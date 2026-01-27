@@ -88,6 +88,7 @@ export async function getProject(id: string): Promise<ProjectWithData | null> {
     id: data.id,
     name: data.name,
     customerName: data.customer_name || '',
+    customerAddress: formatAddress(data.project_data as Record<string, unknown>),
     status: data.status,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
