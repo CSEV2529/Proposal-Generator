@@ -10,9 +10,10 @@ import {
   LABOR_RATE_PER_HOUR
 } from '@/lib/excelExport';
 
-const CLAUDE_CODE_DIR = 'C:/Users/cspen/ClaudeCode';
-const NATIONAL_GRID_FILE = path.join(CLAUDE_CODE_DIR, 'National Grid Breakdown v2.xlsx');
-const NYSEG_RGE_FILE = path.join(CLAUDE_CODE_DIR, 'NYSEG & RG&E Breakdown.xlsx');
+// Templates are stored in the project's templates folder
+const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
+const NATIONAL_GRID_FILE = path.join(TEMPLATES_DIR, 'National Grid Breakdown v2.xlsx');
+const NYSEG_RGE_FILE = path.join(TEMPLATES_DIR, 'NYSEG & RG&E Breakdown.xlsx');
 
 async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
