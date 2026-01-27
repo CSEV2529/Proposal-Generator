@@ -1,3 +1,4 @@
+// Project storage utilities for Supabase
 import { supabase } from './supabase';
 import { Proposal } from './types';
 
