@@ -1,129 +1,174 @@
 import React from 'react';
 import { Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { COMPANY_INFO } from '@/lib/constants';
-import { colors } from './styles';
+import { colors, DISCLAIMER_TEXT } from './styles';
 
-const siteStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
+    backgroundColor: colors.slate900,
+    position: 'relative',
+  },
+
+  content: {
     padding: 40,
-    backgroundColor: colors.white,
+    paddingBottom: 120,
   },
-  header: {
-    backgroundColor: colors.primary,
-    padding: 12,
-    marginBottom: 20,
-    marginHorizontal: -40,
-    marginTop: -40,
-  },
-  headerText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
+
+  // Title
   title: {
-    fontSize: 18,
+    fontSize: 36,
     fontWeight: 'bold',
-    color: colors.primaryDark,
-    marginBottom: 15,
+    color: colors.text,
+    marginBottom: 10,
   },
+
+  titleUnderline: {
+    color: colors.primary,
+  },
+
+  introText: {
+    fontSize: 10,
+    color: colors.textLight,
+    lineHeight: 1.5,
+    marginBottom: 20,
+  },
+
+  // Map container
   mapContainer: {
     flex: 1,
+    minHeight: 350,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 4,
     marginBottom: 20,
-    minHeight: 350,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.slate800,
+    borderRadius: 8,
   },
+
   siteMapImage: {
     maxWidth: '100%',
     maxHeight: 350,
     objectFit: 'contain',
   },
+
   placeholder: {
     textAlign: 'center',
     padding: 40,
   },
+
   placeholderText: {
-    fontSize: 12,
-    color: colors.textLight,
+    fontSize: 14,
+    color: colors.textMuted,
     marginBottom: 10,
   },
+
   placeholderSubtext: {
-    fontSize: 9,
-    color: colors.textLight,
+    fontSize: 10,
+    color: colors.textMuted,
   },
-  notesSection: {
-    marginBottom: 20,
-  },
-  notesTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: colors.primaryDark,
-    marginBottom: 8,
-  },
-  notesBox: {
+
+  // Site Map Approval section
+  approvalSection: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 4,
-    padding: 15,
-    minHeight: 60,
-    backgroundColor: colors.background,
+    position: 'relative',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: colors.slate800,
   },
-  notesText: {
-    fontSize: 9,
-    color: colors.textLight,
-    fontStyle: 'italic',
+
+  approvalAccentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: colors.primary,
   },
-  signatureSection: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: colors.background,
-    borderRadius: 4,
+
+  approvalHeader: {
+    backgroundColor: colors.slate700,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    paddingLeft: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
-  signatureTitle: {
+
+  approvalHeaderText: {
+    color: colors.primary,
     fontSize: 11,
     fontWeight: 'bold',
-    color: colors.primaryDark,
+    letterSpacing: 0.5,
+  },
+
+  approvalContent: {
+    padding: 20,
+    paddingLeft: 25,
+  },
+
+  signatureRow: {
     marginBottom: 15,
   },
-  signatureText: {
-    fontSize: 9,
-    color: colors.text,
-    marginBottom: 15,
-    lineHeight: 1.5,
+
+  signatureLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: 'bold',
+    marginBottom: 3,
   },
-  signatureGrid: {
-    flexDirection: 'row',
-    gap: 40,
-  },
-  signatureBlock: {
-    flex: 1,
-  },
+
   signatureLine: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.text,
-    marginBottom: 5,
-    height: 25,
+    borderBottomColor: colors.textMuted,
+    height: 20,
   },
-  signatureLabel: {
-    fontSize: 8,
-    color: colors.textLight,
-    marginBottom: 12,
+
+  // Disclaimer footer
+  disclaimerFooter: {
+    position: 'absolute',
+    bottom: 50,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.slate800,
+    paddingVertical: 10,
+    paddingHorizontal: 40,
+    borderTopWidth: 1,
+    borderTopColor: colors.primary,
   },
+
+  disclaimerText: {
+    fontSize: 7,
+    color: colors.textMuted,
+    lineHeight: 1.4,
+  },
+
+  // Page footer
   footer: {
     position: 'absolute',
-    bottom: 25,
+    bottom: 20,
     left: 40,
     right: 40,
-    textAlign: 'center',
-    fontSize: 8,
-    color: colors.textLight,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 8,
+  },
+
+  footerLeft: {
+    fontSize: 9,
+    color: colors.textMuted,
+  },
+
+  footerRight: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.primary,
   },
 });
 
@@ -133,63 +178,61 @@ interface SiteMapPageProps {
 
 export function SiteMapPage({ proposal }: SiteMapPageProps) {
   return (
-    <Page size="LETTER" style={siteStyles.page}>
-      <View style={siteStyles.header}>
-        <Text style={siteStyles.headerText}>{COMPANY_INFO.name}</Text>
-      </View>
-
-      <Text style={siteStyles.title}>Proposed Site Map</Text>
-
-      <View style={siteStyles.mapContainer}>
-        {proposal.siteMapImage ? (
-          <Image src={proposal.siteMapImage} style={siteStyles.siteMapImage} />
-        ) : (
-          <View style={siteStyles.placeholder}>
-            <Text style={siteStyles.placeholderText}>Site Map Image</Text>
-            <Text style={siteStyles.placeholderSubtext}>
-              A detailed site map showing proposed charger locations
-              {'\n'}will be provided upon site assessment
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <View style={siteStyles.notesSection}>
-        <Text style={siteStyles.notesTitle}>Site Notes</Text>
-        <View style={siteStyles.notesBox}>
-          <Text style={siteStyles.notesText}>
-            Final charger placement subject to site conditions, utility requirements, and
-            customer approval. ChargeSmart EV will conduct a thorough site assessment to
-            determine optimal placement for accessibility, visibility, and electrical
-            infrastructure.
-          </Text>
-        </View>
-      </View>
-
-      <View style={siteStyles.signatureSection}>
-        <Text style={siteStyles.signatureTitle}>Site Map Approval</Text>
-        <Text style={siteStyles.signatureText}>
-          By signing below, Customer approves the proposed charger locations as shown in
-          the site map above. Any changes to approved locations may result in additional
-          costs and project timeline adjustments.
+    <Page size="LETTER" style={styles.page}>
+      <View style={styles.content}>
+        {/* Title */}
+        <Text style={styles.title}>
+          <Text style={styles.titleUnderline}>Proposed Site Map</Text>
         </Text>
-        <View style={siteStyles.signatureGrid}>
-          <View style={siteStyles.signatureBlock}>
-            <View style={siteStyles.signatureLine}></View>
-            <Text style={siteStyles.signatureLabel}>Customer Signature</Text>
-            <View style={siteStyles.signatureLine}></View>
-            <Text style={siteStyles.signatureLabel}>Printed Name</Text>
+
+        <Text style={styles.introText}>
+          Below you will see a proposed site map for installing EV chargers at your location. Actual Scope of
+          Work may change depending on power availability, utility determinations and other on-site factors.
+        </Text>
+
+        {/* Map Container */}
+        <View style={styles.mapContainer}>
+          {proposal.siteMapImage ? (
+            <Image src={proposal.siteMapImage} style={styles.siteMapImage} />
+          ) : (
+            <View style={styles.placeholder}>
+              <Text style={styles.placeholderText}>[Site Map Image]</Text>
+              <Text style={styles.placeholderSubtext}>
+                Upload a site map image in the app to display here
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Site Map Approval */}
+        <View style={styles.approvalSection}>
+          <View style={styles.approvalAccentBar} />
+          <View style={styles.approvalHeader}>
+            <Text style={styles.approvalHeaderText}>Site Map Approval</Text>
           </View>
-          <View style={siteStyles.signatureBlock}>
-            <View style={siteStyles.signatureLine}></View>
-            <Text style={siteStyles.signatureLabel}>Date</Text>
-            <View style={siteStyles.signatureLine}></View>
-            <Text style={siteStyles.signatureLabel}>CSEV Representative</Text>
+          <View style={styles.approvalContent}>
+            <View style={styles.signatureRow}>
+              <Text style={styles.signatureLabel}>Signature</Text>
+              <View style={styles.signatureLine} />
+            </View>
+            <View style={styles.signatureRow}>
+              <Text style={styles.signatureLabel}>Date Signed</Text>
+              <View style={styles.signatureLine} />
+            </View>
           </View>
         </View>
       </View>
 
-      <Text style={siteStyles.footer}>Page 6 of 6</Text>
+      {/* Disclaimer Footer */}
+      <View style={styles.disclaimerFooter}>
+        <Text style={styles.disclaimerText}>{DISCLAIMER_TEXT}</Text>
+      </View>
+
+      {/* Page Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.footerLeft}>ChargeSmart EV Proposal</Text>
+        <Text style={styles.footerRight}>06</Text>
+      </View>
     </Page>
   );
 }

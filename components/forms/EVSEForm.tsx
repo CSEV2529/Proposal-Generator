@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { pricebookProducts, getProductsByProjectType } from '@/lib/pricebook';
-import { formatCurrency } from '@/lib/calculations';
+import { pricebookProducts } from '@/lib/pricebook';
+import { formatCurrency, calculateEVSEItemPrice } from '@/lib/calculations';
 import { EVSEItem } from '@/lib/types';
 
 export function EVSEForm() {
@@ -16,19 +16,26 @@ export function EVSEForm() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<EVSEItem>>({});
 
-  const availableProducts = getProductsByProjectType(proposal.projectType);
+  // All EVSE products available regardless of project type
+  const availableProducts = pricebookProducts;
 
   const handleAddItem = () => {
     if (availableProducts.length === 0) return;
 
     const product = availableProducts[0];
+    // Use csevCost as our actual cost, calculate price using margin
+    const unitCost = product.csevCost;
+    const unitPrice = calculateEVSEItemPrice(unitCost, proposal.evseMarginPercent);
+
     const newItem: EVSEItem = {
       id: `evse-${Date.now()}`,
       productId: product.id,
       name: product.name,
       quantity: 1,
-      unitPrice: product.unitPrice,
-      totalPrice: product.unitPrice,
+      unitCost,
+      totalCost: unitCost,
+      unitPrice,
+      totalPrice: unitPrice,
       notes: '',
     };
 
@@ -46,12 +53,18 @@ export function EVSEForm() {
     const item = proposal.evseItems.find(i => i.id === itemId);
     if (!item) return;
 
+    // Use csevCost as our actual cost, calculate price using margin
+    const unitCost = product.csevCost;
+    const unitPrice = calculateEVSEItemPrice(unitCost, proposal.evseMarginPercent);
+
     const updatedItem: EVSEItem = {
       ...item,
       productId: product.id,
       name: product.name,
-      unitPrice: product.unitPrice,
-      totalPrice: product.unitPrice * item.quantity,
+      unitCost,
+      totalCost: unitCost * item.quantity,
+      unitPrice,
+      totalPrice: unitPrice * item.quantity,
     };
 
     dispatch({ type: 'UPDATE_EVSE_ITEM', payload: updatedItem });
@@ -64,6 +77,7 @@ export function EVSEForm() {
     const updatedItem: EVSEItem = {
       ...item,
       quantity,
+      totalCost: item.unitCost * quantity,
       totalPrice: item.unitPrice * quantity,
     };
 
@@ -87,10 +101,12 @@ export function EVSEForm() {
     const item = proposal.evseItems.find(i => i.id === itemId);
     if (!item) return;
 
+    const newUnitPrice = editValues.unitPrice ?? item.unitPrice;
+
     const updatedItem: EVSEItem = {
       ...item,
-      unitPrice: editValues.unitPrice ?? item.unitPrice,
-      totalPrice: (editValues.unitPrice ?? item.unitPrice) * item.quantity,
+      unitPrice: newUnitPrice,
+      totalPrice: newUnitPrice * item.quantity,
       notes: editValues.notes ?? item.notes,
     };
 
@@ -103,28 +119,30 @@ export function EVSEForm() {
     <Card
       title="EVSE Equipment"
       subtitle="Add charging equipment from the pricebook or customize pricing"
+      accent
     >
       <div className="space-y-4">
         {proposal.evseItems.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">
+          <p className="text-csev-text-muted text-center py-4">
             No equipment added yet. Click the button below to add items.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 px-2">Product</th>
-                  <th className="text-center py-2 px-2 w-20">Qty</th>
-                  <th className="text-right py-2 px-2 w-28">Unit Price</th>
-                  <th className="text-right py-2 px-2 w-28">Total</th>
-                  <th className="text-left py-2 px-2">Notes</th>
-                  <th className="w-24"></th>
+                <tr className="border-b border-csev-border">
+                  <th className="text-left py-2 px-2 text-csev-text-secondary font-medium">Product</th>
+                  <th className="text-center py-2 px-2 w-16 text-csev-text-secondary font-medium">Qty</th>
+                  <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Unit Cost</th>
+                  <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Unit Price</th>
+                  <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Total Price</th>
+                  <th className="text-left py-2 px-2 text-csev-text-secondary font-medium">Notes</th>
+                  <th className="w-20"></th>
                 </tr>
               </thead>
               <tbody>
                 {proposal.evseItems.map(item => (
-                  <tr key={item.id} className="border-b border-gray-100">
+                  <tr key={item.id} className="border-b border-csev-border/50">
                     <td className="py-2 px-2">
                       <Select
                         value={item.productId}
@@ -147,6 +165,9 @@ export function EVSEForm() {
                         className="text-center text-sm"
                       />
                     </td>
+                    <td className="py-2 px-2 text-right text-csev-text-muted">
+                      {formatCurrency(item.unitCost)}
+                    </td>
                     <td className="py-2 px-2">
                       {editingId === item.id ? (
                         <Input
@@ -163,12 +184,12 @@ export function EVSEForm() {
                           className="text-right text-sm"
                         />
                       ) : (
-                        <span className="block text-right">
+                        <span className="block text-right text-csev-text-primary">
                           {formatCurrency(item.unitPrice)}
                         </span>
                       )}
                     </td>
-                    <td className="py-2 px-2 text-right font-medium">
+                    <td className="py-2 px-2 text-right font-medium text-csev-text-primary">
                       {formatCurrency(item.totalPrice)}
                     </td>
                     <td className="py-2 px-2">
@@ -183,7 +204,7 @@ export function EVSEForm() {
                           className="text-sm"
                         />
                       ) : (
-                        <span className="text-gray-500 text-sm">
+                        <span className="text-csev-text-muted text-sm">
                           {item.notes || '-'}
                         </span>
                       )}
@@ -194,14 +215,14 @@ export function EVSEForm() {
                           <>
                             <button
                               onClick={() => saveEditing(item.id)}
-                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              className="p-1 text-csev-green hover:bg-csev-green/10 rounded"
                               title="Save"
                             >
                               <Check size={16} />
                             </button>
                             <button
                               onClick={cancelEditing}
-                              className="p-1 text-gray-600 hover:bg-gray-50 rounded"
+                              className="p-1 text-csev-text-muted hover:bg-csev-slate-700 rounded"
                               title="Cancel"
                             >
                               <X size={16} />
@@ -211,14 +232,14 @@ export function EVSEForm() {
                           <>
                             <button
                               onClick={() => startEditing(item)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                              className="p-1 text-csev-green hover:bg-csev-green/10 rounded"
                               title="Edit price/notes"
                             >
                               <Edit2 size={16} />
                             </button>
                             <button
                               onClick={() => handleRemoveItem(item.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              className="p-1 text-red-400 hover:bg-red-400/10 rounded"
                               title="Remove"
                             >
                               <Trash2 size={16} />
@@ -231,12 +252,16 @@ export function EVSEForm() {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-gray-50">
-                  <td colSpan={3} className="py-2 px-2 text-right font-semibold">
-                    EVSE Total:
+                <tr className="bg-csev-slate-800">
+                  <td colSpan={2} className="py-2 px-2 text-right font-semibold text-csev-text-primary">
+                    EVSE Totals:
                   </td>
+                  <td className="py-2 px-2 text-right text-csev-text-muted">
+                    {formatCurrency(proposal.evseActualCost)}
+                  </td>
+                  <td></td>
                   <td className="py-2 px-2 text-right font-bold text-csev-green">
-                    {formatCurrency(proposal.evseCost)}
+                    {formatCurrency(proposal.evseQuotedPrice)}
                   </td>
                   <td colSpan={2}></td>
                 </tr>

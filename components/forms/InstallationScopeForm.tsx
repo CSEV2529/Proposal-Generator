@@ -7,25 +7,20 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { installationServices } from '@/lib/pricebook';
-import { formatCurrency } from '@/lib/calculations';
+import { installationServices, getSubgroups, getServicesBySubgroup } from '@/lib/pricebook';
+import { formatCurrency, calculateMaterialCost, calculateLaborCost } from '@/lib/calculations';
 import { InstallationItem } from '@/lib/types';
 
 export function InstallationScopeForm() {
   const { proposal, dispatch } = useProposal();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<InstallationItem>>({});
+  const [selectedSubgroup, setSelectedSubgroup] = useState<string>('');
 
-  const materialServices = installationServices.filter(s => s.category === 'material');
-  const laborServices = installationServices.filter(s => s.category === 'labor');
+  const subgroups = getSubgroups();
 
-  const materialItems = proposal.installationItems.filter(
-    i => i.category === 'material'
-  );
-  const laborItems = proposal.installationItems.filter(i => i.category === 'labor');
-
-  const handleAddItem = (category: 'material' | 'labor') => {
-    const services = category === 'material' ? materialServices : laborServices;
+  const handleAddItem = (subgroup: string) => {
+    const services = getServicesBySubgroup(subgroup);
     if (services.length === 0) return;
 
     const service = services[0];
@@ -34,9 +29,12 @@ export function InstallationScopeForm() {
       itemId: service.id,
       name: service.name,
       quantity: 1,
-      unitPrice: service.unitPrice,
-      totalPrice: service.unitPrice,
-      category,
+      materialPrice: service.materialPrice,
+      laborPrice: service.laborPrice,
+      totalMaterial: service.materialPrice,
+      totalLabor: service.laborPrice,
+      unit: service.unit,
+      subgroup: service.subgroup,
     };
 
     dispatch({ type: 'ADD_INSTALLATION_ITEM', payload: newItem });
@@ -57,8 +55,12 @@ export function InstallationScopeForm() {
       ...item,
       itemId: service.id,
       name: service.name,
-      unitPrice: service.unitPrice,
-      totalPrice: service.unitPrice * item.quantity,
+      materialPrice: service.materialPrice,
+      laborPrice: service.laborPrice,
+      totalMaterial: service.materialPrice * item.quantity,
+      totalLabor: service.laborPrice * item.quantity,
+      unit: service.unit,
+      subgroup: service.subgroup,
     };
 
     dispatch({ type: 'UPDATE_INSTALLATION_ITEM', payload: updatedItem });
@@ -71,7 +73,8 @@ export function InstallationScopeForm() {
     const updatedItem: InstallationItem = {
       ...item,
       quantity,
-      totalPrice: item.unitPrice * quantity,
+      totalMaterial: item.materialPrice * quantity,
+      totalLabor: item.laborPrice * quantity,
     };
 
     dispatch({ type: 'UPDATE_INSTALLATION_ITEM', payload: updatedItem });
@@ -79,7 +82,10 @@ export function InstallationScopeForm() {
 
   const startEditing = (item: InstallationItem) => {
     setEditingId(item.id);
-    setEditValues({ unitPrice: item.unitPrice });
+    setEditValues({
+      materialPrice: item.materialPrice,
+      laborPrice: item.laborPrice,
+    });
   };
 
   const cancelEditing = () => {
@@ -91,10 +97,15 @@ export function InstallationScopeForm() {
     const item = proposal.installationItems.find(i => i.id === itemId);
     if (!item) return;
 
+    const materialPrice = editValues.materialPrice ?? item.materialPrice;
+    const laborPrice = editValues.laborPrice ?? item.laborPrice;
+
     const updatedItem: InstallationItem = {
       ...item,
-      unitPrice: editValues.unitPrice ?? item.unitPrice,
-      totalPrice: (editValues.unitPrice ?? item.unitPrice) * item.quantity,
+      materialPrice,
+      laborPrice,
+      totalMaterial: materialPrice * item.quantity,
+      totalLabor: laborPrice * item.quantity,
     };
 
     dispatch({ type: 'UPDATE_INSTALLATION_ITEM', payload: updatedItem });
@@ -102,167 +113,237 @@ export function InstallationScopeForm() {
     setEditValues({});
   };
 
-  const renderItemsTable = (
-    items: InstallationItem[],
-    services: typeof installationServices,
-    category: 'material' | 'labor',
-    title: string,
-    totalValue: number
-  ) => (
-    <div className="space-y-3">
-      <h4 className="font-medium text-gray-700">{title}</h4>
-      {items.length === 0 ? (
-        <p className="text-gray-500 text-sm py-2">No {title.toLowerCase()} added yet.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-2 px-2">Item</th>
-                <th className="text-center py-2 px-2 w-20">Qty</th>
-                <th className="text-right py-2 px-2 w-28">Unit Price</th>
-                <th className="text-right py-2 px-2 w-28">Total</th>
-                <th className="w-20"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(item => (
-                <tr key={item.id} className="border-b border-gray-100">
-                  <td className="py-2 px-2">
-                    <Select
-                      value={item.itemId}
-                      onChange={e => handleServiceChange(item.id, e.target.value)}
-                      options={services.map(s => ({
-                        value: s.id,
-                        label: `${s.name} (per ${s.unit})`,
-                      }))}
-                      className="text-sm"
-                    />
-                  </td>
-                  <td className="py-2 px-2">
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={e =>
-                        handleQuantityChange(item.id, parseInt(e.target.value) || 1)
-                      }
-                      className="text-center text-sm"
-                    />
-                  </td>
-                  <td className="py-2 px-2">
-                    {editingId === item.id ? (
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={editValues.unitPrice}
-                        onChange={e =>
-                          setEditValues({
-                            ...editValues,
-                            unitPrice: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        className="text-right text-sm"
-                      />
-                    ) : (
-                      <span className="block text-right">
-                        {formatCurrency(item.unitPrice)}
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-2 px-2 text-right font-medium">
-                    {formatCurrency(item.totalPrice)}
-                  </td>
-                  <td className="py-2 px-2">
-                    <div className="flex items-center gap-1 justify-end">
-                      {editingId === item.id ? (
-                        <>
-                          <button
-                            onClick={() => saveEditing(item.id)}
-                            className="p-1 text-green-600 hover:bg-green-50 rounded"
-                            title="Save"
-                          >
-                            <Check size={16} />
-                          </button>
-                          <button
-                            onClick={cancelEditing}
-                            className="p-1 text-gray-600 hover:bg-gray-50 rounded"
-                            title="Cancel"
-                          >
-                            <X size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEditing(item)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Edit price"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleRemoveItem(item.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            title="Remove"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-gray-50">
-                <td colSpan={3} className="py-2 px-2 text-right font-semibold">
-                  {title} Total:
-                </td>
-                <td className="py-2 px-2 text-right font-bold text-csev-green">
-                  {formatCurrency(totalValue)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      )}
-      <Button
-        onClick={() => handleAddItem(category)}
-        variant="outline"
-        size="sm"
-      >
-        <Plus size={16} className="mr-2" />
-        Add {category === 'material' ? 'Material' : 'Labor'} Item
-      </Button>
-    </div>
-  );
+  // Group items by subgroup for display
+  const itemsBySubgroup = proposal.installationItems.reduce((acc, item) => {
+    if (!acc[item.subgroup]) {
+      acc[item.subgroup] = [];
+    }
+    acc[item.subgroup].push(item);
+    return acc;
+  }, {} as Record<string, InstallationItem[]>);
+
+  const getUnitLabel = (unit: string) => {
+    switch (unit) {
+      case 'ft': return '/ft';
+      case 'each': return '/ea';
+      case 'circuit': return '/circuit';
+      case 'project': return '/project';
+      default: return '';
+    }
+  };
 
   return (
     <Card
       title="Installation Scope"
-      subtitle="Define material and labor requirements for the installation"
+      subtitle="Add labor and material items from the pricebook"
+      accent
     >
-      <div className="space-y-8">
-        {renderItemsTable(
-          materialItems,
-          materialServices,
-          'material',
-          'Material Costs',
-          proposal.materialCost
-        )}
+      <div className="space-y-6">
+        {/* Add Item Section */}
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <Select
+              label="Select Category"
+              value={selectedSubgroup}
+              onChange={(e) => setSelectedSubgroup(e.target.value)}
+              options={[
+                { value: '', label: 'Choose a category...' },
+                ...subgroups.map(sg => ({ value: sg, label: sg }))
+              ]}
+            />
+          </div>
+          <Button
+            onClick={() => handleAddItem(selectedSubgroup)}
+            variant="primary"
+            disabled={!selectedSubgroup}
+          >
+            <Plus size={16} className="mr-2" />
+            Add Item
+          </Button>
+        </div>
 
-        <hr className="border-gray-200" />
-
-        {renderItemsTable(
-          laborItems,
-          laborServices,
-          'labor',
-          'Labor Costs',
-          proposal.laborCost
+        {/* Items Table */}
+        {proposal.installationItems.length === 0 ? (
+          <p className="text-csev-text-muted text-center py-8">
+            No installation items added yet. Select a category above and click &quot;Add Item&quot;.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-csev-border bg-csev-slate-800">
+                  <th className="text-left py-3 px-2 text-csev-text-secondary font-medium">Item</th>
+                  <th className="text-center py-3 px-2 w-20 text-csev-text-secondary font-medium">Qty</th>
+                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Material</th>
+                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Labor</th>
+                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Total</th>
+                  <th className="w-24"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(itemsBySubgroup).map(([subgroup, items]) => (
+                  <React.Fragment key={subgroup}>
+                    <tr className="bg-csev-slate-700/50">
+                      <td colSpan={6} className="py-2 px-2 font-semibold text-csev-green text-xs uppercase tracking-wide">
+                        {subgroup}
+                      </td>
+                    </tr>
+                    {items.map(item => {
+                      const services = getServicesBySubgroup(item.subgroup);
+                      return (
+                        <tr key={item.id} className="border-b border-csev-border/50">
+                          <td className="py-2 px-2">
+                            <Select
+                              value={item.itemId}
+                              onChange={e => handleServiceChange(item.id, e.target.value)}
+                              options={services.map(s => ({
+                                value: s.id,
+                                label: `${s.name}`,
+                              }))}
+                              className="text-sm"
+                            />
+                            <span className="text-xs text-csev-text-muted ml-1">
+                              {getUnitLabel(item.unit)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={e =>
+                                handleQuantityChange(item.id, parseInt(e.target.value) || 1)
+                              }
+                              className="text-center text-sm"
+                            />
+                          </td>
+                          <td className="py-2 px-2">
+                            {editingId === item.id ? (
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editValues.materialPrice}
+                                onChange={e =>
+                                  setEditValues({
+                                    ...editValues,
+                                    materialPrice: parseFloat(e.target.value) || 0,
+                                  })
+                                }
+                                className="text-right text-sm"
+                              />
+                            ) : (
+                              <span className="block text-right text-csev-text-primary">
+                                {formatCurrency(item.totalMaterial)}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2">
+                            {editingId === item.id ? (
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editValues.laborPrice}
+                                onChange={e =>
+                                  setEditValues({
+                                    ...editValues,
+                                    laborPrice: parseFloat(e.target.value) || 0,
+                                  })
+                                }
+                                className="text-right text-sm"
+                              />
+                            ) : (
+                              <span className="block text-right text-csev-text-primary">
+                                {formatCurrency(item.totalLabor)}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-right font-medium text-csev-text-primary">
+                            {formatCurrency(item.totalMaterial + item.totalLabor)}
+                          </td>
+                          <td className="py-2 px-2">
+                            <div className="flex items-center gap-1 justify-end">
+                              {editingId === item.id ? (
+                                <>
+                                  <button
+                                    onClick={() => saveEditing(item.id)}
+                                    className="p-1 text-csev-green hover:bg-csev-green/10 rounded"
+                                    title="Save"
+                                  >
+                                    <Check size={16} />
+                                  </button>
+                                  <button
+                                    onClick={cancelEditing}
+                                    className="p-1 text-csev-text-muted hover:bg-csev-slate-700 rounded"
+                                    title="Cancel"
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => startEditing(item)}
+                                    className="p-1 text-csev-green hover:bg-csev-green/10 rounded"
+                                    title="Edit prices"
+                                  >
+                                    <Edit2 size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveItem(item.id)}
+                                    className="p-1 text-red-400 hover:bg-red-400/10 rounded"
+                                    title="Remove"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-csev-slate-800 border-t-2 border-csev-border">
+                  <td colSpan={2} className="py-3 px-2 text-right font-semibold text-csev-text-primary">
+                    Pricebook Total:
+                  </td>
+                  <td className="py-3 px-2 text-right font-bold text-blue-400">
+                    {formatCurrency(calculateMaterialCost(proposal.installationItems))}
+                  </td>
+                  <td className="py-3 px-2 text-right font-bold text-amber-400">
+                    {formatCurrency(calculateLaborCost(proposal.installationItems))}
+                  </td>
+                  <td className="py-3 px-2 text-right font-bold text-csev-text-primary">
+                    {formatCurrency(proposal.csmrPricebookTotal)}
+                  </td>
+                  <td></td>
+                </tr>
+                <tr className="bg-csev-slate-700/50">
+                  <td colSpan={4} className="py-2 px-2 text-right text-sm text-csev-text-secondary">
+                    Our Cost ({proposal.csmrCostBasisPercent}% of pricebook):
+                  </td>
+                  <td className="py-2 px-2 text-right font-medium text-csev-text-muted">
+                    {formatCurrency(proposal.csmrActualCost)}
+                  </td>
+                  <td></td>
+                </tr>
+                <tr className="bg-csev-green/10">
+                  <td colSpan={4} className="py-2 px-2 text-right font-semibold text-csev-text-primary">
+                    Quoted Price (with {proposal.csmrMarginPercent}% margin):
+                  </td>
+                  <td className="py-2 px-2 text-right font-bold text-csev-green">
+                    {formatCurrency(proposal.csmrQuotedPrice)}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         )}
       </div>
     </Card>

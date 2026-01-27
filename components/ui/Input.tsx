@@ -21,7 +21,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-csev-text-secondary mb-1"
         >
           {label}
         </label>
@@ -29,17 +29,20 @@ export function Input({
       <input
         id={inputId}
         className={`
-          w-full px-3 py-2 border rounded-lg shadow-sm
+          w-full px-3 py-2 rounded-lg
+          bg-csev-slate-800 border border-csev-border
+          text-csev-text-primary placeholder-csev-text-muted
           focus:outline-none focus:ring-2 focus:ring-csev-green focus:border-csev-green
-          disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${error ? 'border-red-500' : 'border-gray-300'}
+          disabled:bg-csev-slate-700 disabled:cursor-not-allowed disabled:text-csev-text-muted
+          transition-all duration-200
+          ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
           ${className}
         `}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+        <p className="mt-1 text-sm text-csev-text-muted">{helperText}</p>
       )}
     </div>
   );
@@ -66,7 +69,7 @@ export function TextArea({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-csev-text-secondary mb-1"
         >
           {label}
         </label>
@@ -74,17 +77,20 @@ export function TextArea({
       <textarea
         id={inputId}
         className={`
-          w-full px-3 py-2 border rounded-lg shadow-sm
+          w-full px-3 py-2 rounded-lg
+          bg-csev-slate-800 border border-csev-border
+          text-csev-text-primary placeholder-csev-text-muted
           focus:outline-none focus:ring-2 focus:ring-csev-green focus:border-csev-green
-          disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${error ? 'border-red-500' : 'border-gray-300'}
+          disabled:bg-csev-slate-700 disabled:cursor-not-allowed disabled:text-csev-text-muted
+          transition-all duration-200
+          ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
           ${className}
         `}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+        <p className="mt-1 text-sm text-csev-text-muted">{helperText}</p>
       )}
     </div>
   );

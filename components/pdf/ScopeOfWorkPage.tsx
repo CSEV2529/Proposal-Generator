@@ -1,149 +1,221 @@
 import React from 'react';
 import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { formatCurrency } from '@/lib/calculations';
-import { RESPONSIBILITIES, COMPANY_INFO } from '@/lib/constants';
-import { colors } from './styles';
+import { RESPONSIBILITIES } from '@/lib/constants';
+import { colors, SOW_DISCLAIMER_TEXT } from './styles';
 
-const scopeStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
+    backgroundColor: colors.slate900,
+    position: 'relative',
+  },
+
+  content: {
     padding: 40,
-    backgroundColor: colors.white,
+    paddingBottom: 120,
   },
-  header: {
-    backgroundColor: colors.primary,
-    padding: 12,
-    marginBottom: 20,
-    marginHorizontal: -40,
-    marginTop: -40,
-  },
-  headerText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
+
+  // Title
   title: {
-    fontSize: 18,
+    fontSize: 36,
     fontWeight: 'bold',
-    color: colors.primaryDark,
-    marginBottom: 15,
+    color: colors.text,
+    marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.primaryDark,
-    marginBottom: 8,
-    marginTop: 15,
-    backgroundColor: colors.background,
-    padding: 6,
+
+  titleUnderline: {
+    color: colors.primary,
   },
-  table: {
-    marginBottom: 15,
-  },
+
+  // Table header
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    backgroundColor: colors.slate700,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
-  tableHeaderCell: {
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 9,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-  },
-  tableRowAlt: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    backgroundColor: '#FAFAFA',
-  },
-  colItem: {
+
+  tableHeaderItem: {
     flex: 3,
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
-  colQty: {
-    width: 50,
+
+  tableHeaderQty: {
+    width: 80,
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
-  colPrice: {
-    width: 70,
-    textAlign: 'right',
-  },
-  colNotes: {
+
+  tableHeaderNotes: {
     flex: 2,
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-  tableCell: {
-    fontSize: 8,
-    color: colors.text,
+
+  // Section label (EVSE, INSTALLATION SCOPE)
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    backgroundColor: colors.slate800,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
   },
-  tableCellBold: {
-    fontSize: 8,
-    color: colors.text,
+
+  qtyUpTo: {
+    fontSize: 9,
+    color: colors.textMuted,
     fontWeight: 'bold',
   },
-  totalRow: {
+
+  // Table row
+  tableRow: {
     flexDirection: 'row',
-    backgroundColor: colors.background,
     paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderTopWidth: 2,
-    borderTopColor: colors.primary,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.slate800,
   },
-  responsibilitiesSection: {
-    marginTop: 15,
+
+  tableRowItem: {
+    flex: 3,
+    fontSize: 9,
+    color: colors.textLight,
+    paddingLeft: 15,
   },
+
+  tableRowQty: {
+    width: 80,
+    fontSize: 10,
+    color: colors.text,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+
+  tableRowNotes: {
+    flex: 2,
+    fontSize: 8,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+
+  // Empty row placeholder
+  emptyRow: {
+    flexDirection: 'row',
+    paddingVertical: 6,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.slate800,
+  },
+
+  emptyCell: {
+    fontSize: 9,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+
+  // Responsibilities section
+  responsibilitiesContainer: {
+    marginTop: 20,
+  },
+
   responsibilitiesGrid: {
     flexDirection: 'row',
     gap: 15,
   },
-  responsibilityCol: {
+
+  responsibilityBox: {
     flex: 1,
-    padding: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: colors.slate800,
   },
-  responsibilityTitle: {
-    fontSize: 10,
+
+  responsibilityHeader: {
+    backgroundColor: colors.slate700,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+
+  responsibilityHeaderText: {
+    color: colors.primary,
+    fontSize: 11,
     fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 8,
-    textAlign: 'center',
+    letterSpacing: 0.5,
   },
+
+  responsibilityContent: {
+    padding: 12,
+  },
+
   responsibilityItem: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  bullet: {
-    width: 12,
-    fontSize: 8,
-    color: colors.primary,
-  },
-  responsibilityText: {
-    flex: 1,
-    fontSize: 8,
-    color: colors.text,
+    fontSize: 9,
+    color: colors.textLight,
+    marginBottom: 6,
     lineHeight: 1.4,
   },
-  footer: {
+
+  // Disclaimer footer
+  disclaimerFooter: {
     position: 'absolute',
-    bottom: 25,
+    bottom: 50,
     left: 40,
     right: 40,
-    textAlign: 'center',
-    fontSize: 8,
-    color: colors.textLight,
+    backgroundColor: colors.slate800,
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  disclaimerText: {
+    fontSize: 7,
+    color: colors.textMuted,
+    lineHeight: 1.4,
+  },
+
+  // Page footer
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 40,
+    right: 40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 8,
+  },
+
+  footerLeft: {
+    fontSize: 9,
+    color: colors.textMuted,
+  },
+
+  footerRight: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.primary,
   },
 });
 
@@ -152,200 +224,146 @@ interface ScopeOfWorkPageProps {
 }
 
 export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
-  const materialItems = proposal.installationItems.filter(
-    i => i.category === 'material'
-  );
-  const laborItems = proposal.installationItems.filter(i => i.category === 'labor');
+  // Helper to get unit display
+  const getUnitSuffix = (unit: string) => {
+    switch (unit) {
+      case 'ft':
+        return ' (ft)';
+      case 'each':
+        return '';
+      case 'circuit':
+        return '';
+      case 'project':
+        return '';
+      default:
+        return '';
+    }
+  };
 
   return (
-    <Page size="LETTER" style={scopeStyles.page}>
-      <View style={scopeStyles.header}>
-        <Text style={scopeStyles.headerText}>{COMPANY_INFO.name}</Text>
-      </View>
+    <Page size="LETTER" style={styles.page}>
+      <View style={styles.content}>
+        {/* Title */}
+        <Text style={styles.title}>
+          <Text style={styles.titleUnderline}>Proposed Scope of Work</Text>
+        </Text>
 
-      <Text style={scopeStyles.title}>Proposed Scope of Work</Text>
+        {/* Table Header */}
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderItem}>Item</Text>
+          <Text style={styles.tableHeaderQty}>Quantity</Text>
+          <Text style={styles.tableHeaderNotes}>Notes</Text>
+        </View>
 
-      {/* EVSE Section */}
-      <Text style={scopeStyles.sectionTitle}>EVSE Equipment</Text>
-      <View style={scopeStyles.table}>
-        <View style={scopeStyles.tableHeader}>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colItem]}>
-            Equipment
-          </Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colQty]}>Qty</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>
-            Unit Price
-          </Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>Total</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colNotes]}>Notes</Text>
+        {/* EVSE Section */}
+        <View style={styles.sectionLabel}>
+          <Text>EVSE</Text>
         </View>
 
         {proposal.evseItems.length === 0 ? (
-          <View style={scopeStyles.tableRow}>
-            <Text style={[scopeStyles.tableCell, { fontStyle: 'italic' }]}>
+          <View style={styles.emptyRow}>
+            <Text style={[styles.tableRowItem, { fontStyle: 'italic', color: colors.textLight }]}>
               No equipment specified
             </Text>
+            <Text style={styles.tableRowQty}>-</Text>
+            <Text style={styles.tableRowNotes}>-</Text>
           </View>
         ) : (
           proposal.evseItems.map((item, index) => (
-            <View
-              key={item.id}
-              style={index % 2 === 0 ? scopeStyles.tableRow : scopeStyles.tableRowAlt}
-            >
-              <Text style={[scopeStyles.tableCell, scopeStyles.colItem]}>
-                {item.name}
-              </Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}>
-                {item.quantity}
-              </Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}>
-                {formatCurrency(item.unitPrice)}
-              </Text>
-              <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-                {formatCurrency(item.totalPrice)}
-              </Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colNotes]}>
-                {item.notes || '-'}
-              </Text>
+            <View key={item.id} style={styles.tableRow}>
+              <Text style={styles.tableRowItem}>{item.name}</Text>
+              <Text style={styles.tableRowQty}>{item.quantity}</Text>
+              <Text style={styles.tableRowNotes}>{item.notes || '-'}</Text>
             </View>
           ))
         )}
 
-        <View style={scopeStyles.totalRow}>
-          <Text style={[scopeStyles.tableCellBold, scopeStyles.colItem]}>
-            EVSE Total
-          </Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}></Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}></Text>
-          <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-            {formatCurrency(proposal.evseCost)}
-          </Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colNotes]}></Text>
-        </View>
-      </View>
-
-      {/* Installation - Materials */}
-      <Text style={scopeStyles.sectionTitle}>Installation - Materials</Text>
-      <View style={scopeStyles.table}>
-        <View style={scopeStyles.tableHeader}>
-          <Text style={[scopeStyles.tableHeaderCell, { flex: 4 }]}>Item</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colQty]}>Qty</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>
-            Unit Price
-          </Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>Total</Text>
+        {/* Empty placeholder row */}
+        <View style={styles.tableRow}>
+          <Text style={styles.tableRowItem}>-</Text>
+          <Text style={styles.tableRowQty}>-</Text>
+          <Text style={styles.tableRowNotes}>-</Text>
         </View>
 
-        {materialItems.length === 0 ? (
-          <View style={scopeStyles.tableRow}>
-            <Text style={[scopeStyles.tableCell, { fontStyle: 'italic' }]}>
-              No materials specified
+        {/* Installation Scope Section */}
+        <View style={[styles.sectionLabel, { flexDirection: 'row', justifyContent: 'space-between' }]}>
+          <Text>INSTALLATION SCOPE</Text>
+          <Text style={styles.qtyUpTo}>QTY UP TO:</Text>
+        </View>
+
+        {proposal.installationItems.length === 0 ? (
+          <View style={styles.emptyRow}>
+            <Text style={[styles.tableRowItem, { fontStyle: 'italic', color: colors.textLight }]}>
+              No installation items specified
             </Text>
+            <Text style={styles.tableRowQty}>-</Text>
+            <Text style={styles.tableRowNotes}>-</Text>
           </View>
         ) : (
-          materialItems.map((item, index) => (
-            <View
-              key={item.id}
-              style={index % 2 === 0 ? scopeStyles.tableRow : scopeStyles.tableRowAlt}
-            >
-              <Text style={[scopeStyles.tableCell, { flex: 4 }]}>{item.name}</Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}>
-                {item.quantity}
+          proposal.installationItems.map((item, index) => (
+            <View key={item.id} style={styles.tableRow}>
+              <Text style={styles.tableRowItem}>
+                {item.name}{getUnitSuffix(item.unit)}
               </Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}>
-                {formatCurrency(item.unitPrice)}
-              </Text>
-              <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-                {formatCurrency(item.totalPrice)}
-              </Text>
+              <Text style={styles.tableRowQty}>{item.quantity}</Text>
+              <Text style={styles.tableRowNotes}>-</Text>
             </View>
           ))
         )}
 
-        <View style={scopeStyles.totalRow}>
-          <Text style={[scopeStyles.tableCellBold, { flex: 4 }]}>Material Total</Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}></Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}></Text>
-          <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-            {formatCurrency(proposal.materialCost)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Installation - Labor */}
-      <Text style={scopeStyles.sectionTitle}>Installation - Labor</Text>
-      <View style={scopeStyles.table}>
-        <View style={scopeStyles.tableHeader}>
-          <Text style={[scopeStyles.tableHeaderCell, { flex: 4 }]}>Service</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colQty]}>Qty</Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>
-            Unit Price
-          </Text>
-          <Text style={[scopeStyles.tableHeaderCell, scopeStyles.colPrice]}>Total</Text>
-        </View>
-
-        {laborItems.length === 0 ? (
-          <View style={scopeStyles.tableRow}>
-            <Text style={[scopeStyles.tableCell, { fontStyle: 'italic' }]}>
-              No labor specified
-            </Text>
+        {/* Empty placeholder rows for installation */}
+        {[1, 2, 3].map((_, index) => (
+          <View key={`empty-${index}`} style={styles.tableRow}>
+            <Text style={styles.tableRowItem}>-</Text>
+            <Text style={styles.tableRowQty}>-</Text>
+            <Text style={styles.tableRowNotes}>-</Text>
           </View>
-        ) : (
-          laborItems.map((item, index) => (
-            <View
-              key={item.id}
-              style={index % 2 === 0 ? scopeStyles.tableRow : scopeStyles.tableRowAlt}
-            >
-              <Text style={[scopeStyles.tableCell, { flex: 4 }]}>{item.name}</Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}>
-                {item.quantity}
-              </Text>
-              <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}>
-                {formatCurrency(item.unitPrice)}
-              </Text>
-              <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-                {formatCurrency(item.totalPrice)}
-              </Text>
+        ))}
+
+        {/* Responsibilities */}
+        <View style={styles.responsibilitiesContainer}>
+          <View style={styles.responsibilitiesGrid}>
+            {/* CSEV Responsibilities */}
+            <View style={styles.responsibilityBox}>
+              <View style={styles.responsibilityHeader}>
+                <Text style={styles.responsibilityHeaderText}>CSEV Responsibilities</Text>
+              </View>
+              <View style={styles.responsibilityContent}>
+                {RESPONSIBILITIES.csev.map((item, index) => (
+                  <Text key={index} style={styles.responsibilityItem}>
+                    {item}
+                  </Text>
+                ))}
+              </View>
             </View>
-          ))
-        )}
 
-        <View style={scopeStyles.totalRow}>
-          <Text style={[scopeStyles.tableCellBold, { flex: 4 }]}>Labor Total</Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colQty]}></Text>
-          <Text style={[scopeStyles.tableCell, scopeStyles.colPrice]}></Text>
-          <Text style={[scopeStyles.tableCellBold, scopeStyles.colPrice]}>
-            {formatCurrency(proposal.laborCost)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Responsibilities */}
-      <View style={scopeStyles.responsibilitiesSection}>
-        <Text style={scopeStyles.sectionTitle}>Responsibilities</Text>
-        <View style={scopeStyles.responsibilitiesGrid}>
-          <View style={scopeStyles.responsibilityCol}>
-            <Text style={scopeStyles.responsibilityTitle}>ChargeSmart EV</Text>
-            {RESPONSIBILITIES.csev.map((item, index) => (
-              <View key={index} style={scopeStyles.responsibilityItem}>
-                <Text style={scopeStyles.bullet}>•</Text>
-                <Text style={scopeStyles.responsibilityText}>{item}</Text>
+            {/* Customer Responsibilities */}
+            <View style={styles.responsibilityBox}>
+              <View style={styles.responsibilityHeader}>
+                <Text style={styles.responsibilityHeaderText}>Customer Responsibilities</Text>
               </View>
-            ))}
-          </View>
-          <View style={scopeStyles.responsibilityCol}>
-            <Text style={scopeStyles.responsibilityTitle}>Customer</Text>
-            {RESPONSIBILITIES.customer.map((item, index) => (
-              <View key={index} style={scopeStyles.responsibilityItem}>
-                <Text style={scopeStyles.bullet}>•</Text>
-                <Text style={scopeStyles.responsibilityText}>{item}</Text>
+              <View style={styles.responsibilityContent}>
+                {RESPONSIBILITIES.customer.map((item, index) => (
+                  <Text key={index} style={styles.responsibilityItem}>
+                    {item}
+                  </Text>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
         </View>
       </View>
 
-      <Text style={scopeStyles.footer}>Page 3 of 6</Text>
+      {/* Disclaimer */}
+      <View style={styles.disclaimerFooter}>
+        <Text style={styles.disclaimerText}>{SOW_DISCLAIMER_TEXT}</Text>
+      </View>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.footerLeft}>ChargeSmart EV Proposal</Text>
+        <Text style={styles.footerRight}>03</Text>
+      </View>
     </Page>
   );
 }

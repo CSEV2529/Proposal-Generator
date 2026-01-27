@@ -76,6 +76,7 @@ export function SiteMapForm() {
     <Card
       title="Site Map"
       subtitle="Upload a site map or layout showing proposed charger locations"
+      accent
     >
       <input
         ref={fileInputRef}
@@ -87,11 +88,11 @@ export function SiteMapForm() {
 
       {proposal.siteMapImage ? (
         <div className="space-y-4">
-          <div className="relative rounded-lg overflow-hidden border border-gray-200">
+          <div className="relative rounded-lg overflow-hidden border border-csev-border">
             <img
               src={proposal.siteMapImage}
               alt="Site Map"
-              className="w-full h-auto max-h-96 object-contain bg-gray-50"
+              className="w-full h-auto max-h-96 object-contain bg-csev-slate-800"
             />
             <button
               onClick={handleRemove}
@@ -111,13 +112,13 @@ export function SiteMapForm() {
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-csev-green hover:bg-csev-green/5 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-csev-border rounded-lg p-8 text-center hover:border-csev-green hover:bg-csev-green/5 transition-colors cursor-pointer"
         >
-          <ImageIcon size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 mb-2">
+          <ImageIcon size={48} className="mx-auto text-csev-text-muted mb-4" />
+          <p className="text-csev-text-secondary mb-2">
             Drag and drop an image here, or click to select
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-csev-text-muted">
             Supports: JPG, PNG, GIF (max 5MB)
           </p>
         </div>

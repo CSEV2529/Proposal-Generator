@@ -1,26 +1,101 @@
-import { Proposal, EVSEItem, InstallationItem, PaymentOption } from './types';
+import { Proposal, EVSEItem, InstallationItem, PaymentOption, PaymentOptionAnalysis } from './types';
+import { pricebookProducts } from './pricebook';
 
-export function calculateEVSETotal(items: EVSEItem[]): number {
+// ============================================
+// EVSE Calculations
+// ============================================
+
+export function calculateEVSEActualCost(items: EVSEItem[]): number {
+  return items.reduce((sum, item) => sum + item.totalCost, 0);
+}
+
+export function calculateEVSEQuotedPrice(items: EVSEItem[]): number {
   return items.reduce((sum, item) => sum + item.totalPrice, 0);
 }
 
-export function calculateMaterialCost(items: InstallationItem[]): number {
-  return items
-    .filter(item => item.category === 'material')
-    .reduce((sum, item) => sum + item.totalPrice, 0);
+export function calculateTotalPorts(items: EVSEItem[]): number {
+  return items.reduce((sum, item) => {
+    const product = pricebookProducts.find(p => p.id === item.productId);
+    const portsPerUnit = product?.numberOfPlugs || 1;
+    return sum + (item.quantity * portsPerUnit);
+  }, 0);
 }
 
-export function calculateLaborCost(items: InstallationItem[]): number {
-  return items
-    .filter(item => item.category === 'labor')
-    .reduce((sum, item) => sum + item.totalPrice, 0);
+export function calculateNetworkCost(items: EVSEItem[], years: 1 | 3 | 5): number {
+  return items.reduce((sum, item) => {
+    const product = pricebookProducts.find(p => p.id === item.productId);
+    if (!product) return sum;
+
+    // Get the appropriate network plan cost based on years
+    let networkCostPerUnit: number;
+    switch (years) {
+      case 1:
+        networkCostPerUnit = product.networkPlan1Year;
+        break;
+      case 3:
+        networkCostPerUnit = product.networkPlan3Year;
+        break;
+      case 5:
+        networkCostPerUnit = product.networkPlan5Year;
+        break;
+    }
+
+    return sum + (networkCostPerUnit * item.quantity);
+  }, 0);
+}
+
+export function calculateShippingCost(items: EVSEItem[]): number {
+  return items.reduce((sum, item) => {
+    const product = pricebookProducts.find(p => p.id === item.productId);
+    if (!product) return sum;
+
+    return sum + (product.shippingCost * item.quantity);
+  }, 0);
+}
+
+// Calculate EVSE item prices based on cost and margin
+export function calculateEVSEItemPrice(unitCost: number, marginPercent: number): number {
+  // Price = Cost / (1 - margin%)
+  // This gives us the price where margin% of price is profit
+  // e.g., cost=$100, margin=40% -> price=$166.67 (profit=$66.67 which is 40% of $166.67)
+  return unitCost / (1 - marginPercent / 100);
+}
+
+// ============================================
+// CSMR (Installation) Calculations
+// ============================================
+
+export function calculateCSMRPricebookTotal(items: InstallationItem[]): number {
+  return items.reduce((sum, item) => sum + item.totalMaterial + item.totalLabor, 0);
+}
+
+export function calculateCSMRActualCost(pricebookTotal: number, costBasisPercent: number): number {
+  return pricebookTotal * (costBasisPercent / 100);
+}
+
+export function calculateCSMRQuotedPrice(actualCost: number, marginPercent: number): number {
+  // Price = Cost / (1 - margin%)
+  return actualCost / (1 - marginPercent / 100);
+}
+
+// ============================================
+// Project Totals
+// ============================================
+
+export function calculateTotalActualCost(proposal: Proposal): number {
+  return (
+    proposal.evseActualCost +
+    proposal.csmrActualCost +
+    proposal.utilityAllowance +
+    proposal.shippingCost +
+    proposal.networkPlanCost
+  );
 }
 
 export function calculateGrossProjectCost(proposal: Proposal): number {
   return (
-    proposal.evseCost +
-    proposal.materialCost +
-    proposal.laborCost +
+    proposal.evseQuotedPrice +
+    proposal.csmrQuotedPrice +
     proposal.utilityAllowance +
     proposal.shippingCost +
     proposal.networkPlanCost
@@ -36,6 +111,23 @@ export function calculateNetProjectCost(proposal: Proposal): number {
   const incentives = calculateTotalIncentives(proposal);
   return Math.max(0, gross - incentives);
 }
+
+// ============================================
+// Profitability Calculations
+// ============================================
+
+export function calculateGrossProfit(proposal: Proposal): number {
+  return proposal.netProjectCost - proposal.totalActualCost;
+}
+
+export function calculateGrossMarginPercent(proposal: Proposal): number {
+  if (proposal.netProjectCost === 0) return 0;
+  return (proposal.grossProfit / proposal.netProjectCost) * 100;
+}
+
+// ============================================
+// Payment Option Analysis
+// ============================================
 
 export const paymentOptions: PaymentOption[] = [
   {
@@ -61,12 +153,107 @@ export const paymentOptions: PaymentOption[] = [
   },
 ];
 
-export function calculatePaymentOptionCost(
-  netProjectCost: number,
+export function analyzePaymentOption(
+  proposal: Proposal,
   option: PaymentOption
-): number {
-  return (netProjectCost * option.costPercentage) / 100;
+): PaymentOptionAnalysis {
+  const grossProjectCost = proposal.grossProjectCost;
+  const netProjectCost = proposal.netProjectCost;
+
+  // Use actual cost override if provided, otherwise use estimated cost
+  const csevCost = proposal.actualCostOverride && proposal.actualCostOverride > 0
+    ? proposal.actualCostOverride
+    : proposal.totalActualCost;
+
+  // Customer discount based on NET Project Cost
+  // Option 1 = 100% payment (no discount), Option 2 = 50% payment (50% discount of NET), Option 3 = 0% payment (100% discount of NET)
+  const customerDiscount = netProjectCost * (1 - option.costPercentage / 100);
+
+  // What customer pays
+  const customerPays = netProjectCost - customerDiscount;
+
+  // What CSEV receives = gross project cost minus customer discount
+  const csevRevenue = grossProjectCost - customerDiscount;
+
+  // CSEV profit = Gross Project Cost - Customer Discount - CSEV Cost
+  const csevProfit = grossProjectCost - customerDiscount - csevCost;
+
+  // Margin calculation (avoid division by zero)
+  let csevMarginPercent = 0;
+  if (csevRevenue > 0) {
+    csevMarginPercent = (csevProfit / csevRevenue) * 100;
+  } else if (csevCost > 0) {
+    // For free option, show negative margin as percentage of cost
+    csevMarginPercent = (csevProfit / csevCost) * 100;
+  }
+
+  return {
+    optionName: option.name,
+    customerPays,
+    customerDiscount,
+    revenueShare: option.revenueShare,
+    csevRevenue,
+    csevCost,
+    csevProfit,
+    csevMarginPercent,
+  };
 }
+
+export function analyzeAllPaymentOptions(proposal: Proposal): PaymentOptionAnalysis[] {
+  return paymentOptions.map(option => analyzePaymentOption(proposal, option));
+}
+
+// ============================================
+// Recalculate All Financials
+// ============================================
+
+export function recalculateProposalFinancials(proposal: Proposal): Partial<Proposal> {
+  // EVSE calculations
+  const evseActualCost = calculateEVSEActualCost(proposal.evseItems);
+  const evseQuotedPrice = calculateEVSEQuotedPrice(proposal.evseItems);
+
+  // CSMR calculations
+  const csmrPricebookTotal = calculateCSMRPricebookTotal(proposal.installationItems);
+  const csmrActualCost = calculateCSMRActualCost(csmrPricebookTotal, proposal.csmrCostBasisPercent);
+  const csmrQuotedPrice = calculateCSMRQuotedPrice(csmrActualCost, proposal.csmrMarginPercent);
+
+  // Network cost
+  const networkPlanCost = calculateNetworkCost(proposal.evseItems, proposal.networkYears);
+
+  // Shipping cost (auto-calculated from EVSE SKUs)
+  const shippingCost = calculateShippingCost(proposal.evseItems);
+
+  // Build partial proposal with calculated values
+  const updates: Partial<Proposal> = {
+    evseActualCost,
+    evseQuotedPrice,
+    csmrPricebookTotal,
+    csmrActualCost,
+    csmrQuotedPrice,
+    networkPlanCost,
+    shippingCost,
+  };
+
+  // Create temporary proposal to calculate totals
+  const tempProposal = { ...proposal, ...updates };
+
+  // Calculate totals
+  updates.totalActualCost = calculateTotalActualCost(tempProposal as Proposal);
+  updates.grossProjectCost = calculateGrossProjectCost(tempProposal as Proposal);
+  updates.totalIncentives = calculateTotalIncentives(tempProposal as Proposal);
+  updates.netProjectCost = calculateNetProjectCost({ ...tempProposal, ...updates } as Proposal);
+
+  // Calculate profitability
+  const finalProposal = { ...tempProposal, ...updates } as Proposal;
+  updates.grossProfit = calculateGrossProfit(finalProposal);
+  updates.grossMarginPercent = calculateGrossMarginPercent(finalProposal);
+
+  return updates;
+}
+
+// ============================================
+// Formatting Utilities
+// ============================================
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -87,7 +274,7 @@ export function formatCurrencyWithCents(amount: number): string {
 }
 
 export function formatPercentage(value: number): string {
-  return `${value}%`;
+  return `${value.toFixed(1)}%`;
 }
 
 export function formatDate(date: Date): string {
@@ -106,3 +293,20 @@ export function generateProposalNumber(): string {
   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   return `CSEV-${year}${month}${day}-${random}`;
 }
+
+// Legacy function for backwards compatibility
+export function calculatePaymentOptionCost(
+  netProjectCost: number,
+  option: PaymentOption
+): number {
+  return (netProjectCost * option.costPercentage) / 100;
+}
+
+// Legacy aliases
+export const calculateEVSETotal = calculateEVSEQuotedPrice;
+export const calculateMaterialCost = (items: InstallationItem[]): number => {
+  return items.reduce((sum, item) => sum + item.totalMaterial, 0);
+};
+export const calculateLaborCost = (items: InstallationItem[]): number => {
+  return items.reduce((sum, item) => sum + item.totalLabor, 0);
+};

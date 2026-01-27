@@ -28,7 +28,7 @@ export function Select({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-csev-text-secondary mb-1"
         >
           {label}
         </label>
@@ -36,26 +36,29 @@ export function Select({
       <select
         id={selectId}
         className={`
-          w-full px-3 py-2 border rounded-lg shadow-sm bg-white
+          w-full px-3 py-2 rounded-lg
+          bg-csev-slate-800 border border-csev-border
+          text-csev-text-primary
           focus:outline-none focus:ring-2 focus:ring-csev-green focus:border-csev-green
-          disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${error ? 'border-red-500' : 'border-gray-300'}
+          disabled:bg-csev-slate-700 disabled:cursor-not-allowed disabled:text-csev-text-muted
+          transition-all duration-200
+          ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
           ${className}
         `}
         {...props}
       >
         {placeholder && (
-          <option value="" disabled>
+          <option value="" disabled className="text-csev-text-muted">
             {placeholder}
           </option>
         )}
         {options.map(option => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className="bg-csev-slate-800">
             {option.label}
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
     </div>
   );
 }

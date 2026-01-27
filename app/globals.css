@@ -3,36 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 51, 51, 51;
-  --background-rgb: 249, 250, 251;
+  /* ChargeSmart Dark Theme Variables */
+  --csev-green: #4ade80;
+  --csev-green-dark: #22c55e;
+  --csev-green-light: #86efac;
+  --csev-slate-900: #0f172a;
+  --csev-slate-800: #1e293b;
+  --csev-slate-700: #334155;
+  --csev-panel: #1a202c;
+  --csev-text-primary: #f8fafc;
+  --csev-text-secondary: #94a3b8;
+  --csev-text-muted: #64748b;
+  --csev-border: #334155;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: var(--csev-text-primary);
+  background: var(--csev-slate-900);
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Network Node Background Pattern */
+.bg-network-pattern {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(74, 222, 128, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(74, 222, 128, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.03) 0%, transparent 60%);
+}
+
+/* Network nodes decoration */
+.network-dots::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle, rgba(74, 222, 128, 0.3) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--csev-slate-800);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--csev-slate-700);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: var(--csev-green);
 }
 
-/* Form input focus styles */
+/* Form input focus styles for dark theme */
 input:focus,
 select:focus,
 textarea:focus {
@@ -50,6 +84,45 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+/* Card with green accent bar */
+.card-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--csev-green) 0%, var(--csev-green-dark) 100%);
+}
+
+/* Glowing border effect */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--csev-green) 0%, transparent 50%, var(--csev-green) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+}
+
 /* Animation for loading states */
 @keyframes pulse {
   0%, 100% {
@@ -64,10 +137,58 @@ input[type='number'] {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Stat value large display */
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--csev-green) 0%, var(--csev-green-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section header with uppercase styling */
+.section-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--csev-green);
+}
+
 /* Print styles */
 @media print {
   body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    background: white;
+    color: black;
   }
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Button hover glow effect */
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+}
+
+/* Tab styling for dark theme */
+.tab-active {
+  border-bottom: 2px solid var(--csev-green);
+  color: var(--csev-green);
+}
+
+.tab-inactive {
+  border-bottom: 2px solid transparent;
+  color: var(--csev-text-secondary);
+}
+
+.tab-inactive:hover {
+  color: var(--csev-text-primary);
+  border-bottom-color: var(--csev-slate-700);
 }
