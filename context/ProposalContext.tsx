@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { Proposal, EVSEItem, InstallationItem, defaultProposal } from '@/lib/types';
+import { Proposal, EVSEItem, InstallationItem, defaultProposal, ProjectType } from '@/lib/types';
 import {
   recalculateProposalFinancials,
   calculateEVSEItemPrice,
@@ -12,7 +12,7 @@ import { getScopeTemplateById, ScopeOfWorkTemplate } from '@/lib/templates';
 
 type ProposalAction =
   | { type: 'SET_CUSTOMER_INFO'; payload: Partial<Proposal> }
-  | { type: 'SET_PROJECT_TYPE'; payload: 'level2' | 'dcfc' }
+  | { type: 'SET_PROJECT_TYPE'; payload: ProjectType }
   | { type: 'ADD_EVSE_ITEM'; payload: EVSEItem }
   | { type: 'UPDATE_EVSE_ITEM'; payload: EVSEItem }
   | { type: 'REMOVE_EVSE_ITEM'; payload: string }

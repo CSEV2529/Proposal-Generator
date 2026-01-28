@@ -5,7 +5,8 @@ import { useProposal } from '@/context/ProposalContext';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { STATES, PROJECT_TYPES } from '@/lib/constants';
+import { STATES, PROJECT_TYPES, LOCATION_TYPES } from '@/lib/constants';
+import { ProjectType, LocationType } from '@/lib/types';
 
 export function CustomerInfoForm() {
   const { proposal, dispatch } = useProposal();
@@ -35,7 +36,14 @@ export function CustomerInfoForm() {
   const handleProjectTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch({
       type: 'SET_PROJECT_TYPE',
-      payload: e.target.value as 'level2' | 'dcfc',
+      payload: e.target.value as ProjectType,
+    });
+  };
+
+  const handleLocationTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch({
+      type: 'SET_CUSTOMER_INFO',
+      payload: { locationType: e.target.value as LocationType },
     });
   };
 
@@ -109,10 +117,21 @@ export function CustomerInfoForm() {
           name="projectType"
           value={proposal.projectType}
           onChange={handleProjectTypeChange}
-          options={[
-            { value: 'level2', label: PROJECT_TYPES.level2.label },
-            { value: 'dcfc', label: PROJECT_TYPES.dcfc.label },
-          ]}
+          options={Object.entries(PROJECT_TYPES).map(([value, { label }]) => ({
+            value,
+            label,
+          }))}
+        />
+
+        <Select
+          label="Location Type"
+          name="locationType"
+          value={proposal.locationType}
+          onChange={handleLocationTypeChange}
+          options={Object.entries(LOCATION_TYPES).map(([value, { label }]) => ({
+            value,
+            label,
+          }))}
         />
 
         <Select

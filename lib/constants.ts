@@ -109,13 +109,46 @@ export const ADDITIONAL_TERMS = {
 };
 
 export const PROJECT_TYPES = {
-  level2: {
-    label: 'Level 2 Charging Stations',
+  'level2-epc': {
+    label: 'Level 2 EPC',
     description: 'AC charging, typically 7-19 kW, ideal for destination charging',
   },
-  dcfc: {
-    label: 'DC Fast Charging',
-    description: 'DC charging, 50-350 kW, for rapid charging needs',
+  'level3-epc': {
+    label: 'Level 3 EPC',
+    description: 'DC fast charging, 50-350 kW, for rapid charging needs',
+  },
+  'mixed-epc': {
+    label: 'Mixed EPC',
+    description: 'Combination of Level 2 and Level 3 charging',
+  },
+  'site-host': {
+    label: 'Site Host',
+    description: 'Site host agreement for charging infrastructure',
+  },
+  'distribution': {
+    label: 'Distribution',
+    description: 'Equipment distribution only',
+  },
+};
+
+export const LOCATION_TYPES = {
+  'apartments': {
+    label: 'Apartments / Multi Unit Dwelling',
+  },
+  'commercial': {
+    label: 'Commercial / Workspace',
+  },
+  'dealership': {
+    label: 'Dealership',
+  },
+  'hospitality': {
+    label: 'Hospitality / Hotels',
+  },
+  'municipalities': {
+    label: 'Municipalities / Public Destinations',
+  },
+  'retail': {
+    label: 'Retail / Restaurant',
   },
 };
 

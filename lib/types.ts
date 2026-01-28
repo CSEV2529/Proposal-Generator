@@ -1,5 +1,12 @@
-export type ProjectType = 'level2' | 'dcfc';
+export type ProjectType = 'level2-epc' | 'level3-epc' | 'mixed-epc' | 'site-host' | 'distribution';
 export type AccessType = 'private' | 'public';
+export type LocationType =
+  | 'apartments'
+  | 'commercial'
+  | 'dealership'
+  | 'hospitality'
+  | 'municipalities'
+  | 'retail';
 
 export interface EVSEItem {
   id: string;
@@ -39,6 +46,7 @@ export interface Proposal {
   preparedDate: Date;
   projectType: ProjectType;
   accessType: AccessType;
+  locationType: LocationType;
 
   // State, Utility & Template Selection
   projectStateId?: string;    // State for utility selection
@@ -151,8 +159,9 @@ export const defaultProposal: Proposal = {
   customerState: 'NY',
   customerZip: '',
   preparedDate: new Date(),
-  projectType: 'level2',
+  projectType: 'level2-epc',
   accessType: 'public',
+  locationType: 'commercial',
   evseItems: [],
   installationItems: [],
 
