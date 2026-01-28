@@ -326,12 +326,12 @@ function prepareBudgetLines(proposal: Proposal): BudgetLineItem[] {
     });
   }
 
-  // Network Plan (pass-through)
-  if (proposal.networkPlanCost > 0) {
+  // Network Plan (our actual cost)
+  if (proposal.networkActualCost > 0) {
     lines.push({
       category: 'Network Plan',
       description: `${proposal.networkYears} year plan`,
-      amount: proposal.networkPlanCost,
+      amount: proposal.networkActualCost,
     });
   }
 

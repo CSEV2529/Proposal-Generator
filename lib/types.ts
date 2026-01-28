@@ -78,7 +78,8 @@ export interface Proposal {
   utilityAllowance: number;
   shippingCost: number;
   networkYears: 1 | 3 | 5;
-  networkPlanCost: number;
+  networkPlanCost: number;      // What we charge the customer
+  networkActualCost: number;    // Our actual cost
 
   // Totals
   totalActualCost: number;        // evseActualCost + csmrActualCost + other costs
@@ -114,9 +115,14 @@ export interface PricebookProduct {
   unitPrice: number;
   csevCost: number;
   annualNetworkPlan: number;
+  // Network Plan - what we charge the customer
   networkPlan1Year: number;
   networkPlan3Year: number;
   networkPlan5Year: number;
+  // Network Cost - our actual cost
+  networkCost1Year: number;
+  networkCost3Year: number;
+  networkCost5Year: number;
   shippingCost: number;
   numberOfPlugs: number;
   category: 'charger' | 'accessory';
@@ -185,6 +191,7 @@ export const defaultProposal: Proposal = {
   shippingCost: 0,
   networkYears: 5,
   networkPlanCost: 0,
+  networkActualCost: 0,
 
   // Totals
   totalActualCost: 0,

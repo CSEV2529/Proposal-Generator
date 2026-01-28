@@ -21,22 +21,47 @@ export function calculateTotalPorts(items: EVSEItem[]): number {
   }, 0);
 }
 
+// Calculate network plan price (what we charge the customer)
 export function calculateNetworkCost(items: EVSEItem[], years: 1 | 3 | 5): number {
   return items.reduce((sum, item) => {
     const product = pricebookProducts.find(p => p.id === item.productId);
     if (!product) return sum;
 
-    // Get the appropriate network plan cost based on years
+    // Get the appropriate network plan price based on years
+    let networkPricePerUnit: number;
+    switch (years) {
+      case 1:
+        networkPricePerUnit = product.networkPlan1Year;
+        break;
+      case 3:
+        networkPricePerUnit = product.networkPlan3Year;
+        break;
+      case 5:
+        networkPricePerUnit = product.networkPlan5Year;
+        break;
+    }
+
+    return sum + (networkPricePerUnit * item.quantity);
+  }, 0);
+}
+
+// Calculate actual network cost (what we pay)
+export function calculateActualNetworkCost(items: EVSEItem[], years: 1 | 3 | 5): number {
+  return items.reduce((sum, item) => {
+    const product = pricebookProducts.find(p => p.id === item.productId);
+    if (!product) return sum;
+
+    // Get the appropriate network cost based on years
     let networkCostPerUnit: number;
     switch (years) {
       case 1:
-        networkCostPerUnit = product.networkPlan1Year;
+        networkCostPerUnit = product.networkCost1Year;
         break;
       case 3:
-        networkCostPerUnit = product.networkPlan3Year;
+        networkCostPerUnit = product.networkCost3Year;
         break;
       case 5:
-        networkCostPerUnit = product.networkPlan5Year;
+        networkCostPerUnit = product.networkCost5Year;
         break;
     }
 
@@ -88,7 +113,7 @@ export function calculateTotalActualCost(proposal: Proposal): number {
     proposal.csmrActualCost +
     proposal.utilityAllowance +
     proposal.shippingCost +
-    proposal.networkPlanCost
+    proposal.networkActualCost
   );
 }
 
@@ -217,8 +242,9 @@ export function recalculateProposalFinancials(proposal: Proposal): Partial<Propo
   const csmrActualCost = calculateCSMRActualCost(csmrPricebookTotal, proposal.csmrCostBasisPercent);
   const csmrQuotedPrice = calculateCSMRQuotedPrice(csmrActualCost, proposal.csmrMarginPercent);
 
-  // Network cost
+  // Network cost (what we charge customer) and actual cost (what we pay)
   const networkPlanCost = calculateNetworkCost(proposal.evseItems, proposal.networkYears);
+  const networkActualCost = calculateActualNetworkCost(proposal.evseItems, proposal.networkYears);
 
   // Shipping cost (auto-calculated from EVSE SKUs)
   const shippingCost = calculateShippingCost(proposal.evseItems);
@@ -231,6 +257,7 @@ export function recalculateProposalFinancials(proposal: Proposal): Partial<Propo
     csmrActualCost,
     csmrQuotedPrice,
     networkPlanCost,
+    networkActualCost,
     shippingCost,
   };
 

@@ -483,9 +483,9 @@ export const scopeTemplates: ScopeOfWorkTemplate[] = [
   {
     id: '8-banger-320kw',
     name: '8 Banger 320kW',
-    description: '8 port DCFC installation with 320kW chargers',
+    description: '8 port DCFC installation with 320kW chargers (2x Set of 4)',
     evseItems: [
-      { productId: 'csev-dchp-320-nacs', quantity: 2, notes: '320kW 4-port DCHP' },
+      { productId: 'csev-dchp-640-set4-ccs-nacs', quantity: 2, notes: 'Set of 4 - 640kW (4 ports each)' },
     ],
     installationItems: [
       { serviceId: 'service-2000a-480v', quantity: 1 },
@@ -514,9 +514,9 @@ export const scopeTemplates: ScopeOfWorkTemplate[] = [
   {
     id: '4-banger-320kw',
     name: '4 Banger 320kW',
-    description: '4 port DCFC installation with 320kW charger',
+    description: '4 port DCFC installation with 320kW charger (1x Set of 4)',
     evseItems: [
-      { productId: 'csev-dchp-320-nacs', quantity: 1, notes: '320kW 4-port DCHP' },
+      { productId: 'csev-dchp-640-set4-ccs-nacs', quantity: 1, notes: 'Set of 4 - 640kW (4 ports)' },
     ],
     installationItems: [
       { serviceId: 'service-1200a-480v', quantity: 1 },
