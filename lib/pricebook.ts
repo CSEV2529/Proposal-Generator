@@ -248,7 +248,7 @@ export const pricebookProducts: PricebookProduct[] = [
     networkCost1Year: 150,
     networkCost3Year: 450,
     networkCost5Year: 750,
-    shippingCost: 350,
+    shippingCost: 175,
     numberOfPlugs: 1,
     category: 'charger',
     chargingLevel: 'level2',
