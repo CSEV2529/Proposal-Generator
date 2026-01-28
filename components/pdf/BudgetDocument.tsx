@@ -458,7 +458,7 @@ export function BudgetDocument({ proposal }: BudgetDocumentProps) {
         <View style={styles.notesSection}>
           <Text style={styles.notesTitle}>NOTES</Text>
           <Text style={styles.notesText}>
-            This budget represents ChargeSmart EV's internal costs for this project.
+            This budget represents ChargeSmart EV internal costs for this project.
             EVSE Equipment cost is based on pricebook unit costs. Installation cost reflects
             actual cost basis ({proposal.csmrCostBasisPercent}% of pricebook prices).
             Utility allowance, shipping, and network plan are pass-through costs with no margin applied.
