@@ -240,6 +240,64 @@ function EstimateDownloadButton({ proposal, fileName }: { proposal: Proposal; fi
   );
 }
 
+// Budget PDF Download component
+function BudgetDownloadButton({ proposal, fileName }: { proposal: Proposal; fileName: string }) {
+  const [PDFComponents, setPDFComponents] = useState<{
+    PDFDownloadLink: any;
+    BudgetDocument: any;
+  } | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      import('@react-pdf/renderer'),
+      import('@/components/pdf/BudgetDocument'),
+    ]).then(([pdfRenderer, budgetDoc]) => {
+      setPDFComponents({
+        PDFDownloadLink: pdfRenderer.PDFDownloadLink,
+        BudgetDocument: budgetDoc.BudgetDocument,
+      });
+    });
+  }, []);
+
+  if (!PDFComponents) {
+    return (
+      <Button variant="secondary" size="lg" className="w-full" disabled>
+        <span className="animate-pulse">Loading...</span>
+      </Button>
+    );
+  }
+
+  const { PDFDownloadLink, BudgetDocument } = PDFComponents;
+
+  return (
+    <PDFDownloadLink
+      document={<BudgetDocument proposal={proposal} />}
+      fileName={fileName}
+      className="block"
+    >
+      {({ loading, error }: { loading: boolean; error: any }) => (
+        <Button
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="animate-pulse">Generating...</span>
+          ) : error ? (
+            'Error generating PDF'
+          ) : (
+            <>
+              <FileDown size={20} className="mr-2" />
+              Download Budget (Internal)
+            </>
+          )}
+        </Button>
+      )}
+    </PDFDownloadLink>
+  );
+}
+
 function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -354,6 +412,14 @@ function HomePageContent() {
       : 'Customer';
     const date = proposal.preparedDate.toISOString().split('T')[0];
     return `CSEV_Estimate_${customerName}_${date}.pdf`;
+  };
+
+  const generateBudgetFileName = () => {
+    const customerName = proposal.customerName
+      ? proposal.customerName.replace(/[^a-zA-Z0-9]/g, '_')
+      : 'Customer';
+    const date = proposal.preparedDate.toISOString().split('T')[0];
+    return `CSEV_Budget_${customerName}_${date}.pdf`;
   };
 
   return (
@@ -549,6 +615,7 @@ function HomePageContent() {
                     <>
                       <PDFDownloadButton proposal={proposal} fileName={generateFileName()} />
                       <EstimateDownloadButton proposal={proposal} fileName={generateEstimateFileName()} />
+                      <BudgetDownloadButton proposal={proposal} fileName={generateBudgetFileName()} />
                       <ExcelExportButton proposal={proposal} />
                     </>
                   )}
@@ -567,6 +634,7 @@ function HomePageContent() {
                 <p className="text-xs text-csev-text-muted mt-3">
                   <strong className="text-csev-text-secondary">Proposal:</strong> Customer-facing with pricing options<br/>
                   <strong className="text-csev-text-secondary">Estimate:</strong> Installer estimate with itemized costs<br/>
+                  <strong className="text-csev-text-secondary">Budget:</strong> Internal cost summary (not for distribution)<br/>
                   <strong className="text-csev-text-secondary">Excel:</strong> Utility breakdown template (when utility selected)
                 </p>
 
