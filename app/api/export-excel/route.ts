@@ -123,8 +123,8 @@ async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NYSEG_RGE_FILE);
 
-  // Determine which sheet to use based on project type
-  const sheetName = data.projectType === 'dcfc' ? 'DCFC costs' : 'L2 costs';
+  // Determine which sheet to use based on charging level
+  const sheetName = data.chargingLevel === 'dcfc' ? 'DCFC costs' : 'L2 costs';
   const sheet = workbook.getWorksheet(sheetName);
   if (!sheet) {
     throw new Error(`${sheetName} sheet not found`);

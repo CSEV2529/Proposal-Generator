@@ -154,10 +154,7 @@ interface CoverPageProps {
 }
 
 export function CoverPage({ proposal }: CoverPageProps) {
-  const projectTypeLabel =
-    proposal.projectType === 'level2'
-      ? PROJECT_TYPES.level2.label
-      : PROJECT_TYPES.dcfc.label;
+  const projectTypeLabel = PROJECT_TYPES[proposal.projectType]?.label || proposal.projectType;
 
   const fullAddress = [
     proposal.customerAddress,

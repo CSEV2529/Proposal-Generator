@@ -1,4 +1,5 @@
 export type ProjectType = 'level2-epc' | 'level3-epc' | 'mixed-epc' | 'site-host' | 'distribution';
+export type ChargingLevel = 'level2' | 'dcfc' | 'both';
 export type AccessType = 'private' | 'public';
 export type LocationType =
   | 'apartments'
@@ -119,7 +120,7 @@ export interface PricebookProduct {
   shippingCost: number;
   numberOfPlugs: number;
   category: 'charger' | 'accessory';
-  projectType: ProjectType | 'both';
+  chargingLevel: ChargingLevel;
 }
 
 export interface InstallationService {

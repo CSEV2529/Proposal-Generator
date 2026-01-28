@@ -1,5 +1,19 @@
-import { Proposal, InstallationItem } from './types';
+import { Proposal, InstallationItem, ProjectType } from './types';
 import { LABOR_RATE_PER_HOUR } from './constants';
+
+// Helper to determine charging level from project type
+function getChargingLevelFromProjectType(projectType: ProjectType): 'level2' | 'dcfc' {
+  switch (projectType) {
+    case 'level3-epc':
+      return 'dcfc';
+    case 'level2-epc':
+    case 'mixed-epc':
+    case 'site-host':
+    case 'distribution':
+    default:
+      return 'level2';
+  }
+}
 
 // Cell mappings for National Grid Make-Ready sheet
 // Format: { category: { laborRow, materialRow } }
@@ -102,7 +116,7 @@ function getNYSEGRGECategory(item: InstallationItem): string {
 
 export interface ExcelExportData {
   utilityType: 'national-grid' | 'nyseg-rge';
-  projectType: 'level2' | 'dcfc';
+  chargingLevel: 'level2' | 'dcfc';
   customerName: string;
   siteAddress: string;
   siteCity: string;
@@ -194,7 +208,7 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
 
   return {
     utilityType: 'national-grid',
-    projectType: proposal.projectType,
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
     customerName: proposal.customerName || '',
     siteAddress: proposal.customerAddress || '',
     siteCity: proposal.customerCity || '',
@@ -276,7 +290,7 @@ export function prepareNYSEGRGEExport(proposal: Proposal): ExcelExportData {
 
   return {
     utilityType: 'nyseg-rge',
-    projectType: proposal.projectType,
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
     customerName: proposal.customerName || '',
     siteAddress: proposal.customerAddress || '',
     siteCity: proposal.customerCity || '',

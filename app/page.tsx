@@ -22,7 +22,7 @@ import {
   calculateGrossProjectCost,
   calculateNetProjectCost,
 } from '@/lib/calculations';
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_INFO, PROJECT_TYPES } from '@/lib/constants';
 import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
 import { supabase } from '@/lib/supabase';
 import { createProject, updateProject, getProject } from '@/lib/projectStorage';
@@ -469,7 +469,7 @@ function HomePageContent() {
                     <div className="flex justify-between">
                       <span className="text-csev-text-secondary">Project Type:</span>
                       <span className="font-medium text-csev-text-primary capitalize">
-                        {proposal.projectType === 'level2' ? 'Level 2' : 'DC Fast'}
+                        {PROJECT_TYPES[proposal.projectType]?.label || proposal.projectType}
                       </span>
                     </div>
                     <div className="flex justify-between">

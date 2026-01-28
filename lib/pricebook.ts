@@ -16,7 +16,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-48a-pedestal',
@@ -32,7 +32,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-48a-wall',
@@ -48,7 +48,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   // Level 2 Chargers - 40A
   {
@@ -65,7 +65,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-40a-pedestal',
@@ -81,7 +81,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-40a-wall',
@@ -97,7 +97,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   // Level 2 Chargers - 80A
   {
@@ -114,7 +114,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-80a-pedestal',
@@ -130,7 +130,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-80a-wall',
@@ -146,7 +146,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   // Level 2 Chargers - 32A
   {
@@ -163,7 +163,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-32a-pedestal',
@@ -179,7 +179,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   {
     id: 'csev-ac-sp-32a-wall',
@@ -195,7 +195,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
-    projectType: 'level2',
+    chargingLevel: 'level2',
   },
   // DC Fast Chargers - CCS/CCS
   {
@@ -212,7 +212,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-120-ccs',
@@ -228,7 +228,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-180-ccs',
@@ -244,7 +244,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-240-ccs',
@@ -260,7 +260,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   // DC Fast Chargers - CCS/NACS
   {
@@ -277,7 +277,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-120-nacs',
@@ -293,7 +293,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-180-nacs',
@@ -309,7 +309,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   {
     id: 'csev-dcfc-240-nacs',
@@ -325,7 +325,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
   // DCHP (DC High Power) Chargers
   {
@@ -342,7 +342,7 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 4,
     category: 'charger',
-    projectType: 'dcfc',
+    chargingLevel: 'dcfc',
   },
 ];
 
@@ -1118,8 +1118,8 @@ export function getInstallationServiceById(id: string): InstallationService | un
   return installationServices.find(s => s.id === id);
 }
 
-export function getProductsByProjectType(projectType: 'level2' | 'dcfc'): PricebookProduct[] {
+export function getProductsByChargingLevel(chargingLevel: 'level2' | 'dcfc'): PricebookProduct[] {
   return pricebookProducts.filter(
-    p => p.projectType === projectType || p.projectType === 'both'
+    p => p.chargingLevel === chargingLevel || p.chargingLevel === 'both'
   );
 }
