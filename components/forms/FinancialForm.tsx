@@ -10,6 +10,7 @@ import {
   formatPercentage,
   calculateTotalPorts,
   analyzeAllPaymentOptions,
+  projectRequiresSalesTax,
 } from '@/lib/calculations';
 
 export function FinancialForm() {
@@ -52,7 +53,7 @@ export function FinancialForm() {
         {/* Pricing Settings */}
         <div className="space-y-4">
           <h4 className="section-header">Pricing Settings</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
               label="EVSE Margin %"
               type="number"
@@ -85,6 +86,17 @@ export function FinancialForm() {
               onChange={handlePricingChange('csmrMarginPercent')}
               helperText="Target margin on installation work"
             />
+
+            <Input
+              label="Sales Tax Rate %"
+              type="number"
+              min="0"
+              max="20"
+              step="0.1"
+              value={proposal.salesTaxRate}
+              onChange={handlePricingChange('salesTaxRate')}
+              helperText={projectRequiresSalesTax(proposal.projectType) ? 'Applied to EVSE cost' : 'N/A for Distribution'}
+            />
           </div>
         </div>
 
@@ -103,6 +115,18 @@ export function FinancialForm() {
             <span className="text-right font-medium text-csev-text-primary">
               {formatCurrency(proposal.evseQuotedPrice)}
             </span>
+
+            {proposal.evseSalesTax > 0 && (
+              <>
+                <span className="text-csev-text-secondary">EVSE Sales Tax ({proposal.salesTaxRate}%):</span>
+                <span className="text-right text-csev-text-muted">
+                  {formatCurrency(proposal.evseSalesTax)}
+                </span>
+                <span className="text-right font-medium text-csev-text-primary">
+                  -
+                </span>
+              </>
+            )}
 
             <span className="text-csev-text-secondary">Installation (CSMR):</span>
             <span className="text-right text-csev-text-muted">
@@ -130,7 +154,7 @@ export function FinancialForm() {
 
             <span className="text-csev-text-secondary">Network Plan:</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.networkPlanCost)}
+              {formatCurrency(proposal.networkActualCost)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
               {formatCurrency(proposal.networkPlanCost)}

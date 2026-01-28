@@ -1,4 +1,4 @@
-import { Proposal, EVSEItem, InstallationItem, PaymentOption, PaymentOptionAnalysis } from './types';
+import { Proposal, EVSEItem, InstallationItem, PaymentOption, PaymentOptionAnalysis, ProjectType } from './types';
 import { pricebookProducts } from './pricebook';
 
 // ============================================
@@ -87,6 +87,24 @@ export function calculateEVSEItemPrice(unitCost: number, marginPercent: number):
 }
 
 // ============================================
+// Sales Tax Calculations
+// ============================================
+
+// Project types that require sales tax on EVSE equipment
+const SALES_TAX_PROJECT_TYPES: ProjectType[] = ['level2-epc', 'level3-epc', 'mixed-epc', 'site-host'];
+
+export function projectRequiresSalesTax(projectType: ProjectType): boolean {
+  return SALES_TAX_PROJECT_TYPES.includes(projectType);
+}
+
+export function calculateEVSESalesTax(evseActualCost: number, salesTaxRate: number, projectType: ProjectType): number {
+  if (!projectRequiresSalesTax(projectType)) {
+    return 0;
+  }
+  return evseActualCost * (salesTaxRate / 100);
+}
+
+// ============================================
 // CSMR (Installation) Calculations
 // ============================================
 
@@ -110,6 +128,7 @@ export function calculateCSMRQuotedPrice(actualCost: number, marginPercent: numb
 export function calculateTotalActualCost(proposal: Proposal): number {
   return (
     proposal.evseActualCost +
+    proposal.evseSalesTax +
     proposal.csmrActualCost +
     proposal.utilityAllowance +
     proposal.shippingCost +
@@ -237,6 +256,9 @@ export function recalculateProposalFinancials(proposal: Proposal): Partial<Propo
   const evseActualCost = calculateEVSEActualCost(proposal.evseItems);
   const evseQuotedPrice = calculateEVSEQuotedPrice(proposal.evseItems);
 
+  // Sales tax on EVSE (only for EPC and Site Host projects)
+  const evseSalesTax = calculateEVSESalesTax(evseActualCost, proposal.salesTaxRate, proposal.projectType);
+
   // CSMR calculations
   const csmrPricebookTotal = calculateCSMRPricebookTotal(proposal.installationItems);
   const csmrActualCost = calculateCSMRActualCost(csmrPricebookTotal, proposal.csmrCostBasisPercent);
@@ -253,6 +275,7 @@ export function recalculateProposalFinancials(proposal: Proposal): Partial<Propo
   const updates: Partial<Proposal> = {
     evseActualCost,
     evseQuotedPrice,
+    evseSalesTax,
     csmrPricebookTotal,
     csmrActualCost,
     csmrQuotedPrice,

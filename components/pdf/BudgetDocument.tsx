@@ -298,6 +298,15 @@ function prepareBudgetLines(proposal: Proposal): BudgetLineItem[] {
     });
   }
 
+  // EVSE Sales Tax (only for EPC and Site Host projects)
+  if (proposal.evseSalesTax > 0) {
+    lines.push({
+      category: 'EVSE Sales Tax',
+      description: `${proposal.salesTaxRate}% on equipment`,
+      amount: proposal.evseSalesTax,
+    });
+  }
+
   // Installation / CSMR (our cost)
   if (proposal.csmrActualCost > 0) {
     const installItemCount = proposal.installationItems.length;

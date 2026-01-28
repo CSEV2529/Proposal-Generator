@@ -69,6 +69,10 @@ export interface Proposal {
   evseActualCost: number;         // Sum of all EVSE item costs
   evseQuotedPrice: number;        // Sum of all EVSE item prices (with margin)
 
+  // Sales Tax (applies to EPC and Site Host projects only)
+  salesTaxRate: number;           // Sales tax rate as percentage (e.g., 7 = 7%)
+  evseSalesTax: number;           // Calculated: evseActualCost * salesTaxRate / 100
+
   // CSMR Financials (auto-calculated)
   csmrPricebookTotal: number;     // Raw pricebook total (material + labor)
   csmrActualCost: number;         // csmrPricebookTotal * costBasisPercent
@@ -180,6 +184,10 @@ export const defaultProposal: Proposal = {
   // EVSE
   evseActualCost: 0,
   evseQuotedPrice: 0,
+
+  // Sales Tax (7% default, applies to EPC and Site Host only)
+  salesTaxRate: 7,
+  evseSalesTax: 0,
 
   // CSMR
   csmrPricebookTotal: 0,
