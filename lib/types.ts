@@ -1,4 +1,5 @@
 export type ProjectType = 'level2' | 'dcfc';
+export type AccessType = 'private' | 'public';
 
 export interface EVSEItem {
   id: string;
@@ -37,6 +38,7 @@ export interface Proposal {
   customerZip: string;
   preparedDate: Date;
   projectType: ProjectType;
+  accessType: AccessType;
 
   // State, Utility & Template Selection
   projectStateId?: string;    // State for utility selection
@@ -150,6 +152,7 @@ export const defaultProposal: Proposal = {
   customerZip: '',
   preparedDate: new Date(),
   projectType: 'level2',
+  accessType: 'public',
   evseItems: [],
   installationItems: [],
 

@@ -114,6 +114,17 @@ export function CustomerInfoForm() {
             { value: 'dcfc', label: PROJECT_TYPES.dcfc.label },
           ]}
         />
+
+        <Select
+          label="Access Type"
+          name="accessType"
+          value={proposal.accessType}
+          onChange={handleChange}
+          options={[
+            { value: 'public', label: 'Public' },
+            { value: 'private', label: 'Private' },
+          ]}
+        />
       </div>
     </Card>
   );
