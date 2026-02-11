@@ -1,45 +1,35 @@
 import React from 'react';
-import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { WHY_CSEV_CONTENT } from '@/lib/constants';
+import { PdfTheme } from './pdfTheme';
 import { colors } from './styles';
+import { PageWrapper } from './PageWrapper';
 
 const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    backgroundColor: colors.slate900,
-    position: 'relative',
-  },
-
-  content: {
-    padding: 40,
-    paddingBottom: 100,
-  },
-
   // Page title
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 15,
+    marginBottom: 12,
   },
 
-  titleUnderline: {
+  titleAccent: {
     color: colors.primary,
   },
 
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textMuted,
     textAlign: 'right',
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
   // Two column layout
   twoColumn: {
     flexDirection: 'row',
-    gap: 20,
-    marginBottom: 20,
+    gap: 18,
+    marginBottom: 18,
   },
 
   leftColumn: {
@@ -52,11 +42,11 @@ const styles = StyleSheet.create({
 
   // Image placeholder
   imagePlaceholder: {
-    height: 150,
-    backgroundColor: colors.slate800,
+    height: 140,
+    backgroundColor: colors.panelBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -69,19 +59,19 @@ const styles = StyleSheet.create({
 
   // Markets grid
   marketsGrid: {
-    marginBottom: 15,
+    marginBottom: 12,
   },
 
   marketsRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   marketBox: {
     flex: 1,
-    backgroundColor: colors.slate800,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    backgroundColor: colors.panelBg,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
     marginHorizontal: 3,
     alignItems: 'center',
     borderWidth: 1,
@@ -92,24 +82,24 @@ const styles = StyleSheet.create({
   },
 
   marketText: {
-    fontSize: 9,
+    fontSize: 8,
     color: colors.text,
     textAlign: 'center',
   },
 
   andMore: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.primary,
     fontStyle: 'italic',
     textAlign: 'right',
-    marginTop: 5,
+    marginTop: 4,
   },
 
   // What We Offer section
   offerSection: {
-    backgroundColor: colors.slate800,
-    padding: 15,
-    marginBottom: 15,
+    backgroundColor: colors.panelBg,
+    padding: 12,
+    marginBottom: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -118,38 +108,38 @@ const styles = StyleSheet.create({
   },
 
   offerTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 10,
+    marginBottom: 8,
     letterSpacing: 1,
   },
 
   offerItem: {
     flexDirection: 'row',
-    marginBottom: 6,
+    marginBottom: 5,
     alignItems: 'center',
   },
 
   offerBullet: {
-    width: 15,
+    width: 14,
     fontSize: 10,
     color: colors.primary,
   },
 
   offerText: {
     flex: 1,
-    fontSize: 10,
+    fontSize: 9,
     color: colors.textLight,
   },
 
   // Charger image placeholder (right side)
   chargerImagePlaceholder: {
-    height: 200,
-    backgroundColor: colors.slate800,
+    height: 180,
+    backgroundColor: colors.panelBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -157,9 +147,9 @@ const styles = StyleSheet.create({
 
   // Mission section
   missionSection: {
-    marginTop: 20,
-    backgroundColor: colors.slate800,
-    padding: 20,
+    marginTop: 15,
+    backgroundColor: colors.panelBg,
+    padding: 16,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -168,140 +158,111 @@ const styles = StyleSheet.create({
   },
 
   missionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 12,
+    marginBottom: 10,
     letterSpacing: 1,
   },
 
   missionParagraph: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.textLight,
     lineHeight: 1.5,
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: 'justify',
-  },
-
-  // Footer
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 8,
-  },
-
-  footerLeft: {
-    fontSize: 9,
-    color: colors.textMuted,
-  },
-
-  footerRight: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.primary,
   },
 });
 
-export function WhyCSEVPage() {
+interface WhyCSEVPageProps {
+  theme?: PdfTheme;
+}
+
+export function WhyCSEVPage({}: WhyCSEVPageProps) {
   return (
-    <Page size="LETTER" style={styles.page}>
-      <View style={styles.content}>
-        {/* Title */}
-        <Text style={styles.title}>
-          <Text style={styles.titleUnderline}>Why ChargeSmart EV?</Text>
-        </Text>
+    <PageWrapper pageNumber={2} showDisclaimer={false}>
+      {/* Title */}
+      <Text style={styles.title}>
+        <Text style={styles.titleAccent}>Why ChargeSmart EV?</Text>
+      </Text>
 
-        <Text style={styles.subtitle}>{WHY_CSEV_CONTENT.subtitle}</Text>
+      <Text style={styles.subtitle}>{WHY_CSEV_CONTENT.subtitle}</Text>
 
-        {/* Two column layout */}
-        <View style={styles.twoColumn}>
-          {/* Left column - image */}
-          <View style={styles.leftColumn}>
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.imagePlaceholderText}>[Charger Installation Image]</Text>
-            </View>
-          </View>
-
-          {/* Right column - markets grid */}
-          <View style={styles.rightColumn}>
-            <View style={styles.marketsGrid}>
-              {/* Row 1 */}
-              <View style={styles.marketsRow}>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Multi-family/</Text>
-                  <Text style={styles.marketText}>Apartments</Text>
-                </View>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Hotels/</Text>
-                  <Text style={styles.marketText}>Hospitality</Text>
-                </View>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Retail/</Text>
-                  <Text style={styles.marketText}>Shopping Plazas</Text>
-                </View>
-              </View>
-              {/* Row 2 */}
-              <View style={styles.marketsRow}>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Workplaces</Text>
-                </View>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Auto</Text>
-                  <Text style={styles.marketText}>Dealerships</Text>
-                </View>
-                <View style={styles.marketBox}>
-                  <Text style={styles.marketText}>Municipalities</Text>
-                </View>
-              </View>
-            </View>
-            <Text style={styles.andMore}>...and more</Text>
+      {/* Two column layout */}
+      <View style={styles.twoColumn}>
+        {/* Left column - image */}
+        <View style={styles.leftColumn}>
+          <View style={styles.imagePlaceholder}>
+            <Text style={styles.imagePlaceholderText}>[Charger Installation Image]</Text>
           </View>
         </View>
 
-        {/* What We Offer + Charger Image row */}
-        <View style={styles.twoColumn}>
-          <View style={styles.leftColumn}>
-            <View style={styles.offerSection}>
-              <Text style={styles.offerTitle}>What We Offer:</Text>
-              {WHY_CSEV_CONTENT.whatWeOffer.map((item, index) => (
-                <View key={index} style={styles.offerItem}>
-                  <Text style={styles.offerBullet}>•</Text>
-                  <Text style={styles.offerText}>{item}</Text>
-                </View>
-              ))}
+        {/* Right column - markets grid */}
+        <View style={styles.rightColumn}>
+          <View style={styles.marketsGrid}>
+            {/* Row 1 */}
+            <View style={styles.marketsRow}>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Multi-family/</Text>
+                <Text style={styles.marketText}>Apartments</Text>
+              </View>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Hotels/</Text>
+                <Text style={styles.marketText}>Hospitality</Text>
+              </View>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Retail/</Text>
+                <Text style={styles.marketText}>Shopping Plazas</Text>
+              </View>
+            </View>
+            {/* Row 2 */}
+            <View style={styles.marketsRow}>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Workplaces</Text>
+              </View>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Auto</Text>
+                <Text style={styles.marketText}>Dealerships</Text>
+              </View>
+              <View style={styles.marketBox}>
+                <Text style={styles.marketText}>Municipalities</Text>
+              </View>
             </View>
           </View>
-
-          <View style={styles.rightColumn}>
-            <View style={styles.chargerImagePlaceholder}>
-              <Text style={styles.imagePlaceholderText}>[Single Charger Image]</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Mission Section */}
-        <View style={styles.missionSection}>
-          <Text style={styles.missionTitle}>{WHY_CSEV_CONTENT.missionTitle}</Text>
-          {WHY_CSEV_CONTENT.missionParagraphs.map((paragraph, index) => (
-            <Text key={index} style={styles.missionParagraph}>
-              {paragraph}
-            </Text>
-          ))}
+          <Text style={styles.andMore}>...and more</Text>
         </View>
       </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerLeft}>ChargeSmart EV Proposal</Text>
-        <Text style={styles.footerRight}>02</Text>
+      {/* What We Offer + Charger Image row */}
+      <View style={styles.twoColumn}>
+        <View style={styles.leftColumn}>
+          <View style={styles.offerSection}>
+            <Text style={styles.offerTitle}>What We Offer:</Text>
+            {WHY_CSEV_CONTENT.whatWeOffer.map((item, index) => (
+              <View key={index} style={styles.offerItem}>
+                <Text style={styles.offerBullet}>•</Text>
+                <Text style={styles.offerText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.rightColumn}>
+          <View style={styles.chargerImagePlaceholder}>
+            <Text style={styles.imagePlaceholderText}>[Single Charger Image]</Text>
+          </View>
+        </View>
       </View>
-    </Page>
+
+      {/* Mission Section */}
+      <View style={styles.missionSection}>
+        <Text style={styles.missionTitle}>{WHY_CSEV_CONTENT.missionTitle}</Text>
+        {WHY_CSEV_CONTENT.missionParagraphs.map((paragraph, index) => (
+          <Text key={index} style={styles.missionParagraph}>
+            {paragraph}
+          </Text>
+        ))}
+      </View>
+    </PageWrapper>
   );
 }

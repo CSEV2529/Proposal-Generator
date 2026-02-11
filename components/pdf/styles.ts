@@ -1,43 +1,20 @@
 import { StyleSheet } from '@react-pdf/renderer';
+import { PdfTheme, getPdfColors } from './pdfTheme';
 
-// ChargeSmart Dark Theme Colors
-export const colors = {
-  // Primary accent colors
-  primary: '#4ade80', // ChargeSmart green
-  primaryDark: '#22c55e', // Darker green
-  headerGreen: '#4ade80', // Header bar green
-  accentGreen: '#4ade80', // Green accent bar (replaces yellow)
+// Default theme colors (dark) for backward compatibility
+export const colors = getPdfColors('dark');
 
-  // Dark backgrounds
-  slate900: '#0f172a', // Darkest background
-  slate800: '#1e293b', // Card/panel background
-  slate700: '#334155', // Lighter panels
-  panel: '#1a202c', // Card panels
-
-  // Text colors
-  text: '#f8fafc', // Primary text (light)
-  textLight: '#e2e8f0', // Secondary text
-  textMuted: '#94a3b8', // Muted text
-  textDark: '#1e293b', // Dark text for light backgrounds
-
-  // Borders
-  border: '#334155',
-  borderLight: '#475569',
-
-  // Legacy support
-  background: '#0f172a',
-  backgroundLight: '#1e293b',
-  white: '#FFFFFF',
-  darkBox: '#1e293b',
-  footerBg: '#1e293b', // Dark footer
-};
+// Theme-aware color getter
+export function getColors(theme: PdfTheme = 'dark') {
+  return getPdfColors(theme);
+}
 
 // Common styles used across pages
 export const commonStyles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    backgroundColor: colors.slate900,
+    backgroundColor: colors.pageBg,
     position: 'relative',
   },
 
@@ -52,7 +29,7 @@ export const commonStyles = StyleSheet.create({
 
   // Green section header bar
   sectionHeader: {
-    backgroundColor: colors.slate700,
+    backgroundColor: colors.headerBg,
     paddingVertical: 8,
     paddingHorizontal: 15,
     marginBottom: 0,
@@ -74,13 +51,13 @@ export const commonStyles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 4,
-    backgroundColor: colors.accentGreen,
+    backgroundColor: colors.primary,
   },
 
   // Table styles
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: colors.slate700,
+    backgroundColor: colors.headerBg,
     paddingVertical: 10,
     paddingHorizontal: 15,
   },
@@ -97,7 +74,7 @@ export const commonStyles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
   },
 
   tableRowAlt: {
@@ -106,7 +83,7 @@ export const commonStyles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.panel,
+    backgroundColor: colors.elevatedBg,
   },
 
   tableCell: {
@@ -120,7 +97,7 @@ export const commonStyles = StyleSheet.create({
     bottom: 50,
     left: 0,
     right: 0,
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderTopWidth: 1,
@@ -174,7 +151,7 @@ export const commonStyles = StyleSheet.create({
 
   // Dark theme card panel
   card: {
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -184,7 +161,7 @@ export const commonStyles = StyleSheet.create({
 
   // Card with green accent
   cardAccent: {
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,

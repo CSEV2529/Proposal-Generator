@@ -312,13 +312,19 @@ function HomePageContent() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   const checkAuth = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push('/login');
-      return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || null);
+      } else {
+        // Allow access without login for local development
+        setUserEmail('local@dev.local');
+      }
+    } catch {
+      // Allow access without login for local development
+      setUserEmail('local@dev.local');
     }
-    setUserEmail(user.email || null);
-  }, [router]);
+  }, []);
 
   const loadProject = useCallback(async (projectId: string) => {
     try {

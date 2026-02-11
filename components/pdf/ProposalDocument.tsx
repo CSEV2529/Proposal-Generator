@@ -1,6 +1,8 @@
 import React from 'react';
 import { Document } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
+import { PdfTheme } from './pdfTheme';
+import './fonts';
 import { CoverPage } from './CoverPage';
 import { WhyCSEVPage } from './WhyCSEVPage';
 import { ScopeOfWorkPage } from './ScopeOfWorkPage';
@@ -10,9 +12,12 @@ import { SiteMapPage } from './SiteMapPage';
 
 interface ProposalDocumentProps {
   proposal: Proposal;
+  theme?: PdfTheme;
 }
 
-export function ProposalDocument({ proposal }: ProposalDocumentProps) {
+export function ProposalDocument({ proposal, theme }: ProposalDocumentProps) {
+  const pdfTheme = theme || proposal.pdfTheme || 'dark';
+
   return (
     <Document
       title={`EV Proposal - ${proposal.customerName || 'Customer'}`}
@@ -20,12 +25,12 @@ export function ProposalDocument({ proposal }: ProposalDocumentProps) {
       subject="EV Charging Station Proposal"
       creator="ChargeSmart EV Proposal Generator"
     >
-      <CoverPage proposal={proposal} />
-      <WhyCSEVPage />
-      <ScopeOfWorkPage proposal={proposal} />
-      <FinancialSummaryPage proposal={proposal} />
-      <PaymentOptionsPage proposal={proposal} />
-      <SiteMapPage proposal={proposal} />
+      <CoverPage proposal={proposal} theme={pdfTheme} />
+      <WhyCSEVPage theme={pdfTheme} />
+      <ScopeOfWorkPage proposal={proposal} theme={pdfTheme} />
+      <FinancialSummaryPage proposal={proposal} theme={pdfTheme} />
+      <PaymentOptionsPage proposal={proposal} theme={pdfTheme} />
+      <SiteMapPage proposal={proposal} theme={pdfTheme} />
     </Document>
   );
 }

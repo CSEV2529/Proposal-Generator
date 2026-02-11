@@ -1,39 +1,30 @@
 import React from 'react';
-import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
 import { RESPONSIBILITIES } from '@/lib/constants';
+import { calculateTotalPorts } from '@/lib/calculations';
+import { PdfTheme } from './pdfTheme';
 import { colors, SOW_DISCLAIMER_TEXT } from './styles';
+import { PageWrapper } from './PageWrapper';
 
 const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    backgroundColor: colors.slate900,
-    position: 'relative',
-  },
-
-  content: {
-    padding: 40,
-    paddingBottom: 120,
-  },
-
   // Title
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 20,
+    marginBottom: 15,
   },
 
-  titleUnderline: {
+  titleAccent: {
     color: colors.primary,
   },
 
   // Table header
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: colors.slate700,
-    paddingVertical: 10,
+    backgroundColor: colors.headerBg,
+    paddingVertical: 8,
     paddingHorizontal: 15,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
@@ -42,15 +33,15 @@ const styles = StyleSheet.create({
   tableHeaderItem: {
     flex: 3,
     color: colors.primary,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
 
   tableHeaderQty: {
-    width: 80,
+    width: 70,
     color: colors.primary,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -58,37 +49,48 @@ const styles = StyleSheet.create({
   tableHeaderNotes: {
     flex: 2,
     color: colors.primary,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     textAlign: 'center',
   },
 
   // Section label (EVSE, INSTALLATION SCOPE)
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     color: colors.primary,
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 15,
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
 
-  qtyUpTo: {
-    fontSize: 9,
+  sectionLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 15,
+    backgroundColor: colors.panelBg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+
+  parkingSpaces: {
+    fontSize: 8,
     color: colors.textMuted,
     fontWeight: 'bold',
   },
 
-  // Table row
+  // Table row - dynamic sizing based on item count
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 6,
+    paddingVertical: 5,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
   },
 
   tableRowItem: {
@@ -99,8 +101,8 @@ const styles = StyleSheet.create({
   },
 
   tableRowQty: {
-    width: 80,
-    fontSize: 10,
+    width: 70,
+    fontSize: 9,
     color: colors.text,
     textAlign: 'center',
     fontWeight: 'bold',
@@ -113,257 +115,196 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Empty row placeholder
-  emptyRow: {
-    flexDirection: 'row',
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.slate800,
-  },
-
-  emptyCell: {
+  // Empty state
+  emptyText: {
     fontSize: 9,
+    fontStyle: 'italic',
     color: colors.textMuted,
-    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 30,
   },
 
   // Responsibilities section
   responsibilitiesContainer: {
-    marginTop: 20,
+    marginTop: 15,
   },
 
   responsibilitiesGrid: {
     flexDirection: 'row',
-    gap: 15,
+    gap: 12,
   },
 
   responsibilityBox: {
     flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 6,
     overflow: 'hidden',
-    backgroundColor: colors.slate800,
+    backgroundColor: colors.panelBg,
   },
 
   responsibilityHeader: {
-    backgroundColor: colors.slate700,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    backgroundColor: colors.headerBg,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
 
   responsibilityHeaderText: {
     color: colors.primary,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
 
   responsibilityContent: {
-    padding: 12,
+    padding: 10,
   },
 
   responsibilityItem: {
-    fontSize: 9,
+    fontSize: 8,
     color: colors.textLight,
-    marginBottom: 6,
+    marginBottom: 4,
     lineHeight: 1.4,
   },
 
-  // Disclaimer footer
-  disclaimerFooter: {
-    position: 'absolute',
-    bottom: 50,
-    left: 40,
-    right: 40,
-    backgroundColor: colors.slate800,
-    padding: 10,
+  // SOW disclaimer at bottom of content
+  sowDisclaimer: {
+    marginTop: 12,
+    backgroundColor: colors.panelBg,
+    padding: 8,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.border,
   },
 
-  disclaimerText: {
+  sowDisclaimerText: {
     fontSize: 7,
     color: colors.textMuted,
     lineHeight: 1.4,
-  },
-
-  // Page footer
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 8,
-  },
-
-  footerLeft: {
-    fontSize: 9,
-    color: colors.textMuted,
-  },
-
-  footerRight: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.primary,
   },
 });
 
 interface ScopeOfWorkPageProps {
   proposal: Proposal;
+  theme?: PdfTheme;
 }
 
 export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
+  const totalPorts = calculateTotalPorts(proposal.evseItems);
+
   // Helper to get unit display
   const getUnitSuffix = (unit: string) => {
     switch (unit) {
       case 'ft':
         return ' (ft)';
-      case 'each':
-        return '';
-      case 'circuit':
-        return '';
-      case 'project':
-        return '';
       default:
         return '';
     }
   };
 
+  // Determine if we need compact mode (many items)
+  const totalItems = proposal.evseItems.length + proposal.installationItems.length;
+  const compact = totalItems > 12;
+
+  const rowPadding = compact ? 3 : 5;
+  const fontSize = compact ? 8 : 9;
+
   return (
-    <Page size="LETTER" style={styles.page}>
-      <View style={styles.content}>
-        {/* Title */}
-        <Text style={styles.title}>
-          <Text style={styles.titleUnderline}>Proposed Scope of Work</Text>
+    <PageWrapper pageNumber={3} showDisclaimer={true}>
+      {/* Title */}
+      <Text style={styles.title}>
+        <Text style={styles.titleAccent}>Proposed Scope of Work</Text>
+      </Text>
+
+      {/* Table Header */}
+      <View style={styles.tableHeader} wrap={false}>
+        <Text style={styles.tableHeaderItem}>Item</Text>
+        <Text style={styles.tableHeaderQty}>Quantity</Text>
+        <Text style={styles.tableHeaderNotes}>Notes</Text>
+      </View>
+
+      {/* EVSE Section */}
+      <View style={styles.sectionLabel} wrap={false}>
+        <Text>EVSE</Text>
+      </View>
+
+      {proposal.evseItems.length === 0 ? (
+        <Text style={styles.emptyText}>No equipment specified</Text>
+      ) : (
+        proposal.evseItems.map((item) => (
+          <View key={item.id} style={[styles.tableRow, { paddingVertical: rowPadding }]} wrap={false}>
+            <Text style={[styles.tableRowItem, { fontSize }]}>{item.name}</Text>
+            <Text style={[styles.tableRowQty, { fontSize }]}>{item.quantity}</Text>
+            <Text style={[styles.tableRowNotes, { fontSize: fontSize - 1 }]}>{item.notes || '-'}</Text>
+          </View>
+        ))
+      )}
+
+      {/* Installation Scope Section */}
+      <View style={styles.sectionLabelRow} wrap={false}>
+        <Text style={{ fontSize: 10, fontWeight: 'bold', color: colors.primary }}>
+          INSTALLATION SCOPE
         </Text>
-
-        {/* Table Header */}
-        <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderItem}>Item</Text>
-          <Text style={styles.tableHeaderQty}>Quantity</Text>
-          <Text style={styles.tableHeaderNotes}>Notes</Text>
-        </View>
-
-        {/* EVSE Section */}
-        <View style={styles.sectionLabel}>
-          <Text>EVSE</Text>
-        </View>
-
-        {proposal.evseItems.length === 0 ? (
-          <View style={styles.emptyRow}>
-            <Text style={[styles.tableRowItem, { fontStyle: 'italic', color: colors.textLight }]}>
-              No equipment specified
-            </Text>
-            <Text style={styles.tableRowQty}>-</Text>
-            <Text style={styles.tableRowNotes}>-</Text>
-          </View>
-        ) : (
-          proposal.evseItems.map((item, index) => (
-            <View key={item.id} style={styles.tableRow}>
-              <Text style={styles.tableRowItem}>{item.name}</Text>
-              <Text style={styles.tableRowQty}>{item.quantity}</Text>
-              <Text style={styles.tableRowNotes}>{item.notes || '-'}</Text>
-            </View>
-          ))
+        {totalPorts > 0 && (
+          <Text style={styles.parkingSpaces}>
+            For {totalPorts} parking space{totalPorts !== 1 ? 's' : ''}
+          </Text>
         )}
+      </View>
 
-        {/* Empty placeholder row */}
-        <View style={styles.tableRow}>
-          <Text style={styles.tableRowItem}>-</Text>
-          <Text style={styles.tableRowQty}>-</Text>
-          <Text style={styles.tableRowNotes}>-</Text>
-        </View>
-
-        {/* Installation Scope Section */}
-        <View style={[styles.sectionLabel, { flexDirection: 'row', justifyContent: 'space-between' }]}>
-          <Text>INSTALLATION SCOPE</Text>
-          <Text style={styles.qtyUpTo}>QTY UP TO:</Text>
-        </View>
-
-        {proposal.installationItems.length === 0 ? (
-          <View style={styles.emptyRow}>
-            <Text style={[styles.tableRowItem, { fontStyle: 'italic', color: colors.textLight }]}>
-              No installation items specified
+      {proposal.installationItems.length === 0 ? (
+        <Text style={styles.emptyText}>No installation items specified</Text>
+      ) : (
+        proposal.installationItems.map((item) => (
+          <View key={item.id} style={[styles.tableRow, { paddingVertical: rowPadding }]} wrap={false}>
+            <Text style={[styles.tableRowItem, { fontSize }]}>
+              {item.name}{getUnitSuffix(item.unit)}
             </Text>
-            <Text style={styles.tableRowQty}>-</Text>
-            <Text style={styles.tableRowNotes}>-</Text>
+            <Text style={[styles.tableRowQty, { fontSize }]}>{item.quantity}</Text>
+            <Text style={[styles.tableRowNotes, { fontSize: fontSize - 1 }]}>-</Text>
           </View>
-        ) : (
-          proposal.installationItems.map((item, index) => (
-            <View key={item.id} style={styles.tableRow}>
-              <Text style={styles.tableRowItem}>
-                {item.name}{getUnitSuffix(item.unit)}
-              </Text>
-              <Text style={styles.tableRowQty}>{item.quantity}</Text>
-              <Text style={styles.tableRowNotes}>-</Text>
-            </View>
-          ))
-        )}
+        ))
+      )}
 
-        {/* Empty placeholder rows for installation */}
-        {[1, 2, 3].map((_, index) => (
-          <View key={`empty-${index}`} style={styles.tableRow}>
-            <Text style={styles.tableRowItem}>-</Text>
-            <Text style={styles.tableRowQty}>-</Text>
-            <Text style={styles.tableRowNotes}>-</Text>
+      {/* Responsibilities */}
+      <View style={styles.responsibilitiesContainer} wrap={false}>
+        <View style={styles.responsibilitiesGrid}>
+          {/* CSEV Responsibilities */}
+          <View style={styles.responsibilityBox}>
+            <View style={styles.responsibilityHeader}>
+              <Text style={styles.responsibilityHeaderText}>CSEV Responsibilities</Text>
+            </View>
+            <View style={styles.responsibilityContent}>
+              {RESPONSIBILITIES.csev.map((item, index) => (
+                <Text key={index} style={styles.responsibilityItem}>
+                  {item}
+                </Text>
+              ))}
+            </View>
           </View>
-        ))}
 
-        {/* Responsibilities */}
-        <View style={styles.responsibilitiesContainer}>
-          <View style={styles.responsibilitiesGrid}>
-            {/* CSEV Responsibilities */}
-            <View style={styles.responsibilityBox}>
-              <View style={styles.responsibilityHeader}>
-                <Text style={styles.responsibilityHeaderText}>CSEV Responsibilities</Text>
-              </View>
-              <View style={styles.responsibilityContent}>
-                {RESPONSIBILITIES.csev.map((item, index) => (
-                  <Text key={index} style={styles.responsibilityItem}>
-                    {item}
-                  </Text>
-                ))}
-              </View>
+          {/* Customer Responsibilities */}
+          <View style={styles.responsibilityBox}>
+            <View style={styles.responsibilityHeader}>
+              <Text style={styles.responsibilityHeaderText}>Customer Responsibilities</Text>
             </View>
-
-            {/* Customer Responsibilities */}
-            <View style={styles.responsibilityBox}>
-              <View style={styles.responsibilityHeader}>
-                <Text style={styles.responsibilityHeaderText}>Customer Responsibilities</Text>
-              </View>
-              <View style={styles.responsibilityContent}>
-                {RESPONSIBILITIES.customer.map((item, index) => (
-                  <Text key={index} style={styles.responsibilityItem}>
-                    {item}
-                  </Text>
-                ))}
-              </View>
+            <View style={styles.responsibilityContent}>
+              {RESPONSIBILITIES.customer.map((item, index) => (
+                <Text key={index} style={styles.responsibilityItem}>
+                  {item}
+                </Text>
+              ))}
             </View>
           </View>
         </View>
       </View>
 
-      {/* Disclaimer */}
-      <View style={styles.disclaimerFooter}>
-        <Text style={styles.disclaimerText}>{SOW_DISCLAIMER_TEXT}</Text>
+      {/* SOW Disclaimer */}
+      <View style={styles.sowDisclaimer} wrap={false}>
+        <Text style={styles.sowDisclaimerText}>*{SOW_DISCLAIMER_TEXT}</Text>
       </View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerLeft}>ChargeSmart EV Proposal</Text>
-        <Text style={styles.footerRight}>03</Text>
-      </View>
-    </Page>
+    </PageWrapper>
   );
 }

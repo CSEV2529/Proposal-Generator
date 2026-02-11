@@ -1,160 +1,196 @@
 import React from 'react';
-import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { PROJECT_TYPES, COMPANY_INFO } from '@/lib/constants';
+import { COVER_PAGE_TITLES } from '@/lib/constants';
+import { PdfTheme } from './pdfTheme';
 import { colors } from './styles';
+import { NODES_IMAGE_BASE64 } from './nodesImage';
+import { LOGO_DARK_BASE64 } from './logoDark';
+import { LOGO_LIGHT_BASE64 } from './logoLight';
+import type { ProjectType } from '@/lib/types';
+import { HERO_LEVEL2_BASE64 } from './heroLevel2';
+
+// Hero image mapping by project type
+// Replace null values with base64 data URLs when images are provided
+const HERO_IMAGES: Record<ProjectType, string | null> = {
+  'level2-epc': HERO_LEVEL2_BASE64,
+  'level3-epc': null,
+  'mixed-epc': null,
+  'site-host': null,
+  'distribution': null,
+};
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
-    backgroundColor: colors.slate900,
+    fontFamily: 'Roboto',
+    backgroundColor: colors.pageBg,
     position: 'relative',
   },
 
-  // Logo section at top
+  // Background nodes — same size as PageWrapper (height: 300)
+  backgroundNodes: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 300,
+    opacity: 0.075,
+  },
+
+  backgroundNodesImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+
+  // ── Top: Logo — 75% width, centered ──
   logoSection: {
-    paddingTop: 40,
-    paddingHorizontal: 40,
-    marginBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 18,
+    alignItems: 'center',
+    position: 'relative',
+    zIndex: 1,
   },
 
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  logoImage: {
+    width: '75%',
+    objectFit: 'contain',
   },
 
-  logoCharge: {
-    color: colors.primary,
-  },
-
-  logoSmart: {
-    color: colors.text,
-  },
-
-  logoEV: {
-    color: colors.text,
-  },
-
-  tagline: {
-    fontSize: 12,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    marginTop: 4,
-  },
-
-  // Green accent banner with title
-  banner: {
-    backgroundColor: colors.slate800,
-    paddingVertical: 30,
-    paddingHorizontal: 40,
+  // ── Green banner: Title ──
+  titleBanner: {
+    backgroundColor: colors.primary,
     marginTop: 10,
-    borderTopWidth: 4,
-    borderTopColor: colors.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingVertical: 16,
+    paddingHorizontal: 50,
+    position: 'relative',
+    zIndex: 1,
   },
 
-  bannerTitle: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 10,
+  mainTitle: {
+    fontFamily: 'Orbitron',
+    fontSize: 36,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    marginBottom: 6,
   },
 
-  bannerSubtitle: {
-    fontSize: 14,
-    color: colors.primary,
-    textAlign: 'center',
+  projectTypeSubtitle: {
+    fontFamily: 'Roboto',
+    fontSize: 13,
+    fontWeight: 500,
+    color: '#FFFFFF',
     letterSpacing: 4,
     textTransform: 'uppercase',
   },
 
-  // Hero image placeholder
+  // ── Hero image area — fixed height to keep everything on 1 page ──
   heroSection: {
-    height: 280,
-    backgroundColor: colors.slate800,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    margin: 40,
-    marginTop: 30,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    position: 'relative',
+    zIndex: 1,
+    height: 390,
+    overflow: 'hidden',
+  },
+
+  heroImage: {
+    width: '100%',
+    height: 390,
+    objectFit: 'cover',
   },
 
   heroPlaceholder: {
-    fontSize: 14,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-
-  // Prepared For section
-  preparedForSection: {
-    marginHorizontal: 40,
-    marginTop: 10,
-    paddingLeft: 15,
-    paddingVertical: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-    backgroundColor: colors.slate800,
-    borderRadius: 4,
-  },
-
-  preparedForLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 8,
-    letterSpacing: 2,
-  },
-
-  customerName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
-  },
-
-  customerAddress: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-
-  // Date box at bottom
-  dateBox: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
+    width: '100%',
+    height: 390,
+    backgroundColor: colors.panelBg,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 
-  dateBoxInner: {
-    backgroundColor: colors.slate700,
-    paddingVertical: 14,
-    paddingHorizontal: 50,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: colors.primary,
+  heroPlaceholderText: {
+    fontSize: 14,
+    color: colors.textMuted,
   },
 
-  dateText: {
+  heroPlaceholderSub: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 4,
+  },
+
+  // ── Green banner: Prepared For (full width, ~33% bigger) ──
+  preparedForBanner: {
+    backgroundColor: colors.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 50,
+    position: 'relative',
+    zIndex: 1,
+  },
+
+  preparedForLabel: {
+    fontFamily: 'Orbitron',
+    fontSize: 15,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginBottom: 5,
+  },
+
+  preparedForName: {
+    fontFamily: 'Roboto',
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+
+  preparedForAddress: {
+    fontFamily: 'Roboto',
+    fontSize: 13,
+    fontWeight: 400,
+    color: '#FFFFFF',
+  },
+
+  // ── Spacer pushes Prepared On toward bottom ──
+  bottomSpacer: {
+    flexGrow: 1,
+  },
+
+  // ── Prepared On pill (centered) ──
+  preparedOnSection: {
+    paddingBottom: 20,
+    paddingHorizontal: 50,
+    alignItems: 'center',
+    position: 'relative',
+    zIndex: 1,
+  },
+
+  preparedOnPill: {
+    backgroundColor: colors.panelBg,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+  },
+
+  preparedOnText: {
+    fontFamily: 'Roboto',
     fontSize: 12,
+    fontWeight: 700,
     color: colors.text,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
 });
 
 interface CoverPageProps {
   proposal: Proposal;
+  theme?: PdfTheme;
 }
 
-export function CoverPage({ proposal }: CoverPageProps) {
-  const projectTypeLabel = PROJECT_TYPES[proposal.projectType]?.label || proposal.projectType;
+export function CoverPage({ proposal, theme }: CoverPageProps) {
+  const pdfTheme = theme || 'dark';
+  const projectTypeTitle = COVER_PAGE_TITLES[proposal.projectType] || 'EV CHARGING STATIONS';
+  const logoSrc = pdfTheme === 'dark' ? LOGO_DARK_BASE64 : LOGO_LIGHT_BASE64;
+  const heroImage = HERO_IMAGES[proposal.projectType];
 
   const fullAddress = [
     proposal.customerAddress,
@@ -178,46 +214,56 @@ export function CoverPage({ proposal }: CoverPageProps) {
 
   return (
     <Page size="LETTER" style={styles.page}>
-      {/* Logo */}
+      {/* Background nodes — same height as other pages */}
+      <View style={styles.backgroundNodes}>
+        <Image src={NODES_IMAGE_BASE64} style={styles.backgroundNodesImage} />
+      </View>
+
+      {/* Top: Logo — 75% width, centered */}
       <View style={styles.logoSection}>
-        <Text style={styles.logoText}>
-          <Text style={styles.logoCharge}>Charge</Text>
-          <Text style={styles.logoSmart}>Smart EV</Text>
-          <Text style={{ fontSize: 12, verticalAlign: 'super' }}>®</Text>
-        </Text>
-        <Text style={styles.tagline}>{COMPANY_INFO.tagline}</Text>
+        <Image src={logoSrc} style={styles.logoImage} />
       </View>
 
-      {/* Green Banner */}
-      <View style={styles.banner}>
-        <Text style={styles.bannerTitle}>EV Project Proposal</Text>
-        <Text style={styles.bannerSubtitle}>{projectTypeLabel.toUpperCase()}</Text>
+      {/* Green banner: Title + Project Type */}
+      <View style={styles.titleBanner}>
+        <Text style={styles.mainTitle}>EV Project Proposal</Text>
+        <Text style={styles.projectTypeSubtitle}>{projectTypeTitle}</Text>
       </View>
 
-      {/* Hero Image Placeholder */}
+      {/* Hero image — fills remaining space */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroPlaceholder}>
-          [EV Charger Image]
-          {'\n'}
-          Upload a cover image in the app settings
-        </Text>
+        {heroImage ? (
+          <Image src={heroImage} style={styles.heroImage} />
+        ) : (
+          <View style={styles.heroPlaceholder}>
+            <Text style={styles.heroPlaceholderText}>[Hero Image]</Text>
+            <Text style={styles.heroPlaceholderSub}>
+              Add project-type images to display here
+            </Text>
+          </View>
+        )}
       </View>
 
-      {/* Prepared For */}
-      <View style={styles.preparedForSection}>
+      {/* Green banner: Prepared For — full page width */}
+      <View style={styles.preparedForBanner}>
         <Text style={styles.preparedForLabel}>PREPARED FOR:</Text>
-        <Text style={styles.customerName}>
+        <Text style={styles.preparedForName}>
           {proposal.customerName || 'Customer Name'}
         </Text>
-        <Text style={styles.customerAddress}>
+        <Text style={styles.preparedForAddress}>
           {fullAddress || 'Customer Address'}
         </Text>
       </View>
 
-      {/* Date Box */}
-      <View style={styles.dateBox}>
-        <View style={styles.dateBoxInner}>
-          <Text style={styles.dateText}>PREPARED ON: {formattedDate}</Text>
+      {/* Spacer pushes Prepared On toward bottom of page */}
+      <View style={styles.bottomSpacer} />
+
+      {/* Prepared On — bottom pill */}
+      <View style={styles.preparedOnSection}>
+        <View style={styles.preparedOnPill}>
+          <Text style={styles.preparedOnText}>
+            PREPARED ON:  {formattedDate}
+          </Text>
         </View>
       </View>
     </Page>

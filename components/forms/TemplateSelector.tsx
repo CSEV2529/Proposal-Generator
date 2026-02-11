@@ -9,7 +9,13 @@ import { getAllStates, getUtilitiesByState, getAllScopeTemplates } from '@/lib/t
 export function TemplateSelector() {
   const { proposal, dispatch } = useProposal();
 
-  const states = getAllStates();
+  const allStates = getAllStates();
+  // Put NY and NJ at the top, then the rest alphabetically
+  const states = [
+    ...allStates.filter(s => s.id === 'ny'),
+    ...allStates.filter(s => s.id === 'nj'),
+    ...allStates.filter(s => s.id !== 'ny' && s.id !== 'nj'),
+  ];
   const scopeTemplates = getAllScopeTemplates();
 
   // Get utilities filtered by selected state

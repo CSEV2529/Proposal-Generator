@@ -12,6 +12,7 @@ import {
   analyzeAllPaymentOptions,
   projectRequiresSalesTax,
 } from '@/lib/calculations';
+import { getIncentiveLabels } from '@/lib/constants';
 
 export function FinancialForm() {
   const { proposal, dispatch } = useProposal();
@@ -244,6 +245,37 @@ export function FinancialForm() {
               onChange={handleIncentiveChange('nyseradaIncentive')}
               placeholder="0"
               helperText="State Grant or Incentive"
+            />
+          </div>
+
+          {/* Incentive Label Overrides */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Make Ready Incentive Label (PDF)"
+              type="text"
+              value={proposal.makeReadyIncentiveLabel || ''}
+              onChange={e =>
+                dispatch({
+                  type: 'SET_CUSTOMER_INFO',
+                  payload: { makeReadyIncentiveLabel: e.target.value || undefined },
+                })
+              }
+              placeholder={getIncentiveLabels(proposal.utilityId).makeReady}
+              helperText="Auto-populated from utility. Override if needed."
+            />
+
+            <Input
+              label="Secondary Incentive Label (PDF)"
+              type="text"
+              value={proposal.secondaryIncentiveLabel || ''}
+              onChange={e =>
+                dispatch({
+                  type: 'SET_CUSTOMER_INFO',
+                  payload: { secondaryIncentiveLabel: e.target.value || undefined },
+                })
+              }
+              placeholder={getIncentiveLabels(proposal.utilityId).secondary}
+              helperText="Auto-populated from utility. Override if needed."
             />
           </div>
         </div>

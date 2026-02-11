@@ -9,38 +9,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ChargeSmart Dark Theme Palette
+        // ChargeSmart Dark Theme Palette (matched to Sales Enablement)
         csev: {
-          // Primary teal/mint green accent
-          green: '#4ade80',
-          'green-dark': '#22c55e',
-          'green-light': '#86efac',
-          'green-glow': 'rgba(74, 222, 128, 0.3)',
-          // Dark background colors
-          'slate-900': '#0f172a',
-          'slate-800': '#1e293b',
-          'slate-700': '#334155',
-          'slate-600': '#475569',
+          // Primary green accent
+          green: '#4CBC88',
+          'green-dark': '#3da876',
+          'green-light': '#6dd4a5',
+          'green-glow': 'rgba(76, 188, 136, 0.3)',
+          // Dark background colors (neutral grays, no blue tint)
+          'slate-900': '#1a1a1a',
+          'slate-800': '#242424',
+          'slate-700': '#3a3a3a',
+          'slate-600': '#505050',
           // Text colors for dark theme
-          'text-primary': '#f8fafc',
-          'text-secondary': '#94a3b8',
-          'text-muted': '#64748b',
+          'text-primary': '#e8e8e8',
+          'text-secondary': '#888888',
+          'text-muted': '#505050',
           // Card/panel backgrounds
-          'panel': '#1a202c',
-          'panel-light': '#2d3748',
+          'panel': '#242424',
+          'panel-light': '#2e2e2e',
           // Border colors
-          'border': '#334155',
-          'border-light': '#475569',
+          'border': '#3a3a3a',
+          'border-light': '#505050',
+          // Additional surface colors
+          'elevated': '#2e2e2e',
+          'hover': '#333333',
         },
       },
       backgroundImage: {
-        'gradient-dark': 'linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%)',
-        'gradient-card': 'linear-gradient(145deg, #1e293b 0%, #1a202c 100%)',
-        'glow-green': 'radial-gradient(circle at center, rgba(74, 222, 128, 0.15) 0%, transparent 70%)',
+        'gradient-dark': 'linear-gradient(135deg, #1a1a1a 0%, #242424 50%, #1a1a1a 100%)',
+        'gradient-card': 'linear-gradient(145deg, #242424 0%, #2e2e2e 100%)',
+        'glow-green': 'radial-gradient(circle at center, rgba(76, 188, 136, 0.15) 0%, transparent 70%)',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(74, 222, 128, 0.3)',
-        'glow-sm': '0 0 10px rgba(74, 222, 128, 0.2)',
+        'glow': '0 0 20px rgba(76, 188, 136, 0.3)',
+        'glow-sm': '0 0 10px rgba(76, 188, 136, 0.2)',
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
         'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3)',
       },
@@ -54,8 +57,8 @@ const config: Config = {
       },
       keyframes: {
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(74, 222, 128, 0.3)' },
-          '50%': { boxShadow: '0 0 30px rgba(74, 222, 128, 0.5)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(76, 188, 136, 0.3)' },
+          '50%': { boxShadow: '0 0 30px rgba(76, 188, 136, 0.5)' },
         },
         'fade-in': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },

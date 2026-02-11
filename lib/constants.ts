@@ -160,6 +160,117 @@ export const STATES = [
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
 ];
 
+import type { ProjectType, LocationType } from './types';
+
+// Cover page title mapping by project type
+export const COVER_PAGE_TITLES: Record<ProjectType, string> = {
+  'level2-epc': 'LEVEL 2 CHARGING STATIONS',
+  'level3-epc': 'LEVEL 3 CHARGING STATIONS',
+  'mixed-epc': 'LEVEL 2 & LEVEL 3 CHARGING STATIONS',
+  'site-host': 'SITE HOST EV CHARGING',
+  'distribution': 'EV EQUIPMENT DISTRIBUTION',
+};
+
+// Default incentive labels by utility
+export const INCENTIVE_LABEL_DEFAULTS: Record<string, { makeReady: string; secondary: string }> = {
+  // New York
+  'national-grid': { makeReady: 'National Grid Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  'coned': { makeReady: 'Con Edison Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  'nyseg': { makeReady: 'NYSEG Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  'rge': { makeReady: 'RG&E Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  'oru': { makeReady: 'Orange & Rockland Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  'central-hudson': { makeReady: 'Central Hudson Make Ready Incentive', secondary: 'NYSERDA Charge Ready 2.0 Incentive' },
+  // New Jersey
+  'pseg': { makeReady: 'PSE&G CSMR Incentive', secondary: 'NJBPU Incentive' },
+  'jcpl': { makeReady: 'JCP&L CSMR Incentive', secondary: 'NJBPU Incentive' },
+  'ace': { makeReady: 'Atlantic City Electric CSMR Incentive', secondary: 'NJBPU Incentive' },
+  // Fallback
+  'default': { makeReady: 'Estimated Make Ready Incentive', secondary: 'Estimated Secondary Incentive' },
+};
+
+// Get incentive labels for a given utility
+export function getIncentiveLabels(utilityId?: string): { makeReady: string; secondary: string } {
+  if (utilityId && INCENTIVE_LABEL_DEFAULTS[utilityId]) {
+    return INCENTIVE_LABEL_DEFAULTS[utilityId];
+  }
+  return INCENTIVE_LABEL_DEFAULTS['default'];
+}
+
+// Location-specific value proposition sections
+export const LOCATION_VALUE_PROPS: Record<string, { title: string; intro: string; points: string[] }> = {
+  'hospitality': {
+    title: 'Turn Charging into Check-Ins',
+    intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
+    points: [
+      "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
+      "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
+      "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
+      "Every 100kWh charged generates about $600 in additional room bookings",
+    ],
+  },
+  'apartments': {
+    title: 'Charge Up Your Portfolio',
+    intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
+    points: [
+      "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
+      "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
+      "Increase property value by $50-100K+ per building with installed EV infrastructure",
+      "Future-proof your property as EV adoption grows to 50%+ of new car sales",
+    ],
+  },
+};
+
+// Get value prop content based on location and project type
+export function getLocationValueProp(
+  locationType: LocationType,
+  projectType: ProjectType
+): { title: string; intro: string; points: string[] } | null {
+  // Site host and distribution don't show value props
+  if (projectType === 'distribution') return null;
+  return LOCATION_VALUE_PROPS[locationType] || null;
+}
+
+// Payment options by project type
+export function getPaymentOptions(projectType: ProjectType) {
+  // Default options (Level 2 EPC / NJ LEASE template values)
+  const defaultOptions = {
+    option1: {
+      title: 'Option 1',
+      costPercentage: 100,
+      revenueShare: 100,
+      warrantyIncluded: '3-Year Parts ONLY',
+      warrantyUpgrades: [
+        { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
+        { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
+        { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      ],
+    },
+    option2: {
+      title: 'Option 2',
+      costPercentage: 50,
+      revenueShare: 75,
+      warrantyIncluded: '3-Year Parts ONLY',
+      warrantyUpgrades: [
+        { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
+        { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
+        { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      ],
+    },
+    option3: {
+      title: 'Option 3',
+      costPercentage: 0,
+      revenueShare: 50,
+      warrantyIncluded: '5-Year FULL Parts & Labor',
+      warrantyValue: 20000,
+      warrantyUpgrades: [] as { name: string; cost: number; perStation: boolean }[],
+    },
+  };
+
+  // Future: customize by project type
+  // For now all project types use the same options
+  return defaultOptions;
+}
+
 // Footnote texts from template
 export const FOOTNOTES = {
   networkPlan: '* Customer will be required to provide usage data on a quarterly and annual basis for a minimum of 5 years to receive Make-Ready Incentive. Networking EV stations is encouraged to assist with this ongoing requirement. Non-networked stations will not be able to appear online or charge fees for station use.',

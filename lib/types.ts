@@ -109,6 +109,13 @@ export interface Proposal {
 
   // Site Map
   siteMapImage?: string;
+
+  // Incentive label overrides (auto-populated from utility, user-editable)
+  makeReadyIncentiveLabel?: string;
+  secondaryIncentiveLabel?: string;
+
+  // PDF theme selection
+  pdfTheme?: 'light' | 'dark';
 }
 
 export interface PricebookProduct {
@@ -164,11 +171,13 @@ export interface PaymentOptionAnalysis {
 }
 
 export const defaultProposal: Proposal = {
-  customerName: '',
-  customerAddress: '',
-  customerCity: '',
+  // TODO: Remove test defaults after testing
+  customerName: 'Best Western Inn & Suites',
+  customerAddress: '123 Main St',
+  customerCity: 'Rochester',
   customerState: 'NY',
-  customerZip: '',
+  customerZip: '14624',
+  projectStateId: 'ny',
   preparedDate: new Date(),
   projectType: 'level2-epc',
   accessType: 'public',
