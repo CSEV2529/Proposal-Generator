@@ -170,14 +170,19 @@ templates/
 - Image files: `installationImageL2.ts`, `stationImageL2.ts` (base64, resized to 600px via sharp)
 
 ### Page 3 — ScopeOfWorkPage
-- Title: Orbitron 28px white, marginBottom 12 (matches Page 2)
-- Table header: green left border, Item/Quantity/Notes columns
-- EVSE section: fixed 3 slots (ROW_HEIGHT 18px each)
-  - Auto-generates "EV Parking Signs" row from total ports (qty = ports, note = "For X Parking Spaces")
-  - Unfilled slots show dashes
-- Installation Scope section: fixed 20 slots
-  - Same header style as EVSE, no "QTY UP TO:" or parking spaces text
-  - Unfilled slots show dashes
+- Title: Orbitron 28px white, marginBottom 8
+- Table header: green left border, Item/Quantity columns (no Notes column)
+- EVSE section: fixed 4 slots (ROW_HEIGHT 15px each)
+  - Max 3 user EVSE items + 1 auto-generated "EV Parking Signs" row
+  - Webapp warns at 3 EVSE items (4th slot reserved for signs)
+  - Unfilled slots render as empty space (no dashes)
+- Installation Scope section: fixed 25 slots (ROW_HEIGHT 15px)
+  - Webapp warns at 25 items, Add Item disables
+  - "Delete All" button with confirmation dialog
+  - `CLEAR_INSTALLATION_ITEMS` reducer action
+  - Unfilled slots render as empty space
+- Quantities formatted with comma separators via `formatQty()`
+- `defaultNote` field on InstallationService/InstallationItem (populated in pricebook, not rendered in PDF)
 - Responsibilities: side-by-side CSEV + Customer boxes with green header bars, items with bottom-border dividers (no bullets)
 - SOW Disclaimer: shown via PageWrapper's disclaimer footer with `disclaimerBorder={false}` (no green line)
 - Uses `showDisclaimer={true}` with custom `disclaimerText`
@@ -192,7 +197,7 @@ templates/
 ## Pricebook Data
 
 - **Source of truth**: Currently hardcoded in `lib/pricebook.ts`
-- **Excel export**: `data/CSEV-PriceBook.xlsx` generated from current data (2 sheets: EVSE Products, Installation Services)
+- **Excel export**: `data/CSEV-PriceBook.xlsx` generated from current data (2 sheets: EVSE Products, Installation Services + Notes column)
 - **Generator script**: `scripts/generate-pricebook-excel.js` — run `node scripts/generate-pricebook-excel.js`
 - **Legacy import script**: `read-pricebook.js` — originally read from `PriceBook-2026.01.26-v2.xlsx`
 - 29 EVSE products (L2 chargers, DCFC, DCHP sets, accessories)
