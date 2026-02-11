@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, AlertTriangle } from 'lucide-react';
 import { useProposal } from '@/context/ProposalContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -16,8 +16,11 @@ export function InstallationScopeForm() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<InstallationItem>>({});
   const [selectedSubgroup, setSelectedSubgroup] = useState<string>('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const MAX_INSTALLATION_ITEMS = 25;
   const subgroups = getSubgroups();
+  const isAtLimit = proposal.installationItems.length >= MAX_INSTALLATION_ITEMS;
 
   const handleAddItem = (subgroup: string) => {
     const services = getServicesBySubgroup(subgroup);
@@ -35,6 +38,7 @@ export function InstallationScopeForm() {
       totalLabor: service.laborPrice,
       unit: service.unit,
       subgroup: service.subgroup,
+      defaultNote: service.defaultNote,
     };
 
     dispatch({ type: 'ADD_INSTALLATION_ITEM', payload: newItem });
@@ -61,6 +65,7 @@ export function InstallationScopeForm() {
       totalLabor: service.laborPrice * item.quantity,
       unit: service.unit,
       subgroup: service.subgroup,
+      defaultNote: service.defaultNote,
     };
 
     dispatch({ type: 'UPDATE_INSTALLATION_ITEM', payload: updatedItem });
@@ -155,12 +160,56 @@ export function InstallationScopeForm() {
           <Button
             onClick={() => handleAddItem(selectedSubgroup)}
             variant="primary"
-            disabled={!selectedSubgroup}
+            disabled={!selectedSubgroup || isAtLimit}
           >
             <Plus size={16} className="mr-2" />
             Add Item
           </Button>
+          {proposal.installationItems.length > 0 && (
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="danger"
+            >
+              <Trash2 size={16} className="mr-2" />
+              Delete All
+            </Button>
+          )}
         </div>
+
+        {/* 20-item limit warning */}
+        {isAtLimit && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-sm">
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <span>Maximum of {MAX_INSTALLATION_ITEMS} installation scope line items reached (PDF page limit).</span>
+          </div>
+        )}
+
+        {/* Delete All Confirmation */}
+        {showDeleteConfirm && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <AlertTriangle size={18} className="text-red-400 flex-shrink-0" />
+            <span className="text-red-300 text-sm flex-1">
+              Are you sure you want to delete all {proposal.installationItems.length} installation items? This cannot be undone.
+            </span>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                dispatch({ type: 'CLEAR_INSTALLATION_ITEMS' });
+                setShowDeleteConfirm(false);
+              }}
+            >
+              Yes, Delete All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
 
         {/* Items Table */}
         {proposal.installationItems.length === 0 ? (

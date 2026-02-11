@@ -19,6 +19,7 @@ type ProposalAction =
   | { type: 'ADD_INSTALLATION_ITEM'; payload: InstallationItem }
   | { type: 'UPDATE_INSTALLATION_ITEM'; payload: InstallationItem }
   | { type: 'REMOVE_INSTALLATION_ITEM'; payload: string }
+  | { type: 'CLEAR_INSTALLATION_ITEMS' }
   | { type: 'SET_PRICING_SETTINGS'; payload: Partial<Proposal> }
   | { type: 'SET_FINANCIAL'; payload: Partial<Proposal> }
   | { type: 'SET_NETWORK_YEARS'; payload: 1 | 3 | 5 }
@@ -92,6 +93,7 @@ function createInstallationItemsFromTemplate(
       totalLabor: service.laborPrice * templateItem.quantity,
       unit: service.unit,
       subgroup: service.subgroup,
+      defaultNote: service.defaultNote,
     });
   });
   return items;
@@ -150,6 +152,11 @@ function proposalReducer(state: Proposal, action: ProposalAction): Proposal {
         item => item.id !== action.payload
       );
       const newState = { ...state, installationItems: newItems };
+      return applyFinancialRecalculations(newState);
+    }
+
+    case 'CLEAR_INSTALLATION_ITEMS': {
+      const newState = { ...state, installationItems: [] };
       return applyFinancialRecalculations(newState);
     }
 

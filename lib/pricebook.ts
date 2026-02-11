@@ -574,6 +574,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-400a-208v',
@@ -583,6 +584,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-600a-208v',
@@ -592,6 +594,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-800a-208v',
@@ -601,6 +604,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1000a-208v',
@@ -610,6 +614,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1200a-208v',
@@ -619,6 +624,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1600a-208v',
@@ -628,6 +634,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-2000a-208v',
@@ -637,6 +644,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   // NEW 480V SERVICE ITEMS
   {
@@ -647,6 +655,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-400a-480v',
@@ -656,6 +665,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-600a-480v',
@@ -665,6 +675,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-800a-480v',
@@ -674,6 +685,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1000a-480v',
@@ -683,6 +695,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1200a-480v',
@@ -692,6 +705,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-1600a-480v',
@@ -701,6 +715,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   {
     id: 'service-2000a-480v',
@@ -710,6 +725,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 15000,
     unit: 'each',
     subgroup: 'Panels/Switchgear - New Service',
+    defaultNote: 'Includes Panel + CIAC',
   },
   // BREAKERS
   {
@@ -720,6 +736,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-50a-2p',
@@ -729,6 +746,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-60a-2p',
@@ -738,6 +756,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-100a-2p',
@@ -747,6 +766,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-200a-3p',
@@ -756,6 +776,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-300a-3p',
@@ -765,6 +786,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-400a-3p',
@@ -774,6 +796,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-40a-iline',
@@ -783,6 +806,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-50a-iline',
@@ -792,6 +816,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-100a-iline',
@@ -801,6 +826,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-200a-iline',
@@ -810,6 +836,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   {
     id: 'breaker-400a-iline',
@@ -819,6 +846,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Breakers',
+    defaultNote: '',
   },
   // PANELS
   {
@@ -829,6 +857,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3500,
     unit: 'each',
     subgroup: 'Panels',
+    defaultNote: '',
   },
   {
     id: 'panel-200a',
@@ -838,6 +867,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3500,
     unit: 'each',
     subgroup: 'Panels',
+    defaultNote: '',
   },
   {
     id: 'panel-400a',
@@ -847,6 +877,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 4000,
     unit: 'each',
     subgroup: 'Panels',
+    defaultNote: '',
   },
   {
     id: 'panel-600a',
@@ -856,6 +887,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels',
+    defaultNote: '',
   },
   {
     id: 'panel-800a',
@@ -865,6 +897,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5000,
     unit: 'each',
     subgroup: 'Panels',
+    defaultNote: '',
   },
   // TRANSFORMERS
   {
@@ -875,6 +908,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2500,
     unit: 'each',
     subgroup: 'Transformers',
+    defaultNote: '',
   },
   {
     id: 'transformer-150kva',
@@ -884,6 +918,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2500,
     unit: 'each',
     subgroup: 'Transformers',
+    defaultNote: '',
   },
   {
     id: 'transformer-pad',
@@ -893,6 +928,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 12500,
     unit: 'each',
     subgroup: 'Transformers',
+    defaultNote: 'Includes Pad/Vault',
   },
   // CONDUIT
   {
@@ -903,6 +939,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 4,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-40a-emt-2in',
@@ -912,6 +949,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-50a-pvc-2in',
@@ -921,6 +959,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 4,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-50a-emt-2in',
@@ -930,6 +969,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-60a-pvc-2in',
@@ -939,6 +979,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 4,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-60a-emt-2in',
@@ -948,6 +989,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-100a-pvc-2in',
@@ -957,6 +999,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-100a-emt-2in',
@@ -966,6 +1009,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-200a-pvc-3in',
@@ -975,6 +1019,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 6,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-200a-emt-3in',
@@ -984,6 +1029,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 6,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-pvc-3in',
@@ -993,6 +1039,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 6,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-pvc-4in',
@@ -1002,6 +1049,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 7,
     unit: 'ft',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'conduit-fittings',
@@ -1011,6 +1059,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 125,
     unit: 'circuit',
     subgroup: 'Conduit',
+    defaultNote: '',
   },
   {
     id: 'hand-hole',
@@ -1020,6 +1069,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 50,
     unit: 'each',
     subgroup: 'Conduit',
+    defaultNote: '1 per 200\'',
   },
   // CABLES
   {
@@ -1030,6 +1080,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 1,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-50a',
@@ -1039,6 +1090,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-60a',
@@ -1048,6 +1100,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-100a',
@@ -1057,6 +1110,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-200a',
@@ -1066,6 +1120,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-300a',
@@ -1075,6 +1130,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 4,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-400a',
@@ -1084,6 +1140,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-aluminum-200a',
@@ -1093,6 +1150,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'wire-aluminum-400a',
@@ -1102,6 +1160,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3,
     unit: 'ft',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'mount-station-l2',
@@ -1111,6 +1170,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 200,
     unit: 'each',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'mount-station-l3',
@@ -1120,6 +1180,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 1250,
     unit: 'each',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'terminate-station',
@@ -1129,6 +1190,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   {
     id: 'activation',
@@ -1138,6 +1200,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Cables',
+    defaultNote: '',
   },
   // TRENCHING
   {
@@ -1148,6 +1211,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 12.5,
     unit: 'ft',
     subgroup: 'Trenching',
+    defaultNote: '',
   },
   {
     id: 'trenching-asphalt',
@@ -1157,6 +1221,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 30,
     unit: 'ft',
     subgroup: 'Trenching',
+    defaultNote: '',
   },
   {
     id: 'trenching-concrete',
@@ -1166,6 +1231,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 30,
     unit: 'ft',
     subgroup: 'Trenching',
+    defaultNote: '',
   },
   {
     id: 'underground-boring',
@@ -1175,6 +1241,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 50,
     unit: 'ft',
     subgroup: 'Trenching',
+    defaultNote: '',
   },
   // CIVIL - BASES
   {
@@ -1185,6 +1252,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 300,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'concrete-dcfc-footing',
@@ -1194,6 +1262,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 1000,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'concrete-service-pad',
@@ -1203,6 +1272,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 750,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'bollard-bolt-on',
@@ -1212,6 +1282,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 150,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'bollard-4in-steel',
@@ -1221,6 +1292,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 900,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'bollard-6in-steel',
@@ -1230,6 +1302,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 900,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   {
     id: 'tire-stop',
@@ -1239,6 +1312,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Civil - Bases',
+    defaultNote: '',
   },
   // PERMITS
   {
@@ -1249,6 +1323,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 1000,
     unit: 'project',
     subgroup: 'Permits',
+    defaultNote: '',
   },
   // DESIGN
   {
@@ -1259,6 +1334,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 1000,
     unit: 'project',
     subgroup: 'Design',
+    defaultNote: '',
   },
   {
     id: 'project-management',
@@ -1268,6 +1344,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 2500,
     unit: 'project',
     subgroup: 'Design',
+    defaultNote: '',
   },
   {
     id: 'engineering-site',
@@ -1277,6 +1354,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 3000,
     unit: 'project',
     subgroup: 'Design',
+    defaultNote: '',
   },
   {
     id: 'engineering-full',
@@ -1286,6 +1364,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 5500,
     unit: 'project',
     subgroup: 'Design',
+    defaultNote: '',
   },
   // STRIPING
   {
@@ -1296,6 +1375,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 300,
     unit: 'each',
     subgroup: 'Striping',
+    defaultNote: '',
   },
   {
     id: 'striping-spot',
@@ -1305,6 +1385,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 100,
     unit: 'each',
     subgroup: 'Striping',
+    defaultNote: '',
   },
   {
     id: 'ev-stencil',
@@ -1314,6 +1395,7 @@ export const installationServices: InstallationService[] = [
     laborPrice: 50,
     unit: 'each',
     subgroup: 'Striping',
+    defaultNote: '',
   },
 ];
 

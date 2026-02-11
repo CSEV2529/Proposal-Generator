@@ -35,6 +35,7 @@ export interface InstallationItem {
   totalLabor: number;
   unit: string;
   subgroup: string;
+  defaultNote?: string;
 }
 
 export interface Proposal {
@@ -148,6 +149,7 @@ export interface InstallationService {
   laborPrice: number;
   unit: string;
   subgroup: string;
+  defaultNote?: string;
 }
 
 export interface PaymentOption {

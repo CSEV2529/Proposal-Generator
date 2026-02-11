@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, AlertTriangle } from 'lucide-react';
 import { useProposal } from '@/context/ProposalContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -15,6 +15,9 @@ export function EVSEForm() {
   const { proposal, dispatch } = useProposal();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<EVSEItem>>({});
+
+  const MAX_EVSE_ITEMS = 3; // 3 user items + 1 auto-calculated EV Parking Signs = 4 PDF slots
+  const isAtLimit = proposal.evseItems.length >= MAX_EVSE_ITEMS;
 
   // All EVSE products available regardless of project type
   const availableProducts = pricebookProducts;
@@ -88,7 +91,6 @@ export function EVSEForm() {
     setEditingId(item.id);
     setEditValues({
       unitPrice: item.unitPrice,
-      notes: item.notes,
     });
   };
 
@@ -107,7 +109,6 @@ export function EVSEForm() {
       ...item,
       unitPrice: newUnitPrice,
       totalPrice: newUnitPrice * item.quantity,
-      notes: editValues.notes ?? item.notes,
     };
 
     dispatch({ type: 'UPDATE_EVSE_ITEM', payload: updatedItem });
@@ -136,7 +137,6 @@ export function EVSEForm() {
                   <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Unit Cost</th>
                   <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Unit Price</th>
                   <th className="text-right py-2 px-2 w-24 text-csev-text-secondary font-medium">Total Price</th>
-                  <th className="text-left py-2 px-2 text-csev-text-secondary font-medium">Notes</th>
                   <th className="w-20"></th>
                 </tr>
               </thead>
@@ -193,23 +193,6 @@ export function EVSEForm() {
                       {formatCurrency(item.totalPrice)}
                     </td>
                     <td className="py-2 px-2">
-                      {editingId === item.id ? (
-                        <Input
-                          type="text"
-                          value={editValues.notes || ''}
-                          onChange={e =>
-                            setEditValues({ ...editValues, notes: e.target.value })
-                          }
-                          placeholder="Add notes..."
-                          className="text-sm"
-                        />
-                      ) : (
-                        <span className="text-csev-text-muted text-sm">
-                          {item.notes || '-'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-2 px-2">
                       <div className="flex items-center gap-1 justify-end">
                         {editingId === item.id ? (
                           <>
@@ -233,7 +216,7 @@ export function EVSEForm() {
                             <button
                               onClick={() => startEditing(item)}
                               className="p-1 text-csev-green hover:bg-csev-green/10 rounded"
-                              title="Edit price/notes"
+                              title="Edit price"
                             >
                               <Edit2 size={16} />
                             </button>
@@ -263,14 +246,21 @@ export function EVSEForm() {
                   <td className="py-2 px-2 text-right font-bold text-csev-green">
                     {formatCurrency(proposal.evseQuotedPrice)}
                   </td>
-                  <td colSpan={2}></td>
+                  <td></td>
                 </tr>
               </tfoot>
             </table>
           </div>
         )}
 
-        <Button onClick={handleAddItem} variant="outline" size="sm">
+        {isAtLimit && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-sm">
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <span>Maximum of {MAX_EVSE_ITEMS} EVSE line items reached (PDF page limit). The EV Parking Signs row is auto-generated.</span>
+          </div>
+        )}
+
+        <Button onClick={handleAddItem} variant="outline" size="sm" disabled={isAtLimit}>
           <Plus size={16} className="mr-2" />
           Add Equipment
         </Button>
