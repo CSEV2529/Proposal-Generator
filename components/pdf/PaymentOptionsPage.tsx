@@ -1,164 +1,201 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { formatCurrency, calculateNetProjectCost } from '@/lib/calculations';
-import { getPaymentOptions, getLocationValueProp, FOOTNOTES } from '@/lib/constants';
+import { formatCurrency, formatCurrencyWithCents, calculateNetProjectCost, calculatePaymentOptionCostWithOverride, getEffectivePaymentOptionEnabled } from '@/lib/calculations';
+import { getPaymentOptions, getValuePropForContext, FOOTNOTES } from '@/lib/constants';
 import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 
 function getStyles(colors: PdfColorPalette) {
   return StyleSheet.create({
-    // Title
+    // Title — Orbitron 28px, matches pages 2-6
     title: {
-      fontSize: 32,
-      fontWeight: 'bold',
-      color: colors.text,
+      fontFamily: 'Orbitron',
+      fontSize: 28,
+      fontWeight: 700,
+      color: colors.white,
       marginBottom: 8,
-    },
-
-    titleAccent: {
-      color: colors.primary,
     },
 
     introText: {
+      fontFamily: 'Roboto',
       fontSize: 8,
       color: colors.textMuted,
       lineHeight: 1.4,
-      marginBottom: 12,
+      marginBottom: 10,
     },
 
-    // Purchase Options header
+    // Purchase Options header bar
     purchaseOptionsHeader: {
+      flexDirection: 'row',
       backgroundColor: colors.headerBg,
-      paddingVertical: 6,
+      paddingVertical: 5,
       paddingHorizontal: 15,
-      marginBottom: 8,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      marginBottom: 6,
     },
 
     purchaseOptionsHeaderText: {
+      fontFamily: 'Roboto',
       color: colors.primary,
-      fontSize: 11,
-      fontWeight: 'bold',
+      fontSize: 10,
+      fontWeight: 700,
       letterSpacing: 0.5,
     },
 
-    // Option box
+    // ── Option Box ──
     optionBox: {
+      flexDirection: 'row',
       borderWidth: 1,
       borderColor: colors.border,
-      marginBottom: 8,
-      flexDirection: 'row',
-      borderRadius: 6,
+      borderRadius: 4,
       overflow: 'hidden',
+      marginBottom: 5,
       backgroundColor: colors.panelBg,
     },
 
-    // Option left section
+    // Left panel — option name, ownership, warranty
     optionLeft: {
-      width: 90,
-      padding: 8,
+      width: 95,
+      paddingVertical: 5,
+      paddingHorizontal: 8,
       backgroundColor: colors.headerBg,
       borderRightWidth: 1,
       borderRightColor: colors.border,
     },
 
-    optionNumber: {
-      backgroundColor: colors.primary,
-      paddingVertical: 3,
-      paddingHorizontal: 6,
+    optionTitle: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.white,
+      marginBottom: 2,
+    },
+
+    optionOwnership: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      fontWeight: 700,
+      color: colors.white,
       marginBottom: 6,
-      borderRadius: 3,
     },
 
-    optionNumberText: {
-      color: colors.pageBg,
-      fontSize: 9,
-      fontWeight: 'bold',
-    },
-
-    warrantyIncluded: {
+    warrantyLabel: {
+      fontFamily: 'Roboto',
       fontSize: 7,
       color: colors.textMuted,
       marginBottom: 2,
     },
 
-    warrantyText: {
-      fontSize: 8,
-      color: colors.text,
-      fontWeight: 'bold',
-    },
-
-    warrantyValue: {
-      fontSize: 7,
-      color: colors.primary,
-      fontStyle: 'italic',
-      marginTop: 4,
-    },
-
-    // Option middle section
-    optionMiddle: {
-      flex: 1,
-      padding: 8,
-    },
-
-    costRow: {
+    warrantyCheckRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 6,
+      marginBottom: 1,
+    },
+
+    checkboxFilled: {
+      width: 9,
+      height: 9,
+      backgroundColor: colors.primary,
+      marginRight: 4,
+      borderRadius: 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    checkmark: {
+      fontFamily: 'Roboto',
+      fontSize: 7,
+      color: colors.pageBg,
+      fontWeight: 700,
+    },
+
+    warrantyText: {
+      fontFamily: 'Roboto',
+      fontSize: 7,
+      color: colors.text,
+      fontWeight: 500,
+    },
+
+    // Middle section — cost, rev share, warranty upgrades or description
+    optionMiddle: {
+      flex: 1,
+      paddingVertical: 5,
+      paddingHorizontal: 8,
+    },
+
+    costRevRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+
+    costGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
 
     costLabel: {
+      fontFamily: 'Roboto',
       fontSize: 9,
-      fontWeight: 'bold',
+      fontWeight: 700,
       color: colors.text,
-      marginRight: 8,
+      marginRight: 6,
     },
 
-    costValue: {
-      backgroundColor: colors.primary,
+    costBadge: {
+      backgroundColor: colors.panelBg,
+      borderWidth: 1,
+      borderColor: colors.border,
       paddingVertical: 3,
       paddingHorizontal: 10,
-      borderRadius: 4,
+      borderRadius: 3,
+      width: 90,
+      alignItems: 'center',
     },
 
-    costValueText: {
-      color: colors.pageBg,
-      fontSize: 10,
-      fontWeight: 'bold',
+    costBadgeText: {
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      fontWeight: 700,
+      color: colors.white,
     },
 
-    revShareRow: {
+    revShareGroup: {
       flexDirection: 'row',
       alignItems: 'center',
     },
 
     revShareLabel: {
+      fontFamily: 'Roboto',
       fontSize: 8,
       color: colors.textLight,
       marginRight: 6,
     },
 
-    revShareValue: {
+    revShareBadge: {
       backgroundColor: colors.headerBg,
       paddingVertical: 3,
       paddingHorizontal: 8,
-      borderRadius: 4,
+      borderRadius: 3,
       borderWidth: 1,
       borderColor: colors.primary,
     },
 
-    revShareValueText: {
-      color: colors.primary,
+    revShareBadgeText: {
+      fontFamily: 'Roboto',
       fontSize: 9,
-      fontWeight: 'bold',
+      fontWeight: 700,
+      color: colors.primary,
     },
 
+    // Warranty upgrade checkboxes (Option 1 & 2)
     warrantyUpgradeTitle: {
+      fontFamily: 'Roboto',
       fontSize: 8,
-      fontWeight: 'bold',
+      fontWeight: 700,
       color: colors.primary,
       marginBottom: 4,
     },
@@ -170,46 +207,56 @@ function getStyles(colors: PdfColorPalette) {
     },
 
     checkbox: {
-      width: 10,
-      height: 10,
+      width: 9,
+      height: 9,
       borderWidth: 1,
       borderColor: colors.textMuted,
-      marginRight: 6,
+      marginRight: 5,
       borderRadius: 2,
     },
 
-    warrantyUpgradeName: {
+    upgradeName: {
+      fontFamily: 'Roboto',
       fontSize: 7,
       color: colors.textLight,
       flex: 1,
     },
 
-    warrantyUpgradeCost: {
+    upgradeCost: {
+      fontFamily: 'Roboto',
       fontSize: 6,
       color: colors.primary,
-      fontStyle: 'italic',
+      fontWeight: 500,
     },
 
-    optOutRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 3,
+    // Description text for Options 2 & 3
+    optionDescBold: {
+      fontFamily: 'Roboto',
+      fontSize: 7.5,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 4,
+      lineHeight: 1.4,
     },
 
-    optOutText: {
-      fontSize: 7,
-      color: colors.textMuted,
+    optionDescText: {
+      fontFamily: 'Roboto',
+      fontSize: 7.5,
+      color: colors.textLight,
+      fontWeight: 500,
+      lineHeight: 1.4,
     },
 
-    // Option right section (initial here)
+    // Right panel — initial here (bottom-aligned)
     optionRight: {
-      width: 70,
-      padding: 8,
-      justifyContent: 'center',
+      width: 65,
+      padding: 6,
+      justifyContent: 'flex-end',
       alignItems: 'center',
       borderLeftWidth: 1,
       borderLeftColor: colors.border,
       backgroundColor: colors.headerBg,
+      paddingBottom: 8,
     },
 
     initialLine: {
@@ -220,63 +267,62 @@ function getStyles(colors: PdfColorPalette) {
     },
 
     initialText: {
+      fontFamily: 'Roboto',
       fontSize: 6,
       color: colors.textMuted,
       textAlign: 'center',
+      fontWeight: 700,
+      letterSpacing: 0.3,
     },
 
     // Footnote
     footnote: {
+      fontFamily: 'Roboto',
       fontSize: 6,
       color: colors.textMuted,
       lineHeight: 1.4,
-      marginTop: 6,
-      marginBottom: 10,
+      marginTop: 4,
+      marginBottom: 8,
     },
 
     // Value proposition section
-    valuePropSection: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 6,
-      overflow: 'hidden',
-      backgroundColor: colors.panelBg,
-    },
-
     valuePropHeader: {
+      flexDirection: 'row',
       backgroundColor: colors.headerBg,
-      paddingVertical: 6,
-      paddingHorizontal: 12,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
     },
 
     valuePropHeaderText: {
+      fontFamily: 'Roboto',
       color: colors.primary,
       fontSize: 10,
-      fontWeight: 'bold',
+      fontWeight: 700,
       letterSpacing: 0.5,
     },
 
     valuePropContent: {
-      padding: 10,
+      paddingHorizontal: 15,
+      paddingTop: 6,
     },
 
     valuePropIntro: {
+      fontFamily: 'Roboto',
       fontSize: 8,
       color: colors.textLight,
       marginBottom: 6,
-    },
-
-    valuePropIntroHighlight: {
-      fontWeight: 'bold',
-      color: colors.primary,
+      lineHeight: 1.4,
     },
 
     valuePropPoint: {
-      fontSize: 7,
+      fontFamily: 'Roboto',
+      fontSize: 7.5,
       color: colors.textLight,
-      marginBottom: 3,
+      paddingVertical: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
       lineHeight: 1.4,
     },
   });
@@ -291,105 +337,116 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
   const colors = getPdfColors(theme);
   const styles = getStyles(colors);
   const netCost = calculateNetProjectCost(proposal);
-  const paymentConfig = getPaymentOptions(proposal.projectType);
+  const configEntries = getPaymentOptions(proposal.projectType);
 
-  // Calculate costs for each option
-  const options = [
-    {
-      ...paymentConfig.option1,
-      cost: netCost,
-      showCheckboxes: true,
-    },
-    {
-      ...paymentConfig.option2,
-      cost: netCost * 0.5,
-      showCheckboxes: true,
-    },
-    {
-      ...paymentConfig.option3,
-      cost: 0,
-      showCheckboxes: false,
-    },
-  ];
+  // Overrides from proposal (may be undefined)
+  const costOverrides = proposal.paymentOptionCostOverrides || [];
+  const costPercentOverrides = proposal.paymentOptionCostPercentOverrides || [];
+  const revShareOverrides = proposal.paymentOptionRevShareOverrides || [];
 
-  // Get location-specific value proposition (may be null)
-  const valueProp = getLocationValueProp(proposal.locationType, proposal.projectType);
+  // Filter to only enabled options
+  const enabledFlags = getEffectivePaymentOptionEnabled(proposal);
+  const options = configEntries
+    .map((cfg, i) => {
+      const effectiveCostPercent = costPercentOverrides[i] ?? cfg.costPercentage;
+      const effectiveRevShare = revShareOverrides[i] ?? cfg.revenueShare;
+      return {
+        ...cfg,
+        costPercentage: effectiveCostPercent,
+        revenueShare: effectiveRevShare,
+        cost: calculatePaymentOptionCostWithOverride(netCost, effectiveCostPercent, costOverrides[i]),
+        showCheckboxes: cfg.warrantyUpgrades.length > 0,
+        enabled: enabledFlags[i] ?? true,
+      };
+    })
+    .filter(opt => opt.enabled);
+
+  const optionCountText = options.length === 1 ? 'one payment option' : options.length === 2 ? 'two payment options' : 'three payment options';
+
+  // Get location × project type value proposition (may be null)
+  const valueProp = getValuePropForContext(proposal.locationType, proposal.projectType);
 
   return (
     <PageWrapper pageNumber={5} showDisclaimer={true} theme={theme}>
       {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.titleAccent}>Payment Options</Text>
-      </Text>
+      <Text style={styles.title}>Payment Options</Text>
 
       <Text style={styles.introText}>
-        Below you will see three payment options for you to choose from. Please take a look at the
+        Below you will see {optionCountText} for you to choose from. Please take a look at the
         differing net amounts and how each impacts the Revenue Share amounts. The processing fees
         listed previously will come out of every transaction and cannot be removed or changed in any way.
       </Text>
 
       {/* Purchase Options Header */}
-      <View style={styles.purchaseOptionsHeader} wrap={false}>
+      <View style={styles.purchaseOptionsHeader}>
         <Text style={styles.purchaseOptionsHeaderText}>Purchase Options</Text>
       </View>
 
       {/* Option Boxes */}
       {options.map((option, index) => (
-        <View key={index} style={styles.optionBox} wrap={false}>
-          {/* Left - Option number and warranty */}
+        <View key={index} style={styles.optionBox}>
+          {/* Left — Option name, ownership, warranty */}
           <View style={styles.optionLeft}>
-            <View style={styles.optionNumber}>
-              <Text style={styles.optionNumberText}>{option.title}</Text>
+            <Text style={styles.optionTitle}>{option.title}</Text>
+            <Text style={styles.optionOwnership}>{option.ownership}</Text>
+
+            <Text style={styles.warrantyLabel}>Warranty Included:</Text>
+            <View style={styles.warrantyCheckRow}>
+              <View style={styles.checkboxFilled}>
+                <Text style={styles.checkmark}>{'✓'}</Text>
+              </View>
+              <Text style={styles.warrantyText}>{option.warrantyIncluded}</Text>
             </View>
-            <Text style={styles.warrantyIncluded}>Warranty Included:</Text>
-            <Text style={styles.warrantyText}>{option.warrantyIncluded}</Text>
-            {'warrantyValue' in option && option.warrantyValue && (
-              <Text style={styles.warrantyValue}>
-                A {formatCurrency(option.warrantyValue)} VALUE{'\n'}PER STATION
-              </Text>
-            )}
           </View>
 
-          {/* Middle - Cost and warranty upgrades */}
+          {/* Middle — Cost, Rev Share, upgrades/description */}
           <View style={styles.optionMiddle}>
-            <View style={styles.costRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {/* Cost + Rev Share row */}
+            <View style={styles.costRevRow}>
+              <View style={styles.costGroup}>
                 <Text style={styles.costLabel}>FINAL NET Cost:</Text>
-                <View style={styles.costValue}>
-                  <Text style={styles.costValueText}>
-                    {option.cost === 0 ? 'FREE' : formatCurrency(option.cost)}
+                <View style={styles.costBadge}>
+                  <Text style={styles.costBadgeText}>
+                    {option.costPercentage === 0 ? 'FREE' : formatCurrencyWithCents(option.cost)}
                   </Text>
                 </View>
               </View>
-              <View style={styles.revShareRow}>
+              <View style={styles.revShareGroup}>
                 <Text style={styles.revShareLabel}>Customer Rev Share:</Text>
-                <View style={styles.revShareValue}>
-                  <Text style={styles.revShareValueText}>{option.revenueShare}%</Text>
+                <View style={styles.revShareBadge}>
+                  <Text style={styles.revShareBadgeText}>{option.revenueShare}%</Text>
                 </View>
               </View>
             </View>
 
+            {/* Warranty Upgrades */}
             {option.showCheckboxes && option.warrantyUpgrades && option.warrantyUpgrades.length > 0 && (
               <>
                 <Text style={styles.warrantyUpgradeTitle}>Warranty Upgrade (MUST SELECT ONE):</Text>
                 {option.warrantyUpgrades.map((upgrade, uIndex) => (
                   <View key={uIndex} style={styles.warrantyUpgradeRow}>
                     <View style={styles.checkbox} />
-                    <Text style={styles.warrantyUpgradeName}>{upgrade.name}</Text>
-                    <Text style={styles.warrantyUpgradeCost}>
+                    <Text style={styles.upgradeName}>{upgrade.name}</Text>
+                    <Text style={styles.upgradeCost}>
                       ADD {formatCurrency(upgrade.cost)} TO NET COST PER STATION
                     </Text>
                   </View>
                 ))}
-                <View style={styles.optOutRow}>
+                <View style={styles.warrantyUpgradeRow}>
                   <View style={styles.checkbox} />
-                  <Text style={styles.optOutText}>OPT OUT OF ALL ADDITIONAL WARRANTY COVERAGE</Text>
+                  <Text style={styles.upgradeName}>OPT OUT OF ALL ADDITIONAL WARRANTY COVERAGE</Text>
                 </View>
               </>
             )}
+
+            {/* Description text */}
+            <Text style={styles.optionDescBold}>{option.descriptionBold}</Text>
+            {option.descriptionText ? (
+              <Text style={styles.optionDescText}>{option.descriptionText}</Text>
+            ) : null}
           </View>
 
-          {/* Right - Initial here */}
+          {/* Right — Initial here */}
           <View style={styles.optionRight}>
             <View style={styles.initialLine} />
             <Text style={styles.initialText}>INITIAL HERE{'\n'}TO SELECT{'\n'}THIS OPTION</Text>
@@ -400,22 +457,20 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
       {/* Footnote */}
       <Text style={styles.footnote}>{FOOTNOTES.revenueShare}</Text>
 
-      {/* Conditional Value Proposition Section */}
-      {valueProp && (
-        <View style={styles.valuePropSection} wrap={false}>
-          <View style={styles.valuePropHeader}>
-            <Text style={styles.valuePropHeaderText}>{valueProp.title}</Text>
-          </View>
-          <View style={styles.valuePropContent}>
-            <Text style={styles.valuePropIntro}>{valueProp.intro}</Text>
-            {valueProp.points.map((point, index) => (
-              <Text key={index} style={styles.valuePropPoint}>
-                • {point}
-              </Text>
-            ))}
-          </View>
+      {/* Value Proposition Section — always shows with 4 lines */}
+      <View>
+        <View style={styles.valuePropHeader}>
+          <Text style={styles.valuePropHeaderText}>{valueProp?.title || 'Industry Value Proposition'}</Text>
         </View>
-      )}
+        <View style={styles.valuePropContent}>
+          <Text style={styles.valuePropIntro}>{valueProp?.intro || ' '}</Text>
+          {[0, 1, 2, 3].map((index) => (
+            <Text key={index} style={styles.valuePropPoint}>
+              {valueProp?.points?.[index] || ' '}
+            </Text>
+          ))}
+        </View>
+      </View>
     </PageWrapper>
   );
 }

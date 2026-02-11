@@ -19,6 +19,7 @@ const HERO_IMAGES: Record<ProjectType, string | null> = {
   'level3-epc': HERO_LEVEL3_BASE64,
   'mixed-epc': HERO_MIXED_BASE64,
   'site-host': HERO_SITE_HOST_BASE64,
+  'level2-site-host': HERO_LEVEL2_BASE64,
   'distribution': HERO_DISTRIBUTION_BASE64,
 };
 

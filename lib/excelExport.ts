@@ -9,6 +9,7 @@ function getChargingLevelFromProjectType(projectType: ProjectType): 'level2' | '
     case 'level2-epc':
     case 'mixed-epc':
     case 'site-host':
+    case 'level2-site-host':
     case 'distribution':
     default:
       return 'level2';

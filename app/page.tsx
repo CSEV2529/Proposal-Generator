@@ -21,6 +21,7 @@ import {
   formatCurrency,
   calculateGrossProjectCost,
   calculateNetProjectCost,
+  hasEnabledPaymentOption,
 } from '@/lib/calculations';
 import { COMPANY_INFO, PROJECT_TYPES } from '@/lib/constants';
 import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
@@ -639,9 +640,21 @@ function HomePageContent() {
                 </p>
 
                 <div className="space-y-3">
+                  {mounted && !hasEnabledPaymentOption(proposal) && (
+                    <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+                      At least one payment option must be enabled to generate the proposal PDF.
+                    </div>
+                  )}
                   {mounted && (
                     <>
-                      <PDFDownloadButton proposal={proposal} fileName={generateFileName()} />
+                      {hasEnabledPaymentOption(proposal) ? (
+                        <PDFDownloadButton proposal={proposal} fileName={generateFileName()} />
+                      ) : (
+                        <Button variant="primary" size="lg" className="w-full" disabled>
+                          <FileDown size={20} className="mr-2" />
+                          No Payment Options Enabled
+                        </Button>
+                      )}
                       <EstimateDownloadButton proposal={proposal} fileName={generateEstimateFileName()} />
                       <BudgetDownloadButton proposal={proposal} fileName={generateBudgetFileName()} />
                       <ExcelExportButton proposal={proposal} />

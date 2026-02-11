@@ -11,8 +11,10 @@ import {
   calculateTotalPorts,
   analyzeAllPaymentOptions,
   projectRequiresSalesTax,
+  calculateNetProjectCost,
+  getEffectivePaymentOptionEnabled,
 } from '@/lib/calculations';
-import { getIncentiveLabels, getAdditionalTerms } from '@/lib/constants';
+import { getIncentiveLabels, getAdditionalTerms, getPaymentOptions } from '@/lib/constants';
 
 export function FinancialForm() {
   const { proposal, dispatch } = useProposal();
@@ -418,6 +420,145 @@ export function FinancialForm() {
           <p className="text-xs text-csev-text-muted">
             Option 2 gives customer 50% discount, Option 3 gives customer 100% discount (FREE).
           </p>
+        </div>
+
+        {/* Payment Option Overrides (PDF Page 5) */}
+        <div className="space-y-4">
+          <h4 className="section-header">Payment Option Overrides (PDF Page 5)</h4>
+          <p className="text-xs text-csev-text-muted -mt-2">
+            Override defaults per-proposal. Uncheck an option to hide it from the PDF. At least one must be enabled.
+          </p>
+          {(() => {
+            const configs = getPaymentOptions(proposal.projectType);
+            const netCost = calculateNetProjectCost(proposal);
+            const costOverrides = proposal.paymentOptionCostOverrides || [];
+            const costPercentOverrides = proposal.paymentOptionCostPercentOverrides || [];
+            const revShareOverrides = proposal.paymentOptionRevShareOverrides || [];
+            const effectiveEnabled = getEffectivePaymentOptionEnabled(proposal);
+            const enabledCount = effectiveEnabled.filter(Boolean).length;
+
+            const updateArrayOverride = (
+              field: 'paymentOptionCostOverrides' | 'paymentOptionCostPercentOverrides' | 'paymentOptionRevShareOverrides',
+              index: number,
+              value: number | undefined
+            ) => {
+              const current = proposal[field] || [];
+              const newArr = [...current];
+              while (newArr.length <= index) newArr.push(undefined);
+              newArr[index] = value;
+              while (newArr.length > 0 && newArr[newArr.length - 1] === undefined) newArr.pop();
+              dispatch({
+                type: 'SET_FINANCIAL',
+                payload: { [field]: newArr.length > 0 ? newArr : undefined },
+              });
+            };
+
+            const toggleOptionEnabled = (index: number, checked: boolean) => {
+              const newEnabled = [...effectiveEnabled];
+              newEnabled[index] = checked;
+              dispatch({
+                type: 'SET_FINANCIAL',
+                payload: { paymentOptionEnabled: newEnabled },
+              });
+            };
+
+            return configs.map((cfg, i) => {
+              const isEnabled = effectiveEnabled[i];
+              const analysis = paymentAnalysis[i];
+              const isNegative = analysis && analysis.csevMarginPercent < 0;
+
+              return (
+                <div
+                  key={`option-overrides-${i}`}
+                  className={`rounded-lg p-3 border ${
+                    !isEnabled
+                      ? 'bg-csev-slate-900 border-csev-border/50 opacity-60'
+                      : isNegative
+                        ? 'bg-csev-slate-800 border-red-500/40'
+                        : 'bg-csev-slate-800 border-csev-border'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isEnabled}
+                        onChange={e => {
+                          // Prevent unchecking the last enabled option
+                          if (!e.target.checked && enabledCount <= 1) return;
+                          toggleOptionEnabled(i, e.target.checked);
+                        }}
+                        className="w-4 h-4 rounded border-csev-border text-csev-green focus:ring-csev-green bg-csev-slate-700"
+                      />
+                      <span className="text-sm font-medium text-csev-text-primary">
+                        {cfg.title} — Show on PDF
+                      </span>
+                    </label>
+                    {isNegative && isEnabled && (
+                      <span className="text-xs text-red-400 font-medium px-2 py-0.5 bg-red-500/10 rounded">
+                        Negative margin ({formatPercentage(analysis.csevMarginPercent)})
+                      </span>
+                    )}
+                    {isNegative && !isEnabled && (
+                      <span className="text-xs text-amber-500 font-medium">
+                        Hidden — negative profitability
+                      </span>
+                    )}
+                    {!isEnabled && enabledCount <= 1 && (
+                      <span className="text-xs text-csev-text-muted">
+                        (at least 1 required)
+                      </span>
+                    )}
+                  </div>
+                  {isEnabled && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Input
+                        label="Cost %"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={costPercentOverrides[i] ?? ''}
+                        onChange={e => {
+                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                          updateArrayOverride('paymentOptionCostPercentOverrides', i, v);
+                        }}
+                        placeholder={String(cfg.costPercentage)}
+                        helperText={`Default: ${cfg.costPercentage}%`}
+                      />
+                      <Input
+                        label="Rev Share %"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={revShareOverrides[i] ?? ''}
+                        onChange={e => {
+                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                          updateArrayOverride('paymentOptionRevShareOverrides', i, v);
+                        }}
+                        placeholder={String(cfg.revenueShare)}
+                        helperText={`Default: ${cfg.revenueShare}%`}
+                      />
+                      <Input
+                        label="Cost $ Override"
+                        type="number"
+                        min="0"
+                        step="100"
+                        value={costOverrides[i] ?? ''}
+                        onChange={e => {
+                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                          updateArrayOverride('paymentOptionCostOverrides', i, v);
+                        }}
+                        placeholder={formatCurrency((netCost * (costPercentOverrides[i] ?? cfg.costPercentage)) / 100)}
+                        helperText={`Default: ${costPercentOverrides[i] ?? cfg.costPercentage}% of net`}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
     </Card>

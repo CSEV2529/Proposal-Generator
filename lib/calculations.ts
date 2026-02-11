@@ -1,5 +1,6 @@
 import { Proposal, EVSEItem, InstallationItem, PaymentOption, PaymentOptionAnalysis, ProjectType } from './types';
 import { pricebookProducts } from './pricebook';
+import { getPaymentOptions } from './constants';
 
 // ============================================
 // EVSE Calculations
@@ -91,7 +92,7 @@ export function calculateEVSEItemPrice(unitCost: number, marginPercent: number):
 // ============================================
 
 // Project types that require sales tax on EVSE equipment
-const SALES_TAX_PROJECT_TYPES: ProjectType[] = ['level2-epc', 'level3-epc', 'mixed-epc', 'site-host'];
+const SALES_TAX_PROJECT_TYPES: ProjectType[] = ['level2-epc', 'level3-epc', 'mixed-epc', 'site-host', 'level2-site-host'];
 
 export function projectRequiresSalesTax(projectType: ProjectType): boolean {
   return SALES_TAX_PROJECT_TYPES.includes(projectType);
@@ -244,7 +245,41 @@ export function analyzePaymentOption(
 }
 
 export function analyzeAllPaymentOptions(proposal: Proposal): PaymentOptionAnalysis[] {
-  return paymentOptions.map(option => analyzePaymentOption(proposal, option));
+  // Build payment options from project-type config, applying per-proposal overrides
+  const configs = getPaymentOptions(proposal.projectType);
+  const costPercentOverrides = proposal.paymentOptionCostPercentOverrides || [];
+  const revShareOverrides = proposal.paymentOptionRevShareOverrides || [];
+  const options: PaymentOption[] = configs.map((cfg, i) => ({
+    name: cfg.title,
+    costPercentage: costPercentOverrides[i] ?? cfg.costPercentage,
+    revenueShare: revShareOverrides[i] ?? cfg.revenueShare,
+    warrantyYears: cfg.warrantyValue ? 5 : 3,
+    warrantyType: cfg.warrantyValue ? 'full' as const : 'parts' as const,
+  }));
+  return options.map(option => analyzePaymentOption(proposal, option));
+}
+
+// Get effective enabled state for each payment option
+// If user has explicitly set paymentOptionEnabled, use that.
+// Otherwise, auto-compute: negative profitability = disabled.
+export function getEffectivePaymentOptionEnabled(proposal: Proposal): boolean[] {
+  const analyses = analyzeAllPaymentOptions(proposal);
+  const userEnabled = proposal.paymentOptionEnabled;
+
+  return analyses.map((analysis, i) => {
+    // If user has explicitly set this index, use their value
+    if (userEnabled && i < userEnabled.length) {
+      return userEnabled[i];
+    }
+    // Auto-default: enabled if margin >= 0
+    return analysis.csevMarginPercent >= 0;
+  });
+}
+
+// Check if at least one payment option is enabled for PDF generation
+export function hasEnabledPaymentOption(proposal: Proposal): boolean {
+  const enabled = getEffectivePaymentOptionEnabled(proposal);
+  return enabled.some(v => v);
 }
 
 // ============================================
@@ -342,6 +377,16 @@ export function generateProposalNumber(): string {
   const day = String(date.getDate()).padStart(2, '0');
   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   return `CSEV-${year}${month}${day}-${random}`;
+}
+
+// Calculate payment option cost with optional manual override
+export function calculatePaymentOptionCostWithOverride(
+  netProjectCost: number,
+  costPercentage: number,
+  overrideValue?: number
+): number {
+  if (overrideValue !== undefined && overrideValue >= 0) return overrideValue;
+  return (netProjectCost * costPercentage) / 100;
 }
 
 // Legacy function for backwards compatibility

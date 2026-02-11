@@ -204,8 +204,35 @@ function proposalReducer(state: Proposal, action: ProposalAction): Proposal {
     case 'RESET_PROPOSAL':
       return { ...defaultProposal, preparedDate: new Date() };
 
-    case 'LOAD_PROPOSAL':
-      return applyFinancialRecalculations(action.payload);
+    case 'LOAD_PROPOSAL': {
+      // Migrate old paymentOption1/2/3CostOverride fields to paymentOptionCostOverrides array
+      const loaded = action.payload as Proposal & {
+        paymentOption1CostOverride?: number;
+        paymentOption2CostOverride?: number;
+        paymentOption3CostOverride?: number;
+      };
+      if (!loaded.paymentOptionCostOverrides && (
+        loaded.paymentOption1CostOverride !== undefined ||
+        loaded.paymentOption2CostOverride !== undefined ||
+        loaded.paymentOption3CostOverride !== undefined
+      )) {
+        const overrides: (number | undefined)[] = [
+          loaded.paymentOption1CostOverride,
+          loaded.paymentOption2CostOverride,
+          loaded.paymentOption3CostOverride,
+        ];
+        // Trim trailing undefineds
+        while (overrides.length > 0 && overrides[overrides.length - 1] === undefined) overrides.pop();
+        if (overrides.length > 0) {
+          loaded.paymentOptionCostOverrides = overrides;
+        }
+      }
+      // Clean up old fields
+      delete loaded.paymentOption1CostOverride;
+      delete loaded.paymentOption2CostOverride;
+      delete loaded.paymentOption3CostOverride;
+      return applyFinancialRecalculations(loaded);
+    }
 
     case 'SET_PROJECT_STATE': {
       // When state changes, clear the utility selection since utilities are state-specific

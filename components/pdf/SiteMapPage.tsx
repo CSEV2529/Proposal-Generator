@@ -135,7 +135,7 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
           <Text style={styles.sectionHeaderText}>Site Map Approval</Text>
         </View>
         <View style={styles.approvalContent}>
-          {proposal.projectType === 'site-host' && (
+          {(proposal.projectType === 'site-host' || proposal.projectType === 'level2-site-host') && (
             <View style={styles.signatureRow}>
               <Text style={styles.signatureLabel}>Location Option Selected</Text>
               <View style={styles.signatureLine} />

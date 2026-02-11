@@ -21,6 +21,7 @@ const INSTALLATION_IMAGES: Record<ProjectType, string | null> = {
   'level3-epc': INSTALLATION_IMAGE_L3_BASE64,
   'mixed-epc': INSTALLATION_IMAGE_MIXED_BASE64,
   'site-host': INSTALLATION_IMAGE_SITE_HOST_BASE64,
+  'level2-site-host': INSTALLATION_IMAGE_L2_BASE64,
   'distribution': INSTALLATION_IMAGE_DISTRIBUTION_BASE64,
 };
 
@@ -29,6 +30,7 @@ const STATION_IMAGES: Record<ProjectType, string | null> = {
   'level3-epc': STATION_IMAGE_L3_BASE64,
   'mixed-epc': STATION_IMAGE_MIXED_BASE64,
   'site-host': STATION_IMAGE_SITE_HOST_BASE64,
+  'level2-site-host': STATION_IMAGE_L2_BASE64,
   'distribution': STATION_IMAGE_DISTRIBUTION_BASE64,
 };
 

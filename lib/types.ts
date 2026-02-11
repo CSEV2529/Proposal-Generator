@@ -1,4 +1,4 @@
-export type ProjectType = 'level2-epc' | 'level3-epc' | 'mixed-epc' | 'site-host' | 'distribution';
+export type ProjectType = 'level2-epc' | 'level3-epc' | 'mixed-epc' | 'site-host' | 'level2-site-host' | 'distribution';
 export type ChargingLevel = 'level2' | 'dcfc' | 'both';
 export type AccessType = 'private' | 'public';
 export type LocationType =
@@ -118,6 +118,15 @@ export interface Proposal {
   // Incentive label overrides (auto-populated from utility, user-editable)
   makeReadyIncentiveLabel?: string;
   secondaryIncentiveLabel?: string;
+
+  // Payment Option Overrides (PDF Page 5) — arrays indexed by option position
+  paymentOptionCostOverrides?: (number | undefined)[];
+  paymentOptionCostPercentOverrides?: (number | undefined)[];
+  paymentOptionRevShareOverrides?: (number | undefined)[];
+
+  // Payment Option Visibility — which options appear on PDF (true = show)
+  // When undefined, auto-computed from profitability (negative margin = hidden)
+  paymentOptionEnabled?: boolean[];
 
   // PDF theme selection
   pdfTheme?: 'light' | 'dark';

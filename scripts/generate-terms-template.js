@@ -27,6 +27,7 @@ async function generateTermsTemplate() {
     'Level 3 EPC',
     'Mixed EPC',
     'Site Host',
+    'Level 2 EPC / Site Host',
     'Distribution',
   ];
 
@@ -62,7 +63,7 @@ async function generateTermsTemplate() {
 
   // Add alternating group colors for readability
   let rowIdx = 2;
-  const groupColors = ['FFE8F5E9', 'FFE3F2FD', 'FFFFF3E0', 'FFFCE4EC', 'FFF3E5F5'];
+  const groupColors = ['FFE8F5E9', 'FFE3F2FD', 'FFFFF3E0', 'FFFCE4EC', 'FFF3E5F5', 'FFFFF9C4'];
   for (let g = 0; g < projectTypes.length; g++) {
     for (let r = 0; r < 5; r++) {
       const row = sheet.getRow(rowIdx);
@@ -89,6 +90,7 @@ async function generateTermsTemplate() {
   instrSheet.addRow(['  - Level 3 EPC: DC fast charging projects']);
   instrSheet.addRow(['  - Mixed EPC: Combination L2 + DCFC projects']);
   instrSheet.addRow(['  - Site Host: Site host agreement (customer doesn\'t pay upfront)']);
+  instrSheet.addRow(['  - Level 2 EPC / Site Host: Level 2 EPC with site host payment options']);
   instrSheet.addRow(['  - Distribution: Equipment distribution only']);
   instrSheet.addRow(['']);
   instrSheet.addRow(['You can also add extra rows per project type if needed — just keep the Project Type column filled.']);
