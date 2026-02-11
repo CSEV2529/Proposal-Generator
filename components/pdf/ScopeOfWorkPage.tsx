@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
 import { RESPONSIBILITIES } from '@/lib/constants';
 import { calculateTotalPorts } from '@/lib/calculations';
-import { PdfTheme } from './pdfTheme';
-import { colors, SOW_DISCLAIMER_TEXT } from './styles';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
+import { SOW_DISCLAIMER_TEXT } from './styles';
 import { PageWrapper } from './PageWrapper';
 
 // Fixed slot counts — section heights stay constant regardless of item count
@@ -13,146 +13,148 @@ const INSTALLATION_SLOTS = 25;
 
 const ROW_HEIGHT = 15; // Compact row height to fit single page
 
-const styles = StyleSheet.create({
-  // Title — Orbitron, matches page 2
-  title: {
-    fontFamily: 'Orbitron',
-    fontSize: 28,
-    fontWeight: 700,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
+function getStyles(colors: PdfColorPalette) {
+  return StyleSheet.create({
+    // Title — Orbitron, matches page 2
+    title: {
+      fontFamily: 'Orbitron',
+      fontSize: 28,
+      fontWeight: 700,
+      color: colors.text,
+      marginBottom: 8,
+    },
 
-  // Table header row
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.headerBg,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    // Table header row
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: colors.headerBg,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  tableHeaderItem: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    tableHeaderItem: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  tableHeaderQty: {
-    width: 80,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    textAlign: 'center',
-  },
+    tableHeaderQty: {
+      width: 80,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      textAlign: 'center',
+    },
 
-  // Section label (EVSE, INSTALLATION SCOPE)
-  sectionLabel: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 15,
-    marginTop: 5,
-  },
+    // Section label (EVSE, INSTALLATION SCOPE)
+    sectionLabel: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 2,
+      paddingHorizontal: 15,
+      marginTop: 5,
+    },
 
-  sectionLabelText: {
-    fontFamily: 'Roboto',
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
+    sectionLabelText: {
+      fontFamily: 'Roboto',
+      fontSize: 12,
+      fontWeight: 700,
+      color: colors.text,
+      letterSpacing: 0.5,
+    },
 
-  parkingSpaces: {
-    fontFamily: 'Roboto',
-    fontSize: 8,
-    color: colors.textMuted,
-    fontWeight: 700,
-  },
+    parkingSpaces: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      fontWeight: 700,
+    },
 
-  // Table row
-  tableRow: {
-    flexDirection: 'row',
-    height: ROW_HEIGHT,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'center',
-  },
+    // Table row
+    tableRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+    },
 
-  // Empty row — same height, no text, no border
-  emptyRow: {
-    height: ROW_HEIGHT,
-  },
+    // Empty row — same height, no text, no border
+    emptyRow: {
+      height: ROW_HEIGHT,
+    },
 
-  tableRowItem: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: colors.textLight,
-    paddingLeft: 15,
-  },
+    tableRowItem: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.textLight,
+      paddingLeft: 15,
+    },
 
-  tableRowQty: {
-    width: 80,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: colors.text,
-    textAlign: 'center',
-    fontWeight: 700,
-  },
+    tableRowQty: {
+      width: 80,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.text,
+      textAlign: 'center',
+      fontWeight: 700,
+    },
 
 
-  // Responsibilities section
-  responsibilitiesContainer: {
-    marginTop: 5,
-  },
+    // Responsibilities section
+    responsibilitiesContainer: {
+      marginTop: 5,
+    },
 
-  responsibilitiesGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+    responsibilitiesGrid: {
+      flexDirection: 'row',
+      gap: 12,
+    },
 
-  responsibilityBox: {
-    flex: 1,
-  },
+    responsibilityBox: {
+      flex: 1,
+    },
 
-  responsibilityHeader: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    responsibilityHeader: {
+      backgroundColor: colors.headerBg,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  responsibilityHeaderText: {
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    responsibilityHeaderText: {
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  responsibilityItem: {
-    paddingVertical: 3,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    responsibilityItem: {
+      paddingVertical: 3,
+      paddingHorizontal: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
 
-  responsibilityItemText: {
-    fontFamily: 'Roboto',
-    fontSize: 8,
-    color: colors.textLight,
-    lineHeight: 1.3,
-  },
-});
+    responsibilityItemText: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textLight,
+      lineHeight: 1.3,
+    },
+  });
+}
 
 interface ScopeOfWorkPageProps {
   proposal: Proposal;
@@ -161,7 +163,9 @@ interface ScopeOfWorkPageProps {
 
 const formatQty = (n: number) => n.toLocaleString();
 
-export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
+export function ScopeOfWorkPage({ proposal, theme }: ScopeOfWorkPageProps) {
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors);
   const totalPorts = calculateTotalPorts(proposal.evseItems);
 
   // Helper to get unit display
@@ -230,6 +234,7 @@ export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
       showDisclaimer={true}
       disclaimerText={`*${SOW_DISCLAIMER_TEXT}`}
       disclaimerBorder={false}
+      theme={theme}
     >
       {/* Title */}
       <Text style={styles.title}>Proposed Scope of Work</Text>

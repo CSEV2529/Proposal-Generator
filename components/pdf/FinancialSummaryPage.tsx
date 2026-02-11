@@ -9,238 +9,242 @@ import {
   calculateLaborCost,
 } from '@/lib/calculations';
 import { FOOTNOTES, getIncentiveLabels, getAdditionalTerms } from '@/lib/constants';
-import { PdfTheme } from './pdfTheme';
-import { colors } from './styles';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 
 const ROW_HEIGHT = 18;
 
-const styles = StyleSheet.create({
-  // Title — Orbitron 28px, matches pages 2-3
-  title: {
-    fontFamily: 'Orbitron',
-    fontSize: 28,
-    fontWeight: 700,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
+function getStyles(colors: PdfColorPalette) {
+  return StyleSheet.create({
+    // Title — Orbitron 28px, matches pages 2-3
+    title: {
+      fontFamily: 'Orbitron',
+      fontSize: 28,
+      fontWeight: 700,
+      color: colors.white,
+      marginBottom: 8,
+    },
 
-  // Section header bar (Financial Breakdown, Additional Terms, Proposal Acceptance)
-  sectionHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.headerBg,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    // Section header bar (Financial Breakdown, Additional Terms, Proposal Acceptance)
+    sectionHeader: {
+      flexDirection: 'row',
+      backgroundColor: colors.headerBg,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  sectionHeaderLabel: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    sectionHeaderLabel: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  sectionHeaderCost: {
-    width: 100,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    textAlign: 'center',
-  },
+    sectionHeaderCost: {
+      width: 100,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      textAlign: 'center',
+    },
 
-  sectionHeaderNotes: {
-    width: 130,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    textAlign: 'center',
-  },
+    sectionHeaderNotes: {
+      width: 130,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      textAlign: 'center',
+    },
 
-  // Standard table row
-  tableRow: {
-    flexDirection: 'row',
-    height: ROW_HEIGHT,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'center',
-  },
+    // Standard table row
+    tableRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+    },
 
-  // Bold/total row (darker background)
-  tableRowBold: {
-    flexDirection: 'row',
-    height: ROW_HEIGHT,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'center',
-    backgroundColor: colors.headerBg,
-  },
+    // Bold/total row (darker background)
+    tableRowBold: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+      backgroundColor: colors.headerBg,
+    },
 
-  tableRowLabel: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: colors.textLight,
-    paddingLeft: 15,
-  },
+    tableRowLabel: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.textLight,
+      paddingLeft: 15,
+    },
 
-  tableRowLabelBold: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: '#FFFFFF',
-    fontWeight: 700,
-  },
+    tableRowLabelBold: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.white,
+      fontWeight: 700,
+    },
 
-  tableRowCost: {
-    width: 100,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: colors.text,
-    textAlign: 'center',
-  },
+    tableRowCost: {
+      width: 100,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.text,
+      textAlign: 'center',
+    },
 
-  tableRowCostBold: {
-    width: 100,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontWeight: 700,
-  },
+    tableRowCostBold: {
+      width: 100,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.white,
+      textAlign: 'center',
+      fontWeight: 700,
+    },
 
-  tableRowCostNegative: {
-    width: 100,
-    fontFamily: 'Roboto',
-    fontSize: 9,
-    color: '#ef4444',
-    textAlign: 'center',
-  },
+    tableRowCostNegative: {
+      width: 100,
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: '#ef4444',
+      textAlign: 'center',
+    },
 
-  tableRowNotes: {
-    width: 130,
-    fontFamily: 'Roboto',
-    fontSize: 7,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
+    tableRowNotes: {
+      width: 130,
+      fontFamily: 'Roboto',
+      fontSize: 7,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
 
-  // Footnotes
-  footnotes: {
-    marginTop: 6,
-    paddingHorizontal: 15,
-  },
+    // Footnotes
+    footnotes: {
+      marginTop: 6,
+      paddingHorizontal: 15,
+    },
 
-  footnoteText: {
-    fontFamily: 'Roboto',
-    fontSize: 6,
-    color: colors.textMuted,
-    lineHeight: 1.4,
-    marginBottom: 2,
-  },
+    footnoteText: {
+      fontFamily: 'Roboto',
+      fontSize: 6,
+      color: colors.textMuted,
+      lineHeight: 1.4,
+      marginBottom: 2,
+    },
 
-  // Additional Terms — 2 columns
-  additionalTermsSection: {
-    marginTop: 10,
-  },
+    // Additional Terms — 2 columns
+    additionalTermsSection: {
+      marginTop: 10,
+    },
 
-  termsHeaderLabel: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    termsHeaderLabel: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  termsHeaderNotes: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    termsHeaderNotes: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  termRow: {
-    flexDirection: 'row',
-    height: ROW_HEIGHT,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'center',
-  },
+    termRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+    },
 
-  termLabel: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    fontSize: 8,
-    color: colors.textLight,
-  },
+    termLabel: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textLight,
+    },
 
-  termValue: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    fontSize: 8,
-    color: colors.text,
-  },
+    termValue: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.text,
+    },
 
-  acceptanceHeaderText: {
-    flex: 1,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
+    acceptanceHeaderText: {
+      flex: 1,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+    },
 
-  acceptanceContent: {
-    paddingHorizontal: 15,
-    paddingTop: 6,
-  },
+    acceptanceContent: {
+      paddingHorizontal: 15,
+      paddingTop: 6,
+    },
 
-  acceptanceRow: {
-    marginBottom: 6,
-  },
+    acceptanceRow: {
+      marginBottom: 6,
+    },
 
-  acceptanceLabel: {
-    fontFamily: 'Roboto',
-    fontSize: 8,
-    color: colors.textMuted,
-    fontWeight: 700,
-    marginBottom: 2,
-  },
+    acceptanceLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      fontWeight: 700,
+      marginBottom: 2,
+    },
 
-  acceptanceLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.textMuted,
-    height: 14,
-  },
+    acceptanceLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+      height: 14,
+    },
 
-  acceptanceGrid: {
-    flexDirection: 'row',
-    gap: 25,
-    marginTop: 8,
-  },
+    acceptanceGrid: {
+      flexDirection: 'row',
+      gap: 25,
+      marginTop: 8,
+    },
 
-  acceptanceCol: {
-    flex: 1,
-  },
-});
+    acceptanceCol: {
+      flex: 1,
+    },
+  });
+}
 
 interface FinancialSummaryPageProps {
   proposal: Proposal;
   theme?: PdfTheme;
 }
 
-export function FinancialSummaryPage({ proposal }: FinancialSummaryPageProps) {
+export function FinancialSummaryPage({ proposal, theme }: FinancialSummaryPageProps) {
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors);
+
   const grossCost = calculateGrossProjectCost(proposal);
   const netCost = calculateNetProjectCost(proposal);
 
@@ -274,7 +278,7 @@ export function FinancialSummaryPage({ proposal }: FinancialSummaryPageProps) {
   }));
 
   return (
-    <PageWrapper pageNumber={4} showDisclaimer={true}>
+    <PageWrapper pageNumber={4} showDisclaimer={true} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Financial Summary</Text>
 

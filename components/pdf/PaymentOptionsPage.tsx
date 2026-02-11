@@ -3,290 +3,293 @@ import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
 import { formatCurrency, calculateNetProjectCost } from '@/lib/calculations';
 import { getPaymentOptions, getLocationValueProp, FOOTNOTES } from '@/lib/constants';
-import { PdfTheme } from './pdfTheme';
-import { colors } from './styles';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 
-const styles = StyleSheet.create({
-  // Title
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 8,
-  },
+function getStyles(colors: PdfColorPalette) {
+  return StyleSheet.create({
+    // Title
+    title: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 8,
+    },
 
-  titleAccent: {
-    color: colors.primary,
-  },
+    titleAccent: {
+      color: colors.primary,
+    },
 
-  introText: {
-    fontSize: 8,
-    color: colors.textMuted,
-    lineHeight: 1.4,
-    marginBottom: 12,
-  },
+    introText: {
+      fontSize: 8,
+      color: colors.textMuted,
+      lineHeight: 1.4,
+      marginBottom: 12,
+    },
 
-  // Purchase Options header
-  purchaseOptionsHeader: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    marginBottom: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    // Purchase Options header
+    purchaseOptionsHeader: {
+      backgroundColor: colors.headerBg,
+      paddingVertical: 6,
+      paddingHorizontal: 15,
+      marginBottom: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  purchaseOptionsHeaderText: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
+    purchaseOptionsHeaderText: {
+      color: colors.primary,
+      fontSize: 11,
+      fontWeight: 'bold',
+      letterSpacing: 0.5,
+    },
 
-  // Option box
-  optionBox: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 8,
-    flexDirection: 'row',
-    borderRadius: 6,
-    overflow: 'hidden',
-    backgroundColor: colors.panelBg,
-  },
+    // Option box
+    optionBox: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 8,
+      flexDirection: 'row',
+      borderRadius: 6,
+      overflow: 'hidden',
+      backgroundColor: colors.panelBg,
+    },
 
-  // Option left section
-  optionLeft: {
-    width: 90,
-    padding: 8,
-    backgroundColor: colors.headerBg,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-  },
+    // Option left section
+    optionLeft: {
+      width: 90,
+      padding: 8,
+      backgroundColor: colors.headerBg,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+    },
 
-  optionNumber: {
-    backgroundColor: colors.primary,
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    marginBottom: 6,
-    borderRadius: 3,
-  },
+    optionNumber: {
+      backgroundColor: colors.primary,
+      paddingVertical: 3,
+      paddingHorizontal: 6,
+      marginBottom: 6,
+      borderRadius: 3,
+    },
 
-  optionNumberText: {
-    color: colors.pageBg,
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
+    optionNumberText: {
+      color: colors.pageBg,
+      fontSize: 9,
+      fontWeight: 'bold',
+    },
 
-  warrantyIncluded: {
-    fontSize: 7,
-    color: colors.textMuted,
-    marginBottom: 2,
-  },
+    warrantyIncluded: {
+      fontSize: 7,
+      color: colors.textMuted,
+      marginBottom: 2,
+    },
 
-  warrantyText: {
-    fontSize: 8,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
+    warrantyText: {
+      fontSize: 8,
+      color: colors.text,
+      fontWeight: 'bold',
+    },
 
-  warrantyValue: {
-    fontSize: 7,
-    color: colors.primary,
-    fontStyle: 'italic',
-    marginTop: 4,
-  },
+    warrantyValue: {
+      fontSize: 7,
+      color: colors.primary,
+      fontStyle: 'italic',
+      marginTop: 4,
+    },
 
-  // Option middle section
-  optionMiddle: {
-    flex: 1,
-    padding: 8,
-  },
+    // Option middle section
+    optionMiddle: {
+      flex: 1,
+      padding: 8,
+    },
 
-  costRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    justifyContent: 'space-between',
-  },
+    costRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+      justifyContent: 'space-between',
+    },
 
-  costLabel: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginRight: 8,
-  },
+    costLabel: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginRight: 8,
+    },
 
-  costValue: {
-    backgroundColor: colors.primary,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    borderRadius: 4,
-  },
+    costValue: {
+      backgroundColor: colors.primary,
+      paddingVertical: 3,
+      paddingHorizontal: 10,
+      borderRadius: 4,
+    },
 
-  costValueText: {
-    color: colors.pageBg,
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
+    costValueText: {
+      color: colors.pageBg,
+      fontSize: 10,
+      fontWeight: 'bold',
+    },
 
-  revShareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+    revShareRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
 
-  revShareLabel: {
-    fontSize: 8,
-    color: colors.textLight,
-    marginRight: 6,
-  },
+    revShareLabel: {
+      fontSize: 8,
+      color: colors.textLight,
+      marginRight: 6,
+    },
 
-  revShareValue: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
+    revShareValue: {
+      backgroundColor: colors.headerBg,
+      paddingVertical: 3,
+      paddingHorizontal: 8,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: colors.primary,
+    },
 
-  revShareValueText: {
-    color: colors.primary,
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
+    revShareValueText: {
+      color: colors.primary,
+      fontSize: 9,
+      fontWeight: 'bold',
+    },
 
-  warrantyUpgradeTitle: {
-    fontSize: 8,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 4,
-  },
+    warrantyUpgradeTitle: {
+      fontSize: 8,
+      fontWeight: 'bold',
+      color: colors.primary,
+      marginBottom: 4,
+    },
 
-  warrantyUpgradeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 3,
-  },
+    warrantyUpgradeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 3,
+    },
 
-  checkbox: {
-    width: 10,
-    height: 10,
-    borderWidth: 1,
-    borderColor: colors.textMuted,
-    marginRight: 6,
-    borderRadius: 2,
-  },
+    checkbox: {
+      width: 10,
+      height: 10,
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+      marginRight: 6,
+      borderRadius: 2,
+    },
 
-  warrantyUpgradeName: {
-    fontSize: 7,
-    color: colors.textLight,
-    flex: 1,
-  },
+    warrantyUpgradeName: {
+      fontSize: 7,
+      color: colors.textLight,
+      flex: 1,
+    },
 
-  warrantyUpgradeCost: {
-    fontSize: 6,
-    color: colors.primary,
-    fontStyle: 'italic',
-  },
+    warrantyUpgradeCost: {
+      fontSize: 6,
+      color: colors.primary,
+      fontStyle: 'italic',
+    },
 
-  optOutRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 3,
-  },
+    optOutRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 3,
+    },
 
-  optOutText: {
-    fontSize: 7,
-    color: colors.textMuted,
-  },
+    optOutText: {
+      fontSize: 7,
+      color: colors.textMuted,
+    },
 
-  // Option right section (initial here)
-  optionRight: {
-    width: 70,
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
-    backgroundColor: colors.headerBg,
-  },
+    // Option right section (initial here)
+    optionRight: {
+      width: 70,
+      padding: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderLeftWidth: 1,
+      borderLeftColor: colors.border,
+      backgroundColor: colors.headerBg,
+    },
 
-  initialLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.textMuted,
-    width: 50,
-    marginBottom: 4,
-  },
+    initialLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+      width: 50,
+      marginBottom: 4,
+    },
 
-  initialText: {
-    fontSize: 6,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
+    initialText: {
+      fontSize: 6,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
 
-  // Footnote
-  footnote: {
-    fontSize: 6,
-    color: colors.textMuted,
-    lineHeight: 1.4,
-    marginTop: 6,
-    marginBottom: 10,
-  },
+    // Footnote
+    footnote: {
+      fontSize: 6,
+      color: colors.textMuted,
+      lineHeight: 1.4,
+      marginTop: 6,
+      marginBottom: 10,
+    },
 
-  // Value proposition section
-  valuePropSection: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    overflow: 'hidden',
-    backgroundColor: colors.panelBg,
-  },
+    // Value proposition section
+    valuePropSection: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 6,
+      overflow: 'hidden',
+      backgroundColor: colors.panelBg,
+    },
 
-  valuePropHeader: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    valuePropHeader: {
+      backgroundColor: colors.headerBg,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  valuePropHeaderText: {
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
+    valuePropHeaderText: {
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 'bold',
+      letterSpacing: 0.5,
+    },
 
-  valuePropContent: {
-    padding: 10,
-  },
+    valuePropContent: {
+      padding: 10,
+    },
 
-  valuePropIntro: {
-    fontSize: 8,
-    color: colors.textLight,
-    marginBottom: 6,
-  },
+    valuePropIntro: {
+      fontSize: 8,
+      color: colors.textLight,
+      marginBottom: 6,
+    },
 
-  valuePropIntroHighlight: {
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
+    valuePropIntroHighlight: {
+      fontWeight: 'bold',
+      color: colors.primary,
+    },
 
-  valuePropPoint: {
-    fontSize: 7,
-    color: colors.textLight,
-    marginBottom: 3,
-    lineHeight: 1.4,
-  },
-});
+    valuePropPoint: {
+      fontSize: 7,
+      color: colors.textLight,
+      marginBottom: 3,
+      lineHeight: 1.4,
+    },
+  });
+}
 
 interface PaymentOptionsPageProps {
   proposal: Proposal;
   theme?: PdfTheme;
 }
 
-export function PaymentOptionsPage({ proposal }: PaymentOptionsPageProps) {
+export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps) {
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors);
   const netCost = calculateNetProjectCost(proposal);
   const paymentConfig = getPaymentOptions(proposal.projectType);
 
@@ -313,7 +316,7 @@ export function PaymentOptionsPage({ proposal }: PaymentOptionsPageProps) {
   const valueProp = getLocationValueProp(proposal.locationType, proposal.projectType);
 
   return (
-    <PageWrapper pageNumber={5} showDisclaimer={true}>
+    <PageWrapper pageNumber={5} showDisclaimer={true} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>
         <Text style={styles.titleAccent}>Payment Options</Text>

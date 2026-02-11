@@ -1,119 +1,123 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { PdfTheme } from './pdfTheme';
-import { colors } from './styles';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 
-const styles = StyleSheet.create({
-  // Title
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 8,
-  },
+function getStyles(colors: PdfColorPalette) {
+  return StyleSheet.create({
+    // Title
+    title: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 8,
+    },
 
-  titleAccent: {
-    color: colors.primary,
-  },
+    titleAccent: {
+      color: colors.primary,
+    },
 
-  introText: {
-    fontSize: 9,
-    color: colors.textLight,
-    lineHeight: 1.5,
-    marginBottom: 15,
-  },
+    introText: {
+      fontSize: 9,
+      color: colors.textLight,
+      lineHeight: 1.5,
+      marginBottom: 15,
+    },
 
-  // Map container
-  mapContainer: {
-    flex: 1,
-    minHeight: 340,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.panelBg,
-    borderRadius: 8,
-  },
+    // Map container
+    mapContainer: {
+      flex: 1,
+      minHeight: 340,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 15,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.panelBg,
+      borderRadius: 8,
+    },
 
-  siteMapImage: {
-    maxWidth: '100%',
-    maxHeight: 340,
-    objectFit: 'contain',
-  },
+    siteMapImage: {
+      maxWidth: '100%',
+      maxHeight: 340,
+      objectFit: 'contain',
+    },
 
-  placeholder: {
-    textAlign: 'center',
-    padding: 40,
-  },
+    placeholder: {
+      textAlign: 'center',
+      padding: 40,
+    },
 
-  placeholderText: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginBottom: 10,
-  },
+    placeholderText: {
+      fontSize: 14,
+      color: colors.textMuted,
+      marginBottom: 10,
+    },
 
-  placeholderSubtext: {
-    fontSize: 10,
-    color: colors.textMuted,
-  },
+    placeholderSubtext: {
+      fontSize: 10,
+      color: colors.textMuted,
+    },
 
-  // Site Map Approval section
-  approvalSection: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    overflow: 'hidden',
-    backgroundColor: colors.panelBg,
-  },
+    // Site Map Approval section
+    approvalSection: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 6,
+      overflow: 'hidden',
+      backgroundColor: colors.panelBg,
+    },
 
-  approvalHeader: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    approvalHeader: {
+      backgroundColor: colors.headerBg,
+      paddingVertical: 8,
+      paddingHorizontal: 15,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  approvalHeaderText: {
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
+    approvalHeaderText: {
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: 'bold',
+      letterSpacing: 0.5,
+    },
 
-  approvalContent: {
-    padding: 15,
-  },
+    approvalContent: {
+      padding: 15,
+    },
 
-  signatureRow: {
-    marginBottom: 12,
-  },
+    signatureRow: {
+      marginBottom: 12,
+    },
 
-  signatureLabel: {
-    fontSize: 9,
-    color: colors.textMuted,
-    fontWeight: 'bold',
-    marginBottom: 3,
-  },
+    signatureLabel: {
+      fontSize: 9,
+      color: colors.textMuted,
+      fontWeight: 'bold',
+      marginBottom: 3,
+    },
 
-  signatureLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.textMuted,
-    height: 18,
-  },
-});
+    signatureLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+      height: 18,
+    },
+  });
+}
 
 interface SiteMapPageProps {
   proposal: Proposal;
   theme?: PdfTheme;
 }
 
-export function SiteMapPage({ proposal }: SiteMapPageProps) {
+export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors);
+
   return (
-    <PageWrapper pageNumber={6} showDisclaimer={true}>
+    <PageWrapper pageNumber={6} showDisclaimer={true} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>
         <Text style={styles.titleAccent}>Proposed Site Map</Text>

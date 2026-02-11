@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { WHY_CSEV_CONTENT } from '@/lib/constants';
-import { PdfTheme } from './pdfTheme';
-import { colors } from './styles';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 import { INSTALLATION_IMAGE_L2_BASE64 } from './installationImageL2';
 import { STATION_IMAGE_L2_BASE64 } from './stationImageL2';
@@ -25,226 +24,230 @@ const STATION_IMAGES: Record<ProjectType, string | null> = {
   'distribution': null,
 };
 
-const styles = StyleSheet.create({
-  // Page title — Orbitron
-  title: {
-    fontFamily: 'Orbitron',
-    fontSize: 28,
-    fontWeight: 700,
-    color: '#FFFFFF',
-    marginBottom: 12,
-  },
+function getStyles(colors: PdfColorPalette) {
+  return StyleSheet.create({
+    // Page title — Orbitron
+    title: {
+      fontFamily: 'Orbitron',
+      fontSize: 28,
+      fontWeight: 700,
+      color: colors.white,
+      marginBottom: 12,
+    },
 
-  // ── Top section: installation image (left) + subtitle/grid/offer (right) ──
-  topRow: {
-    flexDirection: 'row',
-    marginBottom: 6,
-  },
+    // ── Top section: installation image (left) + subtitle/grid/offer (right) ──
+    topRow: {
+      flexDirection: 'row',
+      marginBottom: 6,
+    },
 
-  installationImageCol: {
-    width: '35%',
-    marginRight: 14,
-  },
+    installationImageCol: {
+      width: '35%',
+      marginRight: 14,
+    },
 
-  // Height spans from top of grid to bottom of What We Offer
-  installationImage: {
-    width: '100%',
-    height: 242,
-    objectFit: 'cover',
-    borderRadius: 6,
-  },
+    // Height spans from top of grid to bottom of What We Offer
+    installationImage: {
+      width: '100%',
+      height: 242,
+      objectFit: 'cover',
+      borderRadius: 6,
+    },
 
-  installationPlaceholder: {
-    width: '100%',
-    height: 242,
-    backgroundColor: colors.panelBg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+    installationPlaceholder: {
+      width: '100%',
+      height: 242,
+      backgroundColor: colors.panelBg,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
 
-  placeholderText: {
-    fontSize: 9,
-    color: colors.textMuted,
-  },
+    placeholderText: {
+      fontSize: 9,
+      color: colors.textMuted,
+    },
 
-  rightCol: {
-    flex: 1,
-  },
+    rightCol: {
+      flex: 1,
+    },
 
-  subtitle: {
-    fontSize: 11,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    textAlign: 'left',
-    marginBottom: 6,
-  },
+    subtitle: {
+      fontSize: 11,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      textAlign: 'left',
+      marginBottom: 6,
+    },
 
-  // Markets grid
-  marketsGrid: {
-    marginBottom: 4,
-  },
+    // Markets grid
+    marketsGrid: {
+      marginBottom: 4,
+    },
 
-  marketsRow: {
-    flexDirection: 'row',
-    marginBottom: 5,
-  },
+    marketsRow: {
+      flexDirection: 'row',
+      marginBottom: 5,
+    },
 
-  marketBox: {
-    flex: 1,
-    backgroundColor: colors.panelBg,
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    marginHorizontal: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    minHeight: 40,
-  },
+    marketBox: {
+      flex: 1,
+      backgroundColor: colors.panelBg,
+      paddingVertical: 10,
+      paddingHorizontal: 6,
+      marginHorizontal: 3,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 4,
+      borderLeftWidth: 3,
+      borderLeftColor: colors.primary,
+      minHeight: 40,
+    },
 
-  marketText: {
-    fontSize: 9.5,
-    fontFamily: 'Roboto',
-    fontWeight: 500,
-    color: colors.text,
-    textAlign: 'center',
-  },
+    marketText: {
+      fontSize: 9.5,
+      fontFamily: 'Roboto',
+      fontWeight: 500,
+      color: colors.text,
+      textAlign: 'center',
+    },
 
-  andMore: {
-    fontSize: 9,
-    fontFamily: 'Roboto',
-    color: colors.primary,
-    textAlign: 'right',
-    marginTop: 0,
-    marginBottom: 9,
-  },
+    andMore: {
+      fontSize: 9,
+      fontFamily: 'Roboto',
+      color: colors.primary,
+      textAlign: 'right',
+      marginTop: 0,
+      marginBottom: 9,
+    },
 
-  // What We Offer — full width of right column, below grid
-  offerSection: {
-    backgroundColor: colors.panelBg,
-    padding: 10,
-    marginHorizontal: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    // What We Offer — full width of right column, below grid
+    offerSection: {
+      backgroundColor: colors.panelBg,
+      padding: 10,
+      marginHorizontal: 3,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
 
-  offerTitle: {
-    fontSize: 11,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: colors.primary,
-    marginBottom: 6,
-    letterSpacing: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
-    alignSelf: 'flex-start',
-  },
+    offerTitle: {
+      fontSize: 11,
+      fontFamily: 'Roboto',
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 6,
+      letterSpacing: 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.primary,
+      alignSelf: 'flex-start',
+    },
 
-  offerItem: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    alignItems: 'center',
-  },
+    offerItem: {
+      flexDirection: 'row',
+      marginBottom: 4,
+      alignItems: 'center',
+    },
 
-  offerBullet: {
-    width: 14,
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: 700,
-  },
+    offerBullet: {
+      width: 14,
+      fontSize: 10,
+      color: colors.primary,
+      fontWeight: 700,
+    },
 
-  offerText: {
-    flex: 1,
-    fontSize: 9,
-    fontFamily: 'Roboto',
-    color: colors.textLight,
-    fontWeight: 500,
-  },
+    offerText: {
+      flex: 1,
+      fontSize: 9,
+      fontFamily: 'Roboto',
+      color: colors.textLight,
+      fontWeight: 500,
+    },
 
-  // ── Bottom section: Mission (left) + Station image (right) ──
-  // Fixed height to prevent page overflow (LETTER=792, top content ~280, padding ~90)
-  bottomRow: {
-    flexDirection: 'row',
-    height: 380,
-    marginTop: 10,
-  },
+    // ── Bottom section: Mission (left) + Station image (right) ──
+    // Fixed height to prevent page overflow (LETTER=792, top content ~280, padding ~90)
+    bottomRow: {
+      flexDirection: 'row',
+      height: 380,
+      marginTop: 10,
+    },
 
-  bottomLeftCol: {
-    width: '60%',
-    marginRight: 10,
-    height: 380,
-  },
+    bottomLeftCol: {
+      width: '60%',
+      marginRight: 10,
+      height: 380,
+    },
 
-  bottomRightCol: {
-    width: '40%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: 380,
-  },
+    bottomRightCol: {
+      width: '40%',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      height: 380,
+    },
 
-  // Station image — bottom-aligned with mission section
-  stationImage: {
-    width: '90%',
-    height: 370,
-    objectFit: 'contain',
-  },
+    // Station image — bottom-aligned with mission section
+    stationImage: {
+      width: '90%',
+      height: 370,
+      objectFit: 'contain',
+    },
 
-  stationPlaceholder: {
-    width: '100%',
-    height: 380,
-    backgroundColor: colors.panelBg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+    stationPlaceholder: {
+      width: '100%',
+      height: 380,
+      backgroundColor: colors.panelBg,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
 
-  // Mission section — no background box, text fills space
-  missionSection: {
-    height: 380,
-    paddingTop: 14,
-  },
+    // Mission section — no background box, text fills space
+    missionSection: {
+      height: 380,
+      paddingTop: 14,
+    },
 
-  missionTitle: {
-    fontSize: 14,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: colors.primary,
-    marginBottom: 10,
-    letterSpacing: 1,
-  },
+    missionTitle: {
+      fontSize: 14,
+      fontFamily: 'Roboto',
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 10,
+      letterSpacing: 1,
+    },
 
-  missionParagraph: {
-    fontSize: 10.5,
-    fontFamily: 'Roboto',
-    color: colors.textLight,
-    lineHeight: 1.6,
-    marginBottom: 10,
-    textAlign: 'justify',
-  },
-});
+    missionParagraph: {
+      fontSize: 10.5,
+      fontFamily: 'Roboto',
+      color: colors.textLight,
+      lineHeight: 1.6,
+      marginBottom: 10,
+      textAlign: 'justify',
+    },
+  });
+}
 
 interface WhyCSEVPageProps {
   projectType?: ProjectType;
   theme?: PdfTheme;
 }
 
-export function WhyCSEVPage({ projectType = 'level2-epc' }: WhyCSEVPageProps) {
+export function WhyCSEVPage({ projectType = 'level2-epc', theme }: WhyCSEVPageProps) {
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors);
   const installationImage = INSTALLATION_IMAGES[projectType];
   const stationImage = STATION_IMAGES[projectType];
 
   return (
-    <PageWrapper pageNumber={2} showDisclaimer={false}>
+    <PageWrapper pageNumber={2} showDisclaimer={false} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Why ChargeSmart EV?</Text>
 

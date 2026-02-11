@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut } from 'lucide-react';
+import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon } from 'lucide-react';
 import { useProposal } from '@/context/ProposalContext';
 import {
   CustomerInfoForm,
@@ -606,9 +606,33 @@ function HomePageContent() {
 
               {/* Download Buttons */}
               <div className="bg-csev-panel rounded-lg shadow-card border border-csev-border p-6">
-                <h3 className="section-header mb-4">
-                  Generate Documents
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="section-header">
+                    Generate Documents
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        dispatch({
+                          type: 'SET_TERMS',
+                          payload: { pdfTheme: proposal.pdfTheme === 'light' ? 'dark' : 'light' },
+                        })
+                      }
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        proposal.pdfTheme === 'light'
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : 'bg-csev-slate-700 text-csev-text-muted border border-csev-border'
+                      }`}
+                      title={`Switch to ${proposal.pdfTheme === 'light' ? 'dark' : 'light'} mode PDF`}
+                    >
+                      {proposal.pdfTheme === 'light' ? (
+                        <><Sun size={14} /> Light</>
+                      ) : (
+                        <><Moon size={14} /> Dark</>
+                      )}
+                    </button>
+                  </div>
+                </div>
                 <p className="text-sm text-csev-text-secondary mb-4">
                   Download professional PDF documents ready to share with your
                   customer or installer.
