@@ -4,7 +4,7 @@ import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { DISCLAIMER_TEXT } from './styles';
 import { NODES_IMAGE_BASE64 } from './nodesImage';
 
-function getStyles(colors: PdfColorPalette) {
+function getStyles(colors: PdfColorPalette, theme: PdfTheme) {
   return StyleSheet.create({
     page: {
       fontFamily: 'Helvetica',
@@ -20,7 +20,7 @@ function getStyles(colors: PdfColorPalette) {
       left: 0,
       right: 0,
       height: 300,
-      opacity: 0.075,
+      opacity: theme === 'dark' ? 0.075 : 0.12,
     },
 
     backgroundNodesImage: {
@@ -114,7 +114,7 @@ export function PageWrapper({
   theme = 'dark',
 }: PageWrapperProps) {
   const colors = getPdfColors(theme);
-  const styles = getStyles(colors);
+  const styles = getStyles(colors, theme);
   const pageNum = String(pageNumber).padStart(2, '0');
 
   return (

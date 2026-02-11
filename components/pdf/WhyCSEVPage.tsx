@@ -4,24 +4,32 @@ import { WHY_CSEV_CONTENT } from '@/lib/constants';
 import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 import { INSTALLATION_IMAGE_L2_BASE64 } from './installationImageL2';
+import { INSTALLATION_IMAGE_L3_BASE64 } from './installationImageL3';
+import { INSTALLATION_IMAGE_MIXED_BASE64 } from './installationImageMixed';
+import { INSTALLATION_IMAGE_SITE_HOST_BASE64 } from './installationImageSiteHost';
+import { INSTALLATION_IMAGE_DISTRIBUTION_BASE64 } from './installationImageDistribution';
 import { STATION_IMAGE_L2_BASE64 } from './stationImageL2';
+import { STATION_IMAGE_L3_BASE64 } from './stationImageL3';
+import { STATION_IMAGE_MIXED_BASE64 } from './stationImageMixed';
+import { STATION_IMAGE_SITE_HOST_BASE64 } from './stationImageSiteHost';
+import { STATION_IMAGE_DISTRIBUTION_BASE64 } from './stationImageDistribution';
 import type { ProjectType } from '@/lib/types';
 
-// Image mapping by project type — add more as images are provided
+// Image mapping by project type
 const INSTALLATION_IMAGES: Record<ProjectType, string | null> = {
   'level2-epc': INSTALLATION_IMAGE_L2_BASE64,
-  'level3-epc': null,
-  'mixed-epc': null,
-  'site-host': null,
-  'distribution': null,
+  'level3-epc': INSTALLATION_IMAGE_L3_BASE64,
+  'mixed-epc': INSTALLATION_IMAGE_MIXED_BASE64,
+  'site-host': INSTALLATION_IMAGE_SITE_HOST_BASE64,
+  'distribution': INSTALLATION_IMAGE_DISTRIBUTION_BASE64,
 };
 
 const STATION_IMAGES: Record<ProjectType, string | null> = {
   'level2-epc': STATION_IMAGE_L2_BASE64,
-  'level3-epc': null,
-  'mixed-epc': null,
-  'site-host': null,
-  'distribution': null,
+  'level3-epc': STATION_IMAGE_L3_BASE64,
+  'mixed-epc': STATION_IMAGE_MIXED_BASE64,
+  'site-host': STATION_IMAGE_SITE_HOST_BASE64,
+  'distribution': STATION_IMAGE_DISTRIBUTION_BASE64,
 };
 
 function getStyles(colors: PdfColorPalette) {

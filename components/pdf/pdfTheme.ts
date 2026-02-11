@@ -21,7 +21,7 @@ export interface PdfColorPalette {
   border: string;
   borderLight: string;
 
-  // Legacy / shared
+  // High contrast text (white on dark, black on light) — used for titles, bold rows
   white: string;
 }
 
@@ -62,7 +62,7 @@ const lightPalette: PdfColorPalette = {
   border: '#D0D7DE',
   borderLight: '#E0E6EB',
 
-  white: '#FFFFFF',
+  white: '#1F2328',
 };
 
 export function getPdfColors(theme: PdfTheme = 'dark'): PdfColorPalette {

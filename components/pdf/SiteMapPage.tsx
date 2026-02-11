@@ -6,41 +6,32 @@ import { PageWrapper } from './PageWrapper';
 
 function getStyles(colors: PdfColorPalette) {
   return StyleSheet.create({
-    // Title
+    // Title — Orbitron 28px, matches pages 2-5
     title: {
-      fontSize: 32,
-      fontWeight: 'bold',
-      color: colors.text,
+      fontFamily: 'Orbitron',
+      fontSize: 28,
+      fontWeight: 700,
+      color: colors.white,
       marginBottom: 8,
     },
 
-    titleAccent: {
-      color: colors.primary,
-    },
-
     introText: {
+      fontFamily: 'Roboto',
       fontSize: 9,
       color: colors.textLight,
       lineHeight: 1.5,
-      marginBottom: 15,
+      marginBottom: 10,
     },
 
-    // Map container
-    mapContainer: {
-      flex: 1,
-      minHeight: 340,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: 15,
+    // Image container — centered vertically in available space
+    imageContainer: {
+      flexGrow: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.panelBg,
-      borderRadius: 8,
     },
 
     siteMapImage: {
-      maxWidth: '100%',
-      maxHeight: 340,
+      width: '80%',
       objectFit: 'contain',
     },
 
@@ -50,59 +41,57 @@ function getStyles(colors: PdfColorPalette) {
     },
 
     placeholderText: {
+      fontFamily: 'Roboto',
       fontSize: 14,
       color: colors.textMuted,
       marginBottom: 10,
     },
 
     placeholderSubtext: {
+      fontFamily: 'Roboto',
       fontSize: 10,
       color: colors.textMuted,
     },
 
-    // Site Map Approval section
-    approvalSection: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 6,
-      overflow: 'hidden',
-      backgroundColor: colors.panelBg,
-    },
-
-    approvalHeader: {
+    // Site Map Approval — pinned to bottom via flexGrow spacer above
+    sectionHeader: {
+      flexDirection: 'row',
       backgroundColor: colors.headerBg,
-      paddingVertical: 8,
+      paddingVertical: 5,
       paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
     },
 
-    approvalHeaderText: {
+    sectionHeaderText: {
+      fontFamily: 'Roboto',
       color: colors.primary,
       fontSize: 10,
-      fontWeight: 'bold',
+      fontWeight: 700,
       letterSpacing: 0.5,
     },
 
     approvalContent: {
-      padding: 15,
+      paddingHorizontal: 15,
+      paddingTop: 8,
     },
 
     signatureRow: {
-      marginBottom: 12,
+      marginBottom: 6,
     },
 
     signatureLabel: {
-      fontSize: 9,
+      fontFamily: 'Roboto',
+      fontSize: 8,
       color: colors.textMuted,
-      fontWeight: 'bold',
-      marginBottom: 3,
+      fontWeight: 700,
+      marginBottom: 2,
     },
 
     signatureLine: {
       borderBottomWidth: 1,
       borderBottomColor: colors.textMuted,
-      height: 18,
+      height: 14,
     },
   });
 }
@@ -119,17 +108,15 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
   return (
     <PageWrapper pageNumber={6} showDisclaimer={true} theme={theme}>
       {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.titleAccent}>Proposed Site Map</Text>
-      </Text>
+      <Text style={styles.title}>Proposed Site Map</Text>
 
       <Text style={styles.introText}>
         Below you will see a proposed site map for installing EV chargers at your location. Actual Scope of
         Work may change depending on power availability, utility determinations and other on-site factors.
       </Text>
 
-      {/* Map Container */}
-      <View style={styles.mapContainer}>
+      {/* Image — centered vertically in available space */}
+      <View style={styles.imageContainer}>
         {proposal.siteMapImage ? (
           <Image src={proposal.siteMapImage} style={styles.siteMapImage} />
         ) : (
@@ -142,12 +129,18 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
         )}
       </View>
 
-      {/* Site Map Approval */}
-      <View style={styles.approvalSection} wrap={false}>
-        <View style={styles.approvalHeader}>
-          <Text style={styles.approvalHeaderText}>Site Map Approval</Text>
+      {/* Site Map Approval — pinned to bottom */}
+      <View style={{ marginBottom: 15 }}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>Site Map Approval</Text>
         </View>
         <View style={styles.approvalContent}>
+          {proposal.projectType === 'site-host' && (
+            <View style={styles.signatureRow}>
+              <Text style={styles.signatureLabel}>Location Option Selected</Text>
+              <View style={styles.signatureLine} />
+            </View>
+          )}
           <View style={styles.signatureRow}>
             <Text style={styles.signatureLabel}>Signature</Text>
             <View style={styles.signatureLine} />

@@ -8,15 +8,18 @@ import { LOGO_DARK_BASE64 } from './logoDark';
 import { LOGO_LIGHT_BASE64 } from './logoLight';
 import type { ProjectType } from '@/lib/types';
 import { HERO_LEVEL2_BASE64 } from './heroLevel2';
+import { HERO_LEVEL3_BASE64 } from './heroLevel3';
+import { HERO_MIXED_BASE64 } from './heroMixed';
+import { HERO_SITE_HOST_BASE64 } from './heroSiteHost';
+import { HERO_DISTRIBUTION_BASE64 } from './heroDistribution';
 
 // Hero image mapping by project type
-// Replace null values with base64 data URLs when images are provided
 const HERO_IMAGES: Record<ProjectType, string | null> = {
   'level2-epc': HERO_LEVEL2_BASE64,
-  'level3-epc': null,
-  'mixed-epc': null,
-  'site-host': null,
-  'distribution': null,
+  'level3-epc': HERO_LEVEL3_BASE64,
+  'mixed-epc': HERO_MIXED_BASE64,
+  'site-host': HERO_SITE_HOST_BASE64,
+  'distribution': HERO_DISTRIBUTION_BASE64,
 };
 
 function getStyles(colors: PdfColorPalette) {
