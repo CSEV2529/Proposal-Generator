@@ -431,7 +431,7 @@ function HomePageContent() {
   return (
     <div className="min-h-screen bg-csev-slate-900 bg-network-pattern">
       {/* Header */}
-      <header className="bg-csev-slate-800 border-b border-csev-border shadow-lg relative overflow-hidden">
+      <header className="bg-csev-slate-800 border-b border-csev-border shadow-lg relative overflow-hidden sticky top-0 z-40">
         {/* Subtle glow effect */}
         <div className="absolute inset-0 bg-glow-green opacity-30 pointer-events-none" />
 
@@ -509,7 +509,7 @@ function HomePageContent() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form Area */}
           <div className="lg:col-span-2 space-y-6">
@@ -523,7 +523,7 @@ function HomePageContent() {
 
           {/* Sidebar - Summary & Actions */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
+            <div className="sticky top-[104px] space-y-6">
               {/* Quick Summary */}
               {showPreview && (
                 <div className="bg-csev-panel rounded-lg shadow-card border border-csev-border p-6 card-accent animate-fade-in">

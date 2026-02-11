@@ -1,70 +1,95 @@
 import React from 'react';
-import { View, Text, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { WHY_CSEV_CONTENT } from '@/lib/constants';
 import { PdfTheme } from './pdfTheme';
 import { colors } from './styles';
 import { PageWrapper } from './PageWrapper';
+import { INSTALLATION_IMAGE_L2_BASE64 } from './installationImageL2';
+import { STATION_IMAGE_L2_BASE64 } from './stationImageL2';
+import type { ProjectType } from '@/lib/types';
+
+// Image mapping by project type — add more as images are provided
+const INSTALLATION_IMAGES: Record<ProjectType, string | null> = {
+  'level2-epc': INSTALLATION_IMAGE_L2_BASE64,
+  'level3-epc': null,
+  'mixed-epc': null,
+  'site-host': null,
+  'distribution': null,
+};
+
+const STATION_IMAGES: Record<ProjectType, string | null> = {
+  'level2-epc': STATION_IMAGE_L2_BASE64,
+  'level3-epc': null,
+  'mixed-epc': null,
+  'site-host': null,
+  'distribution': null,
+};
 
 const styles = StyleSheet.create({
-  // Page title
+  // Page title — Orbitron
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
+    fontFamily: 'Orbitron',
+    fontSize: 28,
+    fontWeight: 700,
+    color: '#FFFFFF',
     marginBottom: 12,
   },
 
-  titleAccent: {
-    color: colors.primary,
-  },
-
-  subtitle: {
-    fontSize: 11,
-    color: colors.textMuted,
-    textAlign: 'right',
-    marginBottom: 18,
-  },
-
-  // Two column layout
-  twoColumn: {
+  // ── Top section: installation image (left) + subtitle/grid/offer (right) ──
+  topRow: {
     flexDirection: 'row',
-    gap: 18,
-    marginBottom: 18,
+    marginBottom: 6,
   },
 
-  leftColumn: {
+  installationImageCol: {
     width: '35%',
+    marginRight: 14,
   },
 
-  rightColumn: {
-    width: '65%',
+  // Height spans from top of grid to bottom of What We Offer
+  installationImage: {
+    width: '100%',
+    height: 242,
+    objectFit: 'cover',
+    borderRadius: 6,
   },
 
-  // Image placeholder
-  imagePlaceholder: {
-    height: 140,
+  installationPlaceholder: {
+    width: '100%',
+    height: 242,
     backgroundColor: colors.panelBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: colors.border,
   },
 
-  imagePlaceholderText: {
-    fontSize: 10,
+  placeholderText: {
+    fontSize: 9,
     color: colors.textMuted,
+  },
+
+  rightCol: {
+    flex: 1,
+  },
+
+  subtitle: {
+    fontSize: 11,
+    fontFamily: 'Roboto',
+    color: colors.primary,
+    textAlign: 'left',
+    marginBottom: 6,
   },
 
   // Markets grid
   marketsGrid: {
-    marginBottom: 12,
+    marginBottom: 4,
   },
 
   marketsRow: {
     flexDirection: 'row',
-    marginBottom: 6,
+    marginBottom: 5,
   },
 
   marketBox: {
@@ -74,33 +99,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     marginHorizontal: 3,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 4,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
+    minHeight: 40,
   },
 
   marketText: {
-    fontSize: 8,
+    fontSize: 9.5,
+    fontFamily: 'Roboto',
+    fontWeight: 500,
     color: colors.text,
     textAlign: 'center',
   },
 
   andMore: {
-    fontSize: 10,
+    fontSize: 9,
+    fontFamily: 'Roboto',
     color: colors.primary,
-    fontStyle: 'italic',
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: 0,
+    marginBottom: 9,
   },
 
-  // What We Offer section
+  // What We Offer — full width of right column, below grid
   offerSection: {
     backgroundColor: colors.panelBg,
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 8,
+    padding: 10,
+    marginHorizontal: 3,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: colors.border,
     borderLeftWidth: 4,
@@ -109,15 +139,19 @@ const styles = StyleSheet.create({
 
   offerTitle: {
     fontSize: 11,
-    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: colors.primary,
-    marginBottom: 8,
+    marginBottom: 6,
     letterSpacing: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.primary,
+    alignSelf: 'flex-start',
   },
 
   offerItem: {
     flexDirection: 'row',
-    marginBottom: 5,
+    marginBottom: 4,
     alignItems: 'center',
   },
 
@@ -125,82 +159,113 @@ const styles = StyleSheet.create({
     width: 14,
     fontSize: 10,
     color: colors.primary,
+    fontWeight: 700,
   },
 
   offerText: {
     flex: 1,
     fontSize: 9,
+    fontFamily: 'Roboto',
     color: colors.textLight,
+    fontWeight: 500,
   },
 
-  // Charger image placeholder (right side)
-  chargerImagePlaceholder: {
-    height: 180,
+  // ── Bottom section: Mission (left) + Station image (right) ──
+  // Fixed height to prevent page overflow (LETTER=792, top content ~280, padding ~90)
+  bottomRow: {
+    flexDirection: 'row',
+    height: 380,
+    marginTop: 10,
+  },
+
+  bottomLeftCol: {
+    width: '60%',
+    marginRight: 10,
+    height: 380,
+  },
+
+  bottomRightCol: {
+    width: '40%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: 380,
+  },
+
+  // Station image — bottom-aligned with mission section
+  stationImage: {
+    width: '90%',
+    height: 370,
+    objectFit: 'contain',
+  },
+
+  stationPlaceholder: {
+    width: '100%',
+    height: 380,
     backgroundColor: colors.panelBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
   },
 
-  // Mission section
+  // Mission section — no background box, text fills space
   missionSection: {
-    marginTop: 15,
-    backgroundColor: colors.panelBg,
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderTopWidth: 4,
-    borderTopColor: colors.primary,
+    height: 380,
+    paddingTop: 14,
   },
 
   missionTitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: colors.primary,
     marginBottom: 10,
     letterSpacing: 1,
   },
 
   missionParagraph: {
-    fontSize: 9,
+    fontSize: 10.5,
+    fontFamily: 'Roboto',
     color: colors.textLight,
-    lineHeight: 1.5,
-    marginBottom: 8,
+    lineHeight: 1.6,
+    marginBottom: 10,
     textAlign: 'justify',
   },
 });
 
 interface WhyCSEVPageProps {
+  projectType?: ProjectType;
   theme?: PdfTheme;
 }
 
-export function WhyCSEVPage({}: WhyCSEVPageProps) {
+export function WhyCSEVPage({ projectType = 'level2-epc' }: WhyCSEVPageProps) {
+  const installationImage = INSTALLATION_IMAGES[projectType];
+  const stationImage = STATION_IMAGES[projectType];
+
   return (
     <PageWrapper pageNumber={2} showDisclaimer={false}>
       {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.titleAccent}>Why ChargeSmart EV?</Text>
-      </Text>
+      <Text style={styles.title}>Why ChargeSmart EV?</Text>
 
-      <Text style={styles.subtitle}>{WHY_CSEV_CONTENT.subtitle}</Text>
-
-      {/* Two column layout */}
-      <View style={styles.twoColumn}>
-        {/* Left column - image */}
-        <View style={styles.leftColumn}>
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>[Charger Installation Image]</Text>
-          </View>
+      {/* Top section: Installation image (left) + subtitle/grid/offer (right) */}
+      <View style={styles.topRow}>
+        {/* Left — installation image spanning grid top to offer bottom */}
+        <View style={styles.installationImageCol}>
+          {installationImage ? (
+            <Image src={installationImage} style={styles.installationImage} />
+          ) : (
+            <View style={styles.installationPlaceholder}>
+              <Text style={styles.placeholderText}>[Installation Image]</Text>
+            </View>
+          )}
         </View>
 
-        {/* Right column - markets grid */}
-        <View style={styles.rightColumn}>
+        {/* Right — subtitle + 2x3 grid + and more + What We Offer */}
+        <View style={styles.rightCol}>
+          <Text style={styles.subtitle}>{WHY_CSEV_CONTENT.subtitle}</Text>
+
           <View style={styles.marketsGrid}>
-            {/* Row 1 */}
             <View style={styles.marketsRow}>
               <View style={styles.marketBox}>
                 <Text style={styles.marketText}>Multi-family/</Text>
@@ -215,7 +280,6 @@ export function WhyCSEVPage({}: WhyCSEVPageProps) {
                 <Text style={styles.marketText}>Shopping Plazas</Text>
               </View>
             </View>
-            {/* Row 2 */}
             <View style={styles.marketsRow}>
               <View style={styles.marketBox}>
                 <Text style={styles.marketText}>Workplaces</Text>
@@ -230,12 +294,8 @@ export function WhyCSEVPage({}: WhyCSEVPageProps) {
             </View>
           </View>
           <Text style={styles.andMore}>...and more</Text>
-        </View>
-      </View>
 
-      {/* What We Offer + Charger Image row */}
-      <View style={styles.twoColumn}>
-        <View style={styles.leftColumn}>
+          {/* What We Offer — spans full width of right column */}
           <View style={styles.offerSection}>
             <Text style={styles.offerTitle}>What We Offer:</Text>
             {WHY_CSEV_CONTENT.whatWeOffer.map((item, index) => (
@@ -246,22 +306,30 @@ export function WhyCSEVPage({}: WhyCSEVPageProps) {
             ))}
           </View>
         </View>
-
-        <View style={styles.rightColumn}>
-          <View style={styles.chargerImagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>[Single Charger Image]</Text>
-          </View>
-        </View>
       </View>
 
-      {/* Mission Section */}
-      <View style={styles.missionSection}>
-        <Text style={styles.missionTitle}>{WHY_CSEV_CONTENT.missionTitle}</Text>
-        {WHY_CSEV_CONTENT.missionParagraphs.map((paragraph, index) => (
-          <Text key={index} style={styles.missionParagraph}>
-            {paragraph}
-          </Text>
-        ))}
+      {/* Bottom section: Mission (left) + Station image (right) */}
+      <View style={styles.bottomRow}>
+        <View style={styles.bottomLeftCol}>
+          <View style={styles.missionSection}>
+            <Text style={styles.missionTitle}>{WHY_CSEV_CONTENT.missionTitle}</Text>
+            {WHY_CSEV_CONTENT.missionParagraphs.map((paragraph, index) => (
+              <Text key={index} style={styles.missionParagraph}>
+                {paragraph}
+              </Text>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.bottomRightCol}>
+          {stationImage ? (
+            <Image src={stationImage} style={styles.stationImage} />
+          ) : (
+            <View style={styles.stationPlaceholder}>
+              <Text style={styles.placeholderText}>[Station Image]</Text>
+            </View>
+          )}
+        </View>
       </View>
     </PageWrapper>
   );

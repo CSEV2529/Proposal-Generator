@@ -139,11 +139,14 @@ input[type='number'] {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Stat value large display */
+/* Stat value large display — auto-shrinks to fit container */
 .stat-value {
-  font-size: 2.5rem;
+  font-size: clamp(1.25rem, 4vw, 2rem);
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: linear-gradient(135deg, var(--csev-green) 0%, var(--csev-green-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

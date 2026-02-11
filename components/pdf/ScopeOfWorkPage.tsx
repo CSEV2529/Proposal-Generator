@@ -7,24 +7,27 @@ import { PdfTheme } from './pdfTheme';
 import { colors, SOW_DISCLAIMER_TEXT } from './styles';
 import { PageWrapper } from './PageWrapper';
 
+// Fixed slot counts — section heights stay constant regardless of item count
+const EVSE_SLOTS = 3;
+const INSTALLATION_SLOTS = 20;
+
+const ROW_HEIGHT = 18; // Compact row height to fit single page
+
 const styles = StyleSheet.create({
-  // Title
+  // Title — Orbitron, matches page 2
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 15,
+    fontFamily: 'Orbitron',
+    fontSize: 28,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    marginBottom: 12,
   },
 
-  titleAccent: {
-    color: colors.primary,
-  },
-
-  // Table header
+  // Table header row
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: colors.headerBg,
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 15,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
@@ -32,101 +35,102 @@ const styles = StyleSheet.create({
 
   tableHeaderItem: {
     flex: 3,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     letterSpacing: 0.5,
   },
 
   tableHeaderQty: {
-    width: 70,
+    width: 80,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     textAlign: 'center',
   },
 
   tableHeaderNotes: {
     flex: 2,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     textAlign: 'center',
   },
 
   // Section label (EVSE, INSTALLATION SCOPE)
   sectionLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    backgroundColor: colors.panelBg,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-  },
-
-  sectionLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 3,
     paddingHorizontal: 15,
-    backgroundColor: colors.panelBg,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
+    marginTop: 6,
+  },
+
+  sectionLabelText: {
+    fontFamily: 'Roboto',
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
 
   parkingSpaces: {
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.textMuted,
-    fontWeight: 'bold',
+    fontWeight: 700,
   },
 
-  // Table row - dynamic sizing based on item count
+  // Table row
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 5,
+    height: ROW_HEIGHT,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.panelBg,
+    alignItems: 'center',
   },
 
   tableRowItem: {
     flex: 3,
+    fontFamily: 'Roboto',
     fontSize: 9,
     color: colors.textLight,
     paddingLeft: 15,
   },
 
   tableRowQty: {
-    width: 70,
+    width: 80,
+    fontFamily: 'Roboto',
     fontSize: 9,
     color: colors.text,
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: 700,
   },
 
   tableRowNotes: {
     flex: 2,
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.textMuted,
     textAlign: 'center',
   },
 
-  // Empty state
-  emptyText: {
+  // Empty row (dash placeholder)
+  emptyRowText: {
+    fontFamily: 'Roboto',
     fontSize: 9,
-    fontStyle: 'italic',
     color: colors.textMuted,
-    paddingVertical: 8,
-    paddingHorizontal: 30,
+    textAlign: 'center',
   },
 
   // Responsibilities section
   responsibilitiesContainer: {
-    marginTop: 15,
+    marginTop: 6,
   },
 
   responsibilitiesGrid: {
@@ -136,53 +140,36 @@ const styles = StyleSheet.create({
 
   responsibilityBox: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    overflow: 'hidden',
-    backgroundColor: colors.panelBg,
   },
 
   responsibilityHeader: {
     backgroundColor: colors.headerBg,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
 
   responsibilityHeaderText: {
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     letterSpacing: 0.5,
   },
 
-  responsibilityContent: {
-    padding: 10,
+  responsibilityItem: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
 
-  responsibilityItem: {
+  responsibilityItemText: {
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.textLight,
-    marginBottom: 4,
-    lineHeight: 1.4,
-  },
-
-  // SOW disclaimer at bottom of content
-  sowDisclaimer: {
-    marginTop: 12,
-    backgroundColor: colors.panelBg,
-    padding: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  sowDisclaimerText: {
-    fontSize: 7,
-    color: colors.textMuted,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 });
 
@@ -204,85 +191,117 @@ export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
     }
   };
 
-  // Determine if we need compact mode (many items)
-  const totalItems = proposal.evseItems.length + proposal.installationItems.length;
-  const compact = totalItems > 12;
+  // Build EVSE data rows: user items + auto-generated EV Parking Signs + empty fill
+  const evseDataRows: Array<{ name: string; quantity: number; notes: string } | null> = [];
 
-  const rowPadding = compact ? 3 : 5;
-  const fontSize = compact ? 8 : 9;
+  // Add user EVSE items
+  for (const item of proposal.evseItems) {
+    evseDataRows.push({ name: item.name, quantity: item.quantity, notes: item.notes || '-' });
+  }
+
+  // Auto-generate EV Parking Signs row from total ports
+  if (totalPorts > 0) {
+    evseDataRows.push({
+      name: 'EV Parking Signs',
+      quantity: totalPorts,
+      notes: `For ${totalPorts} Parking Spaces`,
+    });
+  }
+
+  // Build EVSE rendered rows — always exactly EVSE_SLOTS rows
+  const evseRows = [];
+  for (let i = 0; i < EVSE_SLOTS; i++) {
+    const data = evseDataRows[i];
+    evseRows.push(
+      <View key={`evse-${i}`} style={styles.tableRow}>
+        {data ? (
+          <>
+            <Text style={styles.tableRowItem}>{data.name}</Text>
+            <Text style={styles.tableRowQty}>{data.quantity}</Text>
+            <Text style={styles.tableRowNotes}>{data.notes}</Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.tableRowItem, styles.emptyRowText]}>-</Text>
+            <Text style={[styles.tableRowQty, styles.emptyRowText]}>-</Text>
+            <Text style={[styles.tableRowNotes, styles.emptyRowText]}>-</Text>
+          </>
+        )}
+      </View>
+    );
+  }
+
+  // Build Installation rows — always exactly INSTALLATION_SLOTS rows
+  const installRows = [];
+  for (let i = 0; i < INSTALLATION_SLOTS; i++) {
+    const item = proposal.installationItems[i];
+    installRows.push(
+      <View key={`install-${i}`} style={styles.tableRow}>
+        {item ? (
+          <>
+            <Text style={styles.tableRowItem}>
+              {item.name}{getUnitSuffix(item.unit)}
+            </Text>
+            <Text style={styles.tableRowQty}>{item.quantity}</Text>
+            <Text style={styles.tableRowNotes}>-</Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.tableRowItem, styles.emptyRowText]}>-</Text>
+            <Text style={[styles.tableRowQty, styles.emptyRowText]}>-</Text>
+            <Text style={[styles.tableRowNotes, styles.emptyRowText]}>-</Text>
+          </>
+        )}
+      </View>
+    );
+  }
 
   return (
-    <PageWrapper pageNumber={3} showDisclaimer={true}>
+    <PageWrapper
+      pageNumber={3}
+      showDisclaimer={true}
+      disclaimerText={`*${SOW_DISCLAIMER_TEXT}`}
+      disclaimerBorder={false}
+    >
       {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.titleAccent}>Proposed Scope of Work</Text>
-      </Text>
+      <Text style={styles.title}>Proposed Scope of Work</Text>
 
       {/* Table Header */}
-      <View style={styles.tableHeader} wrap={false}>
+      <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderItem}>Item</Text>
         <Text style={styles.tableHeaderQty}>Quantity</Text>
         <Text style={styles.tableHeaderNotes}>Notes</Text>
       </View>
 
       {/* EVSE Section */}
-      <View style={styles.sectionLabel} wrap={false}>
-        <Text>EVSE</Text>
+      <View style={styles.sectionLabel}>
+        <Text style={styles.sectionLabelText}>EVSE</Text>
       </View>
-
-      {proposal.evseItems.length === 0 ? (
-        <Text style={styles.emptyText}>No equipment specified</Text>
-      ) : (
-        proposal.evseItems.map((item) => (
-          <View key={item.id} style={[styles.tableRow, { paddingVertical: rowPadding }]} wrap={false}>
-            <Text style={[styles.tableRowItem, { fontSize }]}>{item.name}</Text>
-            <Text style={[styles.tableRowQty, { fontSize }]}>{item.quantity}</Text>
-            <Text style={[styles.tableRowNotes, { fontSize: fontSize - 1 }]}>{item.notes || '-'}</Text>
-          </View>
-        ))
-      )}
+      <View style={{ height: EVSE_SLOTS * ROW_HEIGHT }}>
+        {evseRows}
+      </View>
 
       {/* Installation Scope Section */}
-      <View style={styles.sectionLabelRow} wrap={false}>
-        <Text style={{ fontSize: 10, fontWeight: 'bold', color: colors.primary }}>
-          INSTALLATION SCOPE
-        </Text>
-        {totalPorts > 0 && (
-          <Text style={styles.parkingSpaces}>
-            For {totalPorts} parking space{totalPorts !== 1 ? 's' : ''}
-          </Text>
-        )}
+      <View style={styles.sectionLabel}>
+        <Text style={styles.sectionLabelText}>INSTALLATION SCOPE</Text>
+      </View>
+      <View style={{ height: INSTALLATION_SLOTS * ROW_HEIGHT }}>
+        {installRows}
       </View>
 
-      {proposal.installationItems.length === 0 ? (
-        <Text style={styles.emptyText}>No installation items specified</Text>
-      ) : (
-        proposal.installationItems.map((item) => (
-          <View key={item.id} style={[styles.tableRow, { paddingVertical: rowPadding }]} wrap={false}>
-            <Text style={[styles.tableRowItem, { fontSize }]}>
-              {item.name}{getUnitSuffix(item.unit)}
-            </Text>
-            <Text style={[styles.tableRowQty, { fontSize }]}>{item.quantity}</Text>
-            <Text style={[styles.tableRowNotes, { fontSize: fontSize - 1 }]}>-</Text>
-          </View>
-        ))
-      )}
-
-      {/* Responsibilities */}
-      <View style={styles.responsibilitiesContainer} wrap={false}>
+      {/* Responsibilities — anchored to bottom of content area */}
+      <View style={styles.responsibilitiesContainer}>
         <View style={styles.responsibilitiesGrid}>
           {/* CSEV Responsibilities */}
           <View style={styles.responsibilityBox}>
             <View style={styles.responsibilityHeader}>
               <Text style={styles.responsibilityHeaderText}>CSEV Responsibilities</Text>
             </View>
-            <View style={styles.responsibilityContent}>
-              {RESPONSIBILITIES.csev.map((item, index) => (
-                <Text key={index} style={styles.responsibilityItem}>
-                  {item}
-                </Text>
-              ))}
-            </View>
+            {RESPONSIBILITIES.csev.map((item, index) => (
+              <View key={index} style={styles.responsibilityItem}>
+                <Text style={styles.responsibilityItemText}>{item}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Customer Responsibilities */}
@@ -290,20 +309,13 @@ export function ScopeOfWorkPage({ proposal }: ScopeOfWorkPageProps) {
             <View style={styles.responsibilityHeader}>
               <Text style={styles.responsibilityHeaderText}>Customer Responsibilities</Text>
             </View>
-            <View style={styles.responsibilityContent}>
-              {RESPONSIBILITIES.customer.map((item, index) => (
-                <Text key={index} style={styles.responsibilityItem}>
-                  {item}
-                </Text>
-              ))}
-            </View>
+            {RESPONSIBILITIES.customer.map((item, index) => (
+              <View key={index} style={styles.responsibilityItem}>
+                <Text style={styles.responsibilityItemText}>{item}</Text>
+              </View>
+            ))}
           </View>
         </View>
-      </View>
-
-      {/* SOW Disclaimer */}
-      <View style={styles.sowDisclaimer} wrap={false}>
-        <Text style={styles.sowDisclaimerText}>*{SOW_DISCLAIMER_TEXT}</Text>
       </View>
     </PageWrapper>
   );

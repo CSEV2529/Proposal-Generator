@@ -132,6 +132,79 @@ templates/
 - Animations: `animate-pulse-glow`, `animate-fade-in`
 - Fonts: `font-heading`, `font-body` (CSS vars, falls back to system-ui)
 
+## PDF Page Design (dev-alex branch)
+
+### Fonts
+- **Orbitron**: Display/title font (400, 700, 900 weights) — registered from base64 in `fonts.ts`
+- **Roboto**: Body font (300, 400, 500, 700 weights) — registered from base64 in `fonts.ts`
+- **Hyphenation disabled**: `Font.registerHyphenationCallback((word) => [word])` — words never split mid-word
+- **IMPORTANT**: react-pdf does NOT support `textDecoration: 'underline'` or `fontStyle: 'italic'` (no italic fonts registered). Use `borderBottom` for underline effects.
+
+### PageWrapper (`components/pdf/PageWrapper.tsx`)
+- Wraps all pages 2-6 with consistent layout
+- Props: `pageNumber`, `showDisclaimer`, `showBackground`, `disclaimerText`, `disclaimerBorder`
+- Background: nodes image at 7.5% opacity
+- Footer: green line + "ChargeSmart EV Proposal" left, page number right (Roboto)
+- Disclaimer footer (absolute, bottom 45): default DISCLAIMER_TEXT, or custom text via `disclaimerText` prop
+- `disclaimerBorder={false}` removes green line above disclaimer (used on Page 3)
+- Content padding: 40 top, 50 bottom (no disclaimer) or 90 bottom (with disclaimer)
+
+### Page 1 — CoverPage
+- Hero image: 390px height
+- Company name: fontWeight 700, address: fontWeight 500
+- "PREPARED FOR:" label: Orbitron font
+- Logo: paddingTop 20, paddingBottom 18
+- flexGrow spacer pushes "Prepared On" toward bottom
+
+### Page 2 — WhyCSEVPage
+- Title: Orbitron 28px white, marginBottom 12
+- Subtitle: Roboto 11px green, left-aligned
+- Installation image (left 35%): height 242px, bottom-aligns with What We Offer box
+- 2x3 market grid: boxes with green left border, 9.5px text
+- "...and more": right-aligned, vertically centered between grid and offer section
+- What We Offer: marginHorizontal 3 (aligns with grid edges), green left border
+- Bottom section: fixed height 380px — Mission (left 60%) + Station image (right 40%)
+- Mission: no background box, Roboto 10.5px, paddingTop 14
+- Station image: height 370, bottom-aligned
+- Images keyed by ProjectType — only level2-epc has images currently
+- Image files: `installationImageL2.ts`, `stationImageL2.ts` (base64, resized to 600px via sharp)
+
+### Page 3 — ScopeOfWorkPage
+- Title: Orbitron 28px white, marginBottom 12 (matches Page 2)
+- Table header: green left border, Item/Quantity/Notes columns
+- EVSE section: fixed 3 slots (ROW_HEIGHT 18px each)
+  - Auto-generates "EV Parking Signs" row from total ports (qty = ports, note = "For X Parking Spaces")
+  - Unfilled slots show dashes
+- Installation Scope section: fixed 20 slots
+  - Same header style as EVSE, no "QTY UP TO:" or parking spaces text
+  - Unfilled slots show dashes
+- Responsibilities: side-by-side CSEV + Customer boxes with green header bars, items with bottom-border dividers (no bullets)
+- SOW Disclaimer: shown via PageWrapper's disclaimer footer with `disclaimerBorder={false}` (no green line)
+- Uses `showDisclaimer={true}` with custom `disclaimerText`
+
+### react-pdf Gotchas
+- `flex: 1` on content can cause page overflow — use fixed heights instead
+- `gap` works in flex rows but can be unreliable
+- Images need explicit width/height dimensions
+- `textDecoration` and `fontStyle: 'italic'` not supported
+- Fixed heights preferred for page-constrained layouts
+
+## Pricebook Data
+
+- **Source of truth**: Currently hardcoded in `lib/pricebook.ts`
+- **Excel export**: `data/CSEV-PriceBook.xlsx` generated from current data (2 sheets: EVSE Products, Installation Services)
+- **Generator script**: `scripts/generate-pricebook-excel.js` — run `node scripts/generate-pricebook-excel.js`
+- **Legacy import script**: `read-pricebook.js` — originally read from `PriceBook-2026.01.26-v2.xlsx`
+- 29 EVSE products (L2 chargers, DCFC, DCHP sets, accessories)
+- 82 installation services across 11 subgroups
+
+## Webapp Layout (dev-alex branch)
+
+- Header: `sticky top-0 z-40`
+- Sidebar (right): `sticky top-[104px]` — calibrated to match header height + main padding
+- Grid: no `items-start` (breaks sticky behavior)
+- Stat values: `clamp(1.25rem, 4vw, 2rem)` with overflow hidden
+
 ## Important Notes
 
 - PDF components use dynamic imports with `ssr: false` to avoid hydration issues
@@ -140,3 +213,5 @@ templates/
 - Excel export is conditional — only shows for National Grid or NYSEG/RG&E utility selections
 - Project save/load via URL query param `?project={id}`
 - Auth allows local dev without login (Supabase optional in dev)
+- All PDF page titles use Orbitron 28px white with marginBottom 12 (consistent across pages 2-6)
+- Each PDF page MUST fit on exactly 1 page — use fixed heights, not flex

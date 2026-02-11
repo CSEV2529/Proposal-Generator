@@ -26,7 +26,7 @@ export function ProposalDocument({ proposal, theme }: ProposalDocumentProps) {
       creator="ChargeSmart EV Proposal Generator"
     >
       <CoverPage proposal={proposal} theme={pdfTheme} />
-      <WhyCSEVPage theme={pdfTheme} />
+      <WhyCSEVPage projectType={proposal.projectType} theme={pdfTheme} />
       <ScopeOfWorkPage proposal={proposal} theme={pdfTheme} />
       <FinancialSummaryPage proposal={proposal} theme={pdfTheme} />
       <PaymentOptionsPage proposal={proposal} theme={pdfTheme} />

@@ -30,3 +30,6 @@ Font.register({
     { src: FONT_ROBOTO_700, fontWeight: 700 },
   ],
 });
+
+// Disable hyphenation globally — words wrap whole, never split mid-word
+Font.registerHyphenationCallback((word: string) => [word]);

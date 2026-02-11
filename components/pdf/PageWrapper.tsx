@@ -31,14 +31,14 @@ const styles = StyleSheet.create({
   // Content area with padding to avoid footer overlap
   content: {
     padding: 40,
-    paddingBottom: 90,
+    paddingBottom: 50,
     position: 'relative',
     zIndex: 1,
   },
 
   contentWithDisclaimer: {
     padding: 40,
-    paddingBottom: 130,
+    paddingBottom: 90,
     position: 'relative',
     zIndex: 1,
   },
@@ -72,18 +72,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.primary,
     paddingTop: 6,
   },
 
   footerLeft: {
+    fontFamily: 'Roboto',
     fontSize: 9,
     color: colors.textMuted,
   },
 
   footerRight: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+    fontSize: 10,
+    fontWeight: 700,
     color: colors.primary,
   },
 });
@@ -92,6 +94,8 @@ interface PageWrapperProps {
   pageNumber: number;
   showDisclaimer?: boolean;
   showBackground?: boolean;
+  disclaimerText?: string;
+  disclaimerBorder?: boolean;
   children: ReactNode;
   theme?: PdfTheme;
 }
@@ -100,6 +104,8 @@ export function PageWrapper({
   pageNumber,
   showDisclaimer = false,
   showBackground = true,
+  disclaimerText,
+  disclaimerBorder = true,
   children,
 }: PageWrapperProps) {
   const pageNum = String(pageNumber).padStart(2, '0');
@@ -120,8 +126,11 @@ export function PageWrapper({
 
       {/* Disclaimer bar (pages 3-6) */}
       {showDisclaimer && (
-        <View style={styles.disclaimerFooter}>
-          <Text style={styles.disclaimerText}>{DISCLAIMER_TEXT}</Text>
+        <View style={[
+          styles.disclaimerFooter,
+          !disclaimerBorder && { borderTopWidth: 0 },
+        ]}>
+          <Text style={styles.disclaimerText}>{disclaimerText || DISCLAIMER_TEXT}</Text>
         </View>
       )}
 
