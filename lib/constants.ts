@@ -102,11 +102,76 @@ export const HOTEL_VALUE_PROPOSITION = {
   ],
 };
 
-export const ADDITIONAL_TERMS = {
-  processingFees: '$0.49 per transaction + 9% standard processing',
-  networkFeesResponsibility: 'CSEV Years 1-5; then Customer Years 6+ after Renewal',
-  utilityBillsResponsibility: 'Customer',
+// Additional Terms by Project Type — update these when project types change
+// Each entry is an array of { label, notes } rows displayed on Page 4
+// Network Fees row is generated dynamically based on networkYears selection
+export const ADDITIONAL_TERMS_BY_PROJECT_TYPE: Record<string, Array<{ label: string; notes: string }>> = {
+  'level2-epc': [
+    { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
+    { label: 'Agreement Terms (Years)', notes: '5 Years' },
+    { label: 'Recommended $/kWh', notes: '$0.40 / kWh' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'Customer' },
+  ],
+  'level3-epc': [
+    { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
+    { label: 'Agreement Terms (Years)', notes: '5 Years' },
+    { label: 'Recommended $/kWh', notes: '$0.55 / kWh' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'Customer' },
+  ],
+  'mixed-epc': [
+    { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
+    { label: 'Agreement Terms (Years)', notes: '5 Years' },
+    { label: 'Recommended $/kWh', notes: '$0.40 / kWh for Level 2 units; $0.55 / kWh for DCFC units' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'Customer' },
+  ],
+  'site-host': [
+    { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
+    { label: 'Agreement Terms (Years)', notes: '10 Years Minimum (See Lease Agreement for Final Terms)' },
+    { label: 'Recommended $/kWh', notes: '$0.40 / kWh for Level 2 units; $0.55 / kWh for DCFC units' },
+    { label: 'Party Responsible for Paying Network Fees', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
+  ],
+  'distribution': [
+    { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
+    { label: 'Agreement Terms (Years)', notes: '5 Years' },
+    { label: 'Recommended $/kWh', notes: '$0.40 / kWh for Level 2 units; $0.55 / kWh for DCFC units' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'Customer' },
+  ],
 };
+
+// Generate dynamic network fees text based on years selected
+function getNetworkFeesText(networkYears: number): string {
+  if (networkYears === 1) {
+    return 'CSEV Year 1; then Customer Years 2 and Beyond';
+  }
+  if (networkYears === 3) {
+    return 'CSEV Years 1-3; then Customer Years 4 and Beyond';
+  }
+  return `CSEV Years 1-${networkYears}; then Customer Years ${networkYears + 1}+ after Renewal`;
+}
+
+// Helper to get terms for a project type with dynamic network fees
+// Site Host has static network fees text; all others use dynamic years
+export function getAdditionalTerms(projectType: string, networkYears: number = 5): Array<{ label: string; notes: string }> {
+  const terms = [...(ADDITIONAL_TERMS_BY_PROJECT_TYPE[projectType] || ADDITIONAL_TERMS_BY_PROJECT_TYPE['level2-epc'])];
+
+  // Site Host already has its own static Network Fees row in the data
+  // All other types get a dynamic Network Fees row inserted before Utility Bills
+  if (projectType !== 'site-host') {
+    const utilityBillsIdx = terms.findIndex(t => t.label.includes('Utility Bills'));
+    const networkFeesRow = {
+      label: 'Party Responsible for Paying Network Fees',
+      notes: getNetworkFeesText(networkYears),
+    };
+    if (utilityBillsIdx >= 0) {
+      terms.splice(utilityBillsIdx, 0, networkFeesRow);
+    } else {
+      terms.push(networkFeesRow);
+    }
+  }
+
+  return terms;
+}
 
 export const PROJECT_TYPES = {
   'level2-epc': {

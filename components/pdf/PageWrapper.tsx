@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     position: 'relative',
     zIndex: 1,
+    flex: 1,
   },
 
   contentWithDisclaimer: {
@@ -41,6 +42,7 @@ const styles = StyleSheet.create({
     paddingBottom: 90,
     position: 'relative',
     zIndex: 1,
+    flex: 1,
   },
 
   // Disclaimer footer bar

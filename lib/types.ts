@@ -103,10 +103,14 @@ export interface Proposal {
   grossMarginPercent: number;     // grossProfit / netProjectCost * 100
   actualCostOverride?: number;    // Optional: actual costs to override estimated for true profitability
 
-  // Terms
+  // Terms (legacy fields kept for backward compat)
   processingFees: string;
   agreementTerm: number;
   recommendedKwhRate: number;
+
+  // Additional Terms overrides — keyed by term label, value is override notes
+  // When set, overrides the spreadsheet default for that term on PDF Page 4
+  additionalTermsOverrides?: Record<string, string>;
 
   // Site Map
   siteMapImage?: string;

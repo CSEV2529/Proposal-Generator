@@ -2,120 +2,131 @@ import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
 import {
-  formatCurrency,
   formatCurrencyWithCents,
   calculateGrossProjectCost,
   calculateNetProjectCost,
+  calculateMaterialCost,
+  calculateLaborCost,
 } from '@/lib/calculations';
-import { ADDITIONAL_TERMS, FOOTNOTES, getIncentiveLabels } from '@/lib/constants';
+import { FOOTNOTES, getIncentiveLabels, getAdditionalTerms } from '@/lib/constants';
 import { PdfTheme } from './pdfTheme';
 import { colors } from './styles';
 import { PageWrapper } from './PageWrapper';
 
+const ROW_HEIGHT = 18;
+
 const styles = StyleSheet.create({
-  // Title
+  // Title — Orbitron 28px, matches pages 2-3
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 15,
+    fontFamily: 'Orbitron',
+    fontSize: 28,
+    fontWeight: 700,
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
 
-  titleAccent: {
-    color: colors.primary,
-  },
-
-  // Financial table
-  tableHeader: {
+  // Section header bar (Financial Breakdown, Additional Terms, Proposal Acceptance)
+  sectionHeader: {
     flexDirection: 'row',
     backgroundColor: colors.headerBg,
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 15,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
 
-  tableHeaderLabel: {
-    flex: 3,
+  sectionHeaderLabel: {
+    flex: 1,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     letterSpacing: 0.5,
   },
 
-  tableHeaderCost: {
+  sectionHeaderCost: {
     width: 100,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     textAlign: 'center',
   },
 
-  tableHeaderNotes: {
-    flex: 2,
+  sectionHeaderNotes: {
+    width: 130,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     textAlign: 'center',
   },
 
-  // Table rows
+  // Standard table row
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 6,
+    height: ROW_HEIGHT,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.panelBg,
+    alignItems: 'center',
   },
 
+  // Bold/total row (darker background)
   tableRowBold: {
     flexDirection: 'row',
-    paddingVertical: 6,
+    height: ROW_HEIGHT,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    alignItems: 'center',
     backgroundColor: colors.headerBg,
   },
 
   tableRowLabel: {
-    flex: 3,
+    flex: 1,
+    fontFamily: 'Roboto',
     fontSize: 9,
     color: colors.textLight,
     paddingLeft: 15,
   },
 
   tableRowLabelBold: {
-    flex: 3,
+    flex: 1,
+    fontFamily: 'Roboto',
     fontSize: 9,
-    color: colors.text,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontWeight: 700,
   },
 
   tableRowCost: {
     width: 100,
+    fontFamily: 'Roboto',
     fontSize: 9,
     color: colors.text,
-    textAlign: 'right',
+    textAlign: 'center',
   },
 
   tableRowCostBold: {
     width: 100,
+    fontFamily: 'Roboto',
     fontSize: 9,
-    color: colors.text,
-    textAlign: 'right',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: 700,
   },
 
   tableRowCostNegative: {
     width: 100,
+    fontFamily: 'Roboto',
     fontSize: 9,
-    color: colors.primary,
-    textAlign: 'right',
+    color: '#ef4444',
+    textAlign: 'center',
   },
 
   tableRowNotes: {
-    flex: 2,
+    width: 130,
+    fontFamily: 'Roboto',
     fontSize: 7,
     color: colors.textMuted,
     textAlign: 'center',
@@ -123,119 +134,100 @@ const styles = StyleSheet.create({
 
   // Footnotes
   footnotes: {
-    marginTop: 8,
+    marginTop: 6,
     paddingHorizontal: 15,
-    backgroundColor: colors.panelBg,
-    paddingVertical: 8,
-    borderRadius: 4,
   },
 
   footnoteText: {
+    fontFamily: 'Roboto',
     fontSize: 6,
     color: colors.textMuted,
     lineHeight: 1.4,
     marginBottom: 2,
   },
 
-  // Additional Terms section
+  // Additional Terms — 2 columns
   additionalTermsSection: {
     marginTop: 10,
   },
 
-  additionalTermsHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.headerBg,
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-
-  additionalTermsHeaderLabel: {
+  termsHeaderLabel: {
     flex: 1,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
+    letterSpacing: 0.5,
   },
 
-  additionalTermsHeaderNotes: {
+  termsHeaderNotes: {
     flex: 1,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
+    letterSpacing: 0.5,
   },
 
   termRow: {
     flexDirection: 'row',
-    paddingVertical: 5,
+    height: ROW_HEIGHT,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.panelBg,
+    alignItems: 'center',
   },
 
   termLabel: {
     flex: 1,
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.textLight,
   },
 
   termValue: {
     flex: 1,
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.text,
   },
 
-  // Proposal Acceptance section
-  acceptanceSection: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    overflow: 'hidden',
-    backgroundColor: colors.panelBg,
-  },
-
-  acceptanceHeader: {
-    backgroundColor: colors.headerBg,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-
   acceptanceHeaderText: {
+    flex: 1,
+    fontFamily: 'Roboto',
     color: colors.primary,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 700,
     letterSpacing: 0.5,
   },
 
   acceptanceContent: {
-    padding: 12,
+    paddingHorizontal: 15,
+    paddingTop: 6,
   },
 
   acceptanceRow: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   acceptanceLabel: {
+    fontFamily: 'Roboto',
     fontSize: 8,
     color: colors.textMuted,
-    fontWeight: 'bold',
+    fontWeight: 700,
     marginBottom: 2,
   },
 
   acceptanceLine: {
     borderBottomWidth: 1,
     borderBottomColor: colors.textMuted,
-    height: 16,
+    height: 14,
   },
 
   acceptanceGrid: {
     flexDirection: 'row',
     gap: 25,
-    marginTop: 10,
+    marginTop: 8,
   },
 
   acceptanceCol: {
@@ -252,130 +244,150 @@ export function FinancialSummaryPage({ proposal }: FinancialSummaryPageProps) {
   const grossCost = calculateGrossProjectCost(proposal);
   const netCost = calculateNetProjectCost(proposal);
 
-  // Get network years label
+  // Split CSMR into material and labor quoted prices
+  const materialPricebook = calculateMaterialCost(proposal.installationItems);
+  const laborPricebook = calculateLaborCost(proposal.installationItems);
+  const pricebookTotal = proposal.csmrPricebookTotal;
+
+  // Apply same cost basis + margin ratio to each portion
+  const materialQuoted = pricebookTotal > 0
+    ? (materialPricebook / pricebookTotal) * proposal.csmrQuotedPrice
+    : 0;
+  const laborQuoted = pricebookTotal > 0
+    ? (laborPricebook / pricebookTotal) * proposal.csmrQuotedPrice
+    : 0;
+
+  // Network years label
   const networkYearsLabel = `${proposal.networkYears} Years Included`;
 
-  // Get incentive labels (auto-mapped from utility, with user overrides)
+  // Incentive labels (auto-mapped from utility, with user overrides)
   const defaultLabels = getIncentiveLabels(proposal.utilityId);
   const makeReadyLabel = proposal.makeReadyIncentiveLabel || defaultLabels.makeReady;
   const secondaryLabel = proposal.secondaryIncentiveLabel || defaultLabels.secondary;
 
+  // Additional Terms based on selected project type + network years, with user overrides
+  const additionalTermsBase = getAdditionalTerms(proposal.projectType, proposal.networkYears);
+  const overrides = proposal.additionalTermsOverrides || {};
+  const additionalTerms = additionalTermsBase.map(term => ({
+    ...term,
+    notes: overrides[term.label] || term.notes,
+  }));
+
   return (
     <PageWrapper pageNumber={4} showDisclaimer={true}>
       {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.titleAccent}>Financial Summary</Text>
-      </Text>
+      <Text style={styles.title}>Financial Summary</Text>
 
-      {/* Financial Breakdown Table */}
-      <View style={styles.tableHeader} wrap={false}>
-        <Text style={styles.tableHeaderLabel}>Financial Breakdown</Text>
-        <Text style={styles.tableHeaderCost}>Cost</Text>
-        <Text style={styles.tableHeaderNotes}>Notes</Text>
+      {/* Financial Breakdown Header */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionHeaderLabel}>Financial Breakdown</Text>
+        <Text style={styles.sectionHeaderCost}>Cost</Text>
+        <Text style={styles.sectionHeaderNotes}>Notes</Text>
       </View>
 
-      {/* Cost rows */}
-      <View style={styles.tableRow} wrap={false}>
+      {/* EVSE Cost */}
+      <View style={styles.tableRow}>
         <Text style={styles.tableRowLabel}>EVSE Cost</Text>
-        <Text style={styles.tableRowCost}>{formatCurrency(proposal.evseQuotedPrice)}</Text>
+        <Text style={styles.tableRowCost}>{formatCurrencyWithCents(proposal.evseQuotedPrice)}</Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
-      <View style={styles.tableRow} wrap={false}>
-        <Text style={styles.tableRowLabel}>Customer Side Make Ready</Text>
-        <Text style={styles.tableRowCost}>{formatCurrency(proposal.csmrQuotedPrice)}</Text>
-        <Text style={styles.tableRowNotes}>Material + Labor</Text>
+      {/* Customer Side MR - Material Cost */}
+      <View style={styles.tableRow}>
+        <Text style={styles.tableRowLabel}>Customer Side MR - Material Cost</Text>
+        <Text style={styles.tableRowCost}>{formatCurrencyWithCents(materialQuoted)}</Text>
+        <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
-      <View style={styles.tableRow} wrap={false}>
+      {/* Customer Side MR - Labor Cost */}
+      <View style={styles.tableRow}>
+        <Text style={styles.tableRowLabel}>Customer Side MR - Labor Cost</Text>
+        <Text style={styles.tableRowCost}>{formatCurrencyWithCents(laborQuoted)}</Text>
+        <Text style={styles.tableRowNotes}>-</Text>
+      </View>
+
+      {/* Utility Side Make Ready */}
+      <View style={styles.tableRow}>
         <Text style={styles.tableRowLabel}>Utility Side Make Ready (Allowance)</Text>
-        <Text style={styles.tableRowCost}>{formatCurrency(proposal.utilityAllowance)}</Text>
+        <Text style={styles.tableRowCost}>
+          {proposal.utilityAllowance > 0 ? formatCurrencyWithCents(proposal.utilityAllowance) : '-'}
+        </Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
-      <View style={styles.tableRow} wrap={false}>
+      {/* Shipping Cost */}
+      <View style={styles.tableRow}>
         <Text style={styles.tableRowLabel}>Shipping Cost</Text>
-        <Text style={styles.tableRowCost}>{formatCurrency(proposal.shippingCost)}</Text>
+        <Text style={styles.tableRowCost}>{formatCurrencyWithCents(proposal.shippingCost)}</Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
-      <View style={styles.tableRow} wrap={false}>
+      {/* Annual Network Plan */}
+      <View style={styles.tableRow}>
         <Text style={styles.tableRowLabel}>Annual Network Plan*</Text>
-        <Text style={styles.tableRowCost}>{formatCurrency(proposal.networkPlanCost)}</Text>
+        <Text style={styles.tableRowCost}>{formatCurrencyWithCents(proposal.networkPlanCost)}</Text>
         <Text style={styles.tableRowNotes}>{networkYearsLabel}</Text>
       </View>
 
-      {/* Gross Project Cost */}
-      <View style={styles.tableRowBold} wrap={false}>
+      {/* Gross Project Cost (bold row) */}
+      <View style={styles.tableRowBold}>
         <Text style={styles.tableRowLabelBold}>Gross Project Cost</Text>
-        <Text style={styles.tableRowCostBold}>{formatCurrency(grossCost)}</Text>
+        <Text style={styles.tableRowCostBold}>{formatCurrencyWithCents(grossCost)}</Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
-      {/* Incentives */}
-      <View style={styles.tableRow} wrap={false}>
+      {/* Make Ready Incentive */}
+      <View style={styles.tableRow}>
         <Text style={styles.tableRowLabel}>{makeReadyLabel}</Text>
-        <Text style={styles.tableRowCostNegative}>- {formatCurrency(proposal.makeReadyIncentive)}</Text>
+        <Text style={styles.tableRowCostNegative}>
+          {proposal.makeReadyIncentive > 0 ? `- ${formatCurrencyWithCents(proposal.makeReadyIncentive)}` : '-'}
+        </Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
+      {/* Secondary Incentive (only if > 0) */}
       {proposal.nyseradaIncentive > 0 && (
-        <View style={styles.tableRow} wrap={false}>
+        <View style={styles.tableRow}>
           <Text style={styles.tableRowLabel}>{secondaryLabel}</Text>
-          <Text style={styles.tableRowCostNegative}>- {formatCurrency(proposal.nyseradaIncentive)}</Text>
+          <Text style={styles.tableRowCostNegative}>- {formatCurrencyWithCents(proposal.nyseradaIncentive)}</Text>
           <Text style={styles.tableRowNotes}>-</Text>
         </View>
       )}
 
-      {/* Net Project Cost */}
-      <View style={styles.tableRowBold} wrap={false}>
+      {/* Project Cost with Incentives (bold row) */}
+      <View style={styles.tableRowBold}>
         <Text style={styles.tableRowLabelBold}>Project Cost (with Incentives)**</Text>
-        <Text style={styles.tableRowCostBold}>{formatCurrency(netCost)}</Text>
+        <Text style={styles.tableRowCostBold}>{formatCurrencyWithCents(netCost)}</Text>
         <Text style={styles.tableRowNotes}>-</Text>
       </View>
 
       {/* Footnotes */}
-      <View style={styles.footnotes} wrap={false}>
+      <View style={styles.footnotes}>
         <Text style={styles.footnoteText}>{FOOTNOTES.networkPlan}</Text>
         <Text style={styles.footnoteText}>{FOOTNOTES.paymentOptions}</Text>
       </View>
 
       {/* Additional Terms */}
-      <View style={styles.additionalTermsSection} wrap={false}>
-        <View style={styles.additionalTermsHeader}>
-          <Text style={styles.additionalTermsHeaderLabel}>Additional Terms</Text>
-          <Text style={styles.additionalTermsHeaderNotes}>Notes</Text>
+      <View style={styles.additionalTermsSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.termsHeaderLabel}>Additional Terms</Text>
+          <Text style={styles.termsHeaderNotes}>Notes</Text>
         </View>
 
-        <View style={styles.termRow}>
-          <Text style={styles.termLabel}>Processing Fees</Text>
-          <Text style={styles.termValue}>{ADDITIONAL_TERMS.processingFees}</Text>
-        </View>
-
-        <View style={styles.termRow}>
-          <Text style={styles.termLabel}>Agreement Term (Years)</Text>
-          <Text style={styles.termValue}>{proposal.agreementTerm} Years</Text>
-        </View>
-
-        <View style={styles.termRow}>
-          <Text style={styles.termLabel}>Recommended $/kWh</Text>
-          <Text style={styles.termValue}>{formatCurrencyWithCents(proposal.recommendedKwhRate)}/kWh</Text>
-        </View>
-
-        <View style={styles.termRow}>
-          <Text style={styles.termLabel}>Party Responsible for Paying Network Fees</Text>
-          <Text style={styles.termValue}>{ADDITIONAL_TERMS.networkFeesResponsibility}</Text>
-        </View>
-
-        <View style={styles.termRow}>
-          <Text style={styles.termLabel}>Party Responsible for Paying Utility Bills</Text>
-          <Text style={styles.termValue}>{ADDITIONAL_TERMS.utilityBillsResponsibility}</Text>
-        </View>
+        {additionalTerms.map((term, index) => (
+          <View key={index} style={styles.termRow}>
+            <Text style={styles.termLabel}>{term.label}</Text>
+            <Text style={styles.termValue}>{term.notes}</Text>
+          </View>
+        ))}
       </View>
 
-      {/* Proposal Acceptance */}
-      <View style={styles.acceptanceSection} wrap={false}>
-        <View style={styles.acceptanceHeader}>
+      {/* Spacer pushes Acceptance to bottom of page */}
+      <View style={{ flexGrow: 1 }} />
+
+      {/* Proposal Acceptance — pinned above disclaimer */}
+      <View>
+        <View style={styles.sectionHeader}>
           <Text style={styles.acceptanceHeaderText}>Proposal Acceptance - CUSTOMER INFO</Text>
         </View>
         <View style={styles.acceptanceContent}>

@@ -429,11 +429,9 @@ function HomePageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-csev-slate-900 bg-network-pattern">
+    <div className="min-h-screen bg-csev-slate-900">
       {/* Header */}
       <header className="bg-csev-slate-800 border-b border-csev-border shadow-lg relative overflow-hidden sticky top-0 z-40">
-        {/* Subtle glow effect */}
-        <div className="absolute inset-0 bg-glow-green opacity-30 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">

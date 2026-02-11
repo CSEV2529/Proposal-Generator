@@ -222,11 +222,13 @@ export function InstallationScopeForm() {
               <thead>
                 <tr className="border-b border-csev-border bg-csev-slate-800">
                   <th className="text-left py-3 px-2 text-csev-text-secondary font-medium">Item</th>
-                  <th className="text-center py-3 px-2 w-20 text-csev-text-secondary font-medium">Qty</th>
-                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Material</th>
-                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Labor</th>
-                  <th className="text-right py-3 px-2 w-28 text-csev-text-secondary font-medium">Total</th>
-                  <th className="w-24"></th>
+                  <th className="py-3 px-2 w-28 text-csev-text-secondary font-medium">
+                    <span className="block text-center w-16">Qty</span>
+                  </th>
+                  <th className="text-right py-3 px-2 w-24 text-csev-text-secondary font-medium">Material</th>
+                  <th className="text-right py-3 px-2 w-24 text-csev-text-secondary font-medium">Labor</th>
+                  <th className="text-right py-3 px-2 w-24 text-csev-text-secondary font-medium">Total</th>
+                  <th className="w-20"></th>
                 </tr>
               </thead>
               <tbody>
@@ -251,20 +253,24 @@ export function InstallationScopeForm() {
                               }))}
                               className="text-sm"
                             />
-                            <span className="text-xs text-csev-text-muted ml-1">
-                              {getUnitLabel(item.unit)}
-                            </span>
                           </td>
                           <td className="py-2 px-2">
-                            <Input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={e =>
-                                handleQuantityChange(item.id, parseInt(e.target.value) || 1)
-                              }
-                              className="text-center text-sm"
-                            />
+                            <div className="flex items-center gap-1">
+                              <div className="w-16 flex-shrink-0">
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={e =>
+                                    handleQuantityChange(item.id, parseInt(e.target.value) || 1)
+                                  }
+                                  className="text-center text-sm"
+                                />
+                              </div>
+                              <span className="text-xs text-csev-text-muted whitespace-nowrap">
+                                {getUnitLabel(item.unit)}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-2 px-2">
                             {editingId === item.id ? (

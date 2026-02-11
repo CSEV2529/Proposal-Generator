@@ -12,7 +12,7 @@ import {
   analyzeAllPaymentOptions,
   projectRequiresSalesTax,
 } from '@/lib/calculations';
-import { getIncentiveLabels } from '@/lib/constants';
+import { getIncentiveLabels, getAdditionalTerms } from '@/lib/constants';
 
 export function FinancialForm() {
   const { proposal, dispatch } = useProposal();
@@ -280,50 +280,61 @@ export function FinancialForm() {
           </div>
         </div>
 
-        {/* Terms */}
+        {/* Additional Terms (PDF Page 4) */}
         <div className="space-y-4">
-          <h4 className="section-header">Agreement Terms</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              label="Processing Fees"
-              type="text"
-              value={proposal.processingFees}
-              onChange={e =>
-                dispatch({
-                  type: 'SET_TERMS',
-                  payload: { processingFees: e.target.value },
-                })
-              }
-              placeholder="e.g., 3.5%"
-            />
+          <h4 className="section-header">Additional Terms (PDF Output)</h4>
+          <p className="text-xs text-csev-text-muted -mt-2">
+            Defaults auto-populated from Project Type. Click any Notes field to override for this proposal.
+          </p>
+          <div className="space-y-2">
+            {getAdditionalTerms(proposal.projectType, proposal.networkYears).map((term) => {
+              const overrides = proposal.additionalTermsOverrides || {};
+              const hasOverride = term.label in overrides;
+              const displayValue = hasOverride ? overrides[term.label] : term.notes;
 
-            <Input
-              label="Agreement Term (Years)"
-              type="number"
-              min="1"
-              max="10"
-              value={proposal.agreementTerm}
-              onChange={e =>
-                dispatch({
-                  type: 'SET_TERMS',
-                  payload: { agreementTerm: parseInt(e.target.value) || 5 },
-                })
-              }
-            />
-
-            <Input
-              label="Recommended $/kWh Rate"
-              type="number"
-              min="0"
-              step="0.01"
-              value={proposal.recommendedKwhRate}
-              onChange={e =>
-                dispatch({
-                  type: 'SET_TERMS',
-                  payload: { recommendedKwhRate: parseFloat(e.target.value) || 0 },
-                })
-              }
-            />
+              return (
+                <div key={term.label} className="grid grid-cols-[1fr_1.5fr] gap-3 items-center">
+                  <span className="text-sm text-csev-text-secondary">{term.label}</span>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={displayValue}
+                      onChange={e => {
+                        const newOverrides = { ...overrides, [term.label]: e.target.value };
+                        dispatch({
+                          type: 'SET_TERMS',
+                          payload: { additionalTermsOverrides: newOverrides },
+                        });
+                      }}
+                      className={`w-full rounded-lg border px-3 py-1.5 text-sm ${
+                        hasOverride
+                          ? 'border-csev-green/50 bg-csev-slate-800 text-csev-text-primary'
+                          : 'border-csev-border bg-csev-slate-700 text-csev-text-muted'
+                      }`}
+                    />
+                    {hasOverride && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newOverrides = { ...overrides };
+                          delete newOverrides[term.label];
+                          dispatch({
+                            type: 'SET_TERMS',
+                            payload: {
+                              additionalTermsOverrides: Object.keys(newOverrides).length > 0 ? newOverrides : undefined,
+                            },
+                          });
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-csev-text-muted hover:text-csev-green"
+                        title="Reset to default"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
