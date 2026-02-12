@@ -472,7 +472,7 @@ export function FinancialForm() {
                   key={`option-overrides-${i}`}
                   className={`rounded-lg p-3 border ${
                     !isEnabled
-                      ? 'bg-csev-slate-900 border-csev-border/50 opacity-60'
+                      ? 'bg-csev-slate-900 border-csev-border/50'
                       : isNegative
                         ? 'bg-csev-slate-800 border-red-500/40'
                         : 'bg-csev-slate-800 border-csev-border'
@@ -504,57 +504,60 @@ export function FinancialForm() {
                         Hidden — negative profitability
                       </span>
                     )}
+                    {!isNegative && !isEnabled && proposal.projectType === 'site-host' && (
+                      <span className="text-xs text-amber-500 font-medium">
+                        Off by default — Site Host project type
+                      </span>
+                    )}
                     {!isEnabled && enabledCount <= 1 && (
                       <span className="text-xs text-csev-text-muted">
                         (at least 1 required)
                       </span>
                     )}
                   </div>
-                  {isEnabled && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <Input
-                        label="Cost %"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={costPercentOverrides[i] ?? ''}
-                        onChange={e => {
-                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
-                          updateArrayOverride('paymentOptionCostPercentOverrides', i, v);
-                        }}
-                        placeholder={String(cfg.costPercentage)}
-                        helperText={`Default: ${cfg.costPercentage}%`}
-                      />
-                      <Input
-                        label="Rev Share %"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={revShareOverrides[i] ?? ''}
-                        onChange={e => {
-                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
-                          updateArrayOverride('paymentOptionRevShareOverrides', i, v);
-                        }}
-                        placeholder={String(cfg.revenueShare)}
-                        helperText={`Default: ${cfg.revenueShare}%`}
-                      />
-                      <Input
-                        label="Cost $ Override"
-                        type="number"
-                        min="0"
-                        step="100"
-                        value={costOverrides[i] ?? ''}
-                        onChange={e => {
-                          const v = e.target.value ? parseFloat(e.target.value) : undefined;
-                          updateArrayOverride('paymentOptionCostOverrides', i, v);
-                        }}
-                        placeholder={formatCurrency((netCost * (costPercentOverrides[i] ?? cfg.costPercentage)) / 100)}
-                        helperText={`Default: ${costPercentOverrides[i] ?? cfg.costPercentage}% of net`}
-                      />
-                    </div>
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Input
+                      label="Cost %"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={costPercentOverrides[i] ?? ''}
+                      onChange={e => {
+                        const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                        updateArrayOverride('paymentOptionCostPercentOverrides', i, v);
+                      }}
+                      placeholder={String(cfg.costPercentage)}
+                      helperText={`Default: ${cfg.costPercentage}%`}
+                    />
+                    <Input
+                      label="Rev Share %"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={revShareOverrides[i] ?? ''}
+                      onChange={e => {
+                        const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                        updateArrayOverride('paymentOptionRevShareOverrides', i, v);
+                      }}
+                      placeholder={String(cfg.revenueShare)}
+                      helperText={`Default: ${cfg.revenueShare}%`}
+                    />
+                    <Input
+                      label="Cost $ Override"
+                      type="number"
+                      min="0"
+                      step="100"
+                      value={costOverrides[i] ?? ''}
+                      onChange={e => {
+                        const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                        updateArrayOverride('paymentOptionCostOverrides', i, v);
+                      }}
+                      placeholder={formatCurrency((netCost * (costPercentOverrides[i] ?? cfg.costPercentage)) / 100)}
+                      helperText={`Default: ${costPercentOverrides[i] ?? cfg.costPercentage}% of net`}
+                    />
+                  </div>
                 </div>
               );
             });

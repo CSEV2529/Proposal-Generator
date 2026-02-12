@@ -200,22 +200,28 @@ export const paymentOptions: PaymentOption[] = [
 
 export function analyzePaymentOption(
   proposal: Proposal,
-  option: PaymentOption
+  option: PaymentOption,
+  costDollarOverride?: number
 ): PaymentOptionAnalysis {
   const grossProjectCost = proposal.grossProjectCost;
-  const netProjectCost = proposal.netProjectCost;
 
   // Use actual cost override if provided, otherwise use estimated cost
   const csevCost = proposal.actualCostOverride && proposal.actualCostOverride > 0
     ? proposal.actualCostOverride
     : proposal.totalActualCost;
 
-  // Customer discount based on NET Project Cost
-  // Option 1 = 100% payment (no discount), Option 2 = 50% payment (50% discount of NET), Option 3 = 0% payment (100% discount of NET)
-  const customerDiscount = netProjectCost * (1 - option.costPercentage / 100);
-
-  // What customer pays
-  const customerPays = netProjectCost - customerDiscount;
+  // Customer Discount = percentage of Gross Cost they DON'T pay
+  // e.g., Cost% = 70% means customer pays 70%, discount = 30% of Gross
+  // If dollar override is set, discount = Gross - dollar override amount
+  let customerDiscount: number;
+  let customerPays: number;
+  if (costDollarOverride !== undefined && costDollarOverride >= 0) {
+    customerPays = costDollarOverride;
+    customerDiscount = grossProjectCost - costDollarOverride;
+  } else {
+    customerDiscount = grossProjectCost * (1 - option.costPercentage / 100);
+    customerPays = grossProjectCost - customerDiscount;
+  }
 
   // What CSEV receives = gross project cost minus customer discount
   const csevRevenue = grossProjectCost - customerDiscount;
@@ -249,6 +255,7 @@ export function analyzeAllPaymentOptions(proposal: Proposal): PaymentOptionAnaly
   const configs = getPaymentOptions(proposal.projectType);
   const costPercentOverrides = proposal.paymentOptionCostPercentOverrides || [];
   const revShareOverrides = proposal.paymentOptionRevShareOverrides || [];
+  const costDollarOverrides = proposal.paymentOptionCostOverrides || [];
   const options: PaymentOption[] = configs.map((cfg, i) => ({
     name: cfg.title,
     costPercentage: costPercentOverrides[i] ?? cfg.costPercentage,
@@ -256,20 +263,30 @@ export function analyzeAllPaymentOptions(proposal: Proposal): PaymentOptionAnaly
     warrantyYears: cfg.warrantyValue ? 5 : 3,
     warrantyType: cfg.warrantyValue ? 'full' as const : 'parts' as const,
   }));
-  return options.map(option => analyzePaymentOption(proposal, option));
+  return options.map((option, i) => analyzePaymentOption(proposal, option, costDollarOverrides[i]));
 }
 
 // Get effective enabled state for each payment option
 // If user has explicitly set paymentOptionEnabled, use that.
 // Otherwise, auto-compute: negative profitability = disabled.
+// Site Host: only Option 1 enabled by default (Options 2+ off).
 export function getEffectivePaymentOptionEnabled(proposal: Proposal): boolean[] {
   const analyses = analyzeAllPaymentOptions(proposal);
   const userEnabled = proposal.paymentOptionEnabled;
+  const isSiteHost = proposal.projectType === 'site-host';
 
   return analyses.map((analysis, i) => {
     // If user has explicitly set this index, use their value
     if (userEnabled && i < userEnabled.length) {
       return userEnabled[i];
+    }
+    // Option 1 always enabled by default (even if negative profitability)
+    if (i === 0) {
+      return true;
+    }
+    // Site Host: only first option enabled by default
+    if (isSiteHost) {
+      return false;
     }
     // Auto-default: enabled if margin >= 0
     return analysis.csevMarginPercent >= 0;

@@ -90,32 +90,36 @@ function getStyles(colors: PdfColorPalette) {
 
     warrantyCheckRow: {
       flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 1,
+      alignItems: 'flex-start',
+      marginBottom: 3,
     },
 
     checkboxFilled: {
-      width: 9,
-      height: 9,
+      width: 7,
+      height: 7,
+      minWidth: 7,
+      minHeight: 7,
       backgroundColor: colors.primary,
-      marginRight: 4,
-      borderRadius: 2,
+      marginRight: 3,
+      marginTop: 1,
+      borderRadius: 1,
       justifyContent: 'center',
       alignItems: 'center',
     },
 
     checkmark: {
       fontFamily: 'Roboto',
-      fontSize: 7,
+      fontSize: 5.5,
       color: colors.pageBg,
       fontWeight: 700,
     },
 
     warrantyText: {
       fontFamily: 'Roboto',
-      fontSize: 7,
+      fontSize: 6.5,
       color: colors.text,
       fontWeight: 500,
+      flex: 1,
     },
 
     // Middle section — cost, rev share, warranty upgrades or description
@@ -391,12 +395,14 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
             <Text style={styles.optionOwnership}>{option.ownership}</Text>
 
             <Text style={styles.warrantyLabel}>Warranty Included:</Text>
-            <View style={styles.warrantyCheckRow}>
-              <View style={styles.checkboxFilled}>
-                <Text style={styles.checkmark}>{'✓'}</Text>
+            {option.warrantyIncluded.split(';').map((part, wi) => (
+              <View key={wi} style={styles.warrantyCheckRow}>
+                <View style={styles.checkboxFilled}>
+                  <Text style={styles.checkmark}>{'✓'}</Text>
+                </View>
+                <Text style={styles.warrantyText}>{part.trim()}</Text>
               </View>
-              <Text style={styles.warrantyText}>{option.warrantyIncluded}</Text>
-            </View>
+            ))}
           </View>
 
           {/* Middle — Cost, Rev Share, upgrades/description */}
@@ -428,7 +434,7 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
                     <View style={styles.checkbox} />
                     <Text style={styles.upgradeName}>{upgrade.name}</Text>
                     <Text style={styles.upgradeCost}>
-                      ADD {formatCurrency(upgrade.cost)} TO NET COST PER STATION
+                      {upgrade.costLabel || `ADD ${formatCurrency(upgrade.cost)} TO NET COST PER STATION`}
                     </Text>
                   </View>
                 ))}
@@ -442,7 +448,7 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
             {/* Description text */}
             <Text style={styles.optionDescBold}>{option.descriptionBold}</Text>
             {option.descriptionText ? (
-              <Text style={styles.optionDescText}>{option.descriptionText}</Text>
+              <Text style={styles.optionDescBold}>{option.descriptionText}</Text>
             ) : null}
           </View>
 
