@@ -69,12 +69,14 @@ context/
 lib/
 ├── types.ts              # Core types: Proposal (60+ fields), EVSEItem, InstallationItem,
 │                         #   PricebookProduct, InstallationService, PaymentOption, PaymentOptionAnalysis
-│                         #   ProjectType: level2-epc, level3-epc, mixed-epc, site-host, distribution
+│                         #   ProjectType: level2-epc, level3-epc, mixed-epc, site-host, level2-site-host, distribution
 │                         #   ChargingLevel: level2, dcfc, both | AccessType: private, public
 │                         #   LocationType: apartments, commercial, dealership, hospitality, municipalities, retail
 ├── constants.ts          # COMPANY_INFO, LABOR_RATE ($125/hr), WHY_CSEV_CONTENT,
-│                         #   RESPONSIBILITIES, PAYMENT_OPTION_DETAILS, LOCATION_VALUE_PROPS,
+│                         #   RESPONSIBILITIES, LOCATION_VALUE_PROPS,
 │                         #   INCENTIVE_LABEL_DEFAULTS, FOOTNOTES, COVER_PAGE_TITLES
+│                         #   PaymentOptionConfig[], PAYMENT_OPTIONS_BY_PROJECT_TYPE (per-project-type arrays)
+│                         #   getPaymentOptions(), getValuePropForContext(), getAdditionalTerms()
 ├── pricebook.ts          # 27 EVSE SKUs (Autel L2 + DCFC 60-320kW), 2 accessories,
 │                         #   90+ installation services grouped by subgroup:
 │                         #   New Service, Breakers, Panels, Transformers, Conduit,
@@ -120,7 +122,14 @@ templates/
 - **Sales tax**: applies to EPC + Site Host only (not distribution)
 - **Network plans**: 1/3/5 year options with cost vs. price
 - **Incentives**: Make Ready, NYSERDA
-- **Payment options**: 3 tiers (100%, 50%, 0% upfront) with profitability analysis
+- **Payment options**: Per-project-type PaymentOptionConfig[] arrays in constants.ts
+  - Each project type owns 1-3 options with independent cost%, rev share%, warranty, descriptions
+  - Per-proposal overrides: paymentOptionCostPercentOverrides, paymentOptionRevShareOverrides, paymentOptionCostOverrides (dollar)
+  - paymentOptionEnabled[] controls PDF output; all options always visible in webapp
+  - Option 1 always enabled by default; Site Host Options 2+ off by default
+  - Profitability: Customer Discount = (1 - costPercent/100) * grossProjectCost
+  - costLabel on warrantyUpgrades for custom display text (used by mixed-epc dual pricing)
+  - Warranty text splits on `;` in PDF for multi-level display (L2/DCFC)
 
 ## Branding / Tailwind
 
