@@ -177,7 +177,8 @@ templates/
 - Installation image (left 35%): height 242px, bottom-aligns with What We Offer box
 - 2x3 market grid: boxes with green left border, 9.5px text
 - "...and more": right-aligned, vertically centered between grid and offer section
-- What We Offer: marginHorizontal 3 (aligns with grid edges), green left border
+- What We Offer: marginHorizontal 3, green left border, two columns (whatWeOffer + whatWeOfferExtra in constants.ts)
+- Background nodes: 120% width, 360px height, centered with overflow (spills off edges)
 - Bottom section: fixed height 380px — Mission (left 60%) + Station image (right 40%)
 - Mission: no background box, Roboto 10.5px, paddingTop 14
 - Station image: height 370, bottom-aligned
