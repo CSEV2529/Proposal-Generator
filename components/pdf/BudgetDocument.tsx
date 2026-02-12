@@ -1,279 +1,312 @@
 import React from 'react';
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_INFO, PROJECT_TYPES } from '@/lib/constants';
 import { formatCurrency, generateProposalNumber, calculateTotalPorts } from '@/lib/calculations';
+import { getUtilityById } from '@/lib/templates';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
+import { LOGO_DARK_BASE64 } from './logoDark';
+import { LOGO_LIGHT_BASE64 } from './logoLight';
+import { NODES_IMAGE_BASE64 } from './nodesImage';
 
-const colors = {
-  primary: '#4ade80',
-  slate900: '#0f172a',
-  slate800: '#1e293b',
-  slate700: '#334155',
-  text: '#f8fafc',
-  textLight: '#e2e8f0',
-  textMuted: '#94a3b8',
-  border: '#334155',
-  white: '#FFFFFF',
-};
+const ROW_HEIGHT = 20;
+const BANNER_HEIGHT = 22;
+const BANNER_OFFSET = 10;
 
-const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    backgroundColor: colors.slate900,
-    paddingBottom: 60,
-  },
+function getStyles(colors: PdfColorPalette, theme: PdfTheme) {
+  return StyleSheet.create({
+    page: {
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      backgroundColor: colors.pageBg,
+      position: 'relative',
+    },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 40,
-    paddingTop: 30,
-    paddingBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
+    // Background nodes — matches Estimate/PageWrapper
+    backgroundNodes: {
+      position: 'absolute',
+      top: -30,
+      left: '-10%',
+      width: '120%',
+      height: 360,
+      opacity: theme === 'dark' ? 0.075 : 0.12,
+    },
 
-  headerLeft: {
-    flex: 1,
-  },
+    backgroundNodesImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+    },
 
-  budgetTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 5,
-    letterSpacing: 2,
-  },
+    // ── Confidential banners — full width, top and bottom ──
+    bannerTop: {
+      position: 'absolute',
+      top: BANNER_OFFSET,
+      left: 0,
+      right: 0,
+      height: BANNER_HEIGHT,
+      backgroundColor: '#dc2626',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10,
+    },
 
-  budgetSubtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginBottom: 10,
-  },
+    bannerBottom: {
+      position: 'absolute',
+      bottom: BANNER_OFFSET,
+      left: 0,
+      right: 0,
+      height: BANNER_HEIGHT,
+      backgroundColor: '#dc2626',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10,
+    },
 
-  companyName: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.textLight,
-    marginBottom: 2,
-  },
+    bannerText: {
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      fontWeight: 700,
+      color: '#FFFFFF',
+      letterSpacing: 1.5,
+      textAlign: 'center',
+    },
 
-  companyInfo: {
-    fontSize: 9,
-    color: colors.textMuted,
-    marginBottom: 1,
-  },
+    // ── Header: Title + Company | Logo + Details ──
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 40,
+      paddingTop: BANNER_OFFSET + BANNER_HEIGHT + 12,
+      paddingBottom: 15,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  logoContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-  },
+    headerLeft: {},
 
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+    headerRight: {
+      alignItems: 'flex-end',
+    },
 
-  logoCharge: {
-    color: colors.primary,
-  },
+    budgetTitle: {
+      fontFamily: 'Orbitron',
+      fontSize: 26,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 6,
+    },
 
-  logoSmart: {
-    color: colors.text,
-  },
+    companyName: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.white,
+      marginBottom: 2,
+    },
 
-  // Project Info Section
-  projectSection: {
-    marginHorizontal: 40,
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: colors.slate800,
-    borderRadius: 8,
-    padding: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
+    companyInfo: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      marginBottom: 1,
+    },
 
-  projectTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 12,
-    letterSpacing: 1,
-  },
+    logo: {
+      width: 140,
+      height: 42,
+      objectFit: 'contain',
+      marginBottom: 8,
+    },
 
-  projectGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
+    // Details under logo, right-aligned
+    detailRow: {
+      flexDirection: 'row',
+      marginBottom: 2,
+    },
 
-  projectItem: {
-    width: '50%',
-    marginBottom: 8,
-  },
+    detailLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      width: 75,
+      textAlign: 'right',
+      marginRight: 6,
+    },
 
-  projectLabel: {
-    fontSize: 9,
-    color: colors.textMuted,
-    marginBottom: 2,
-  },
+    detailValue: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.white,
+      fontWeight: 700,
+      width: 80,
+    },
 
-  projectValue: {
-    fontSize: 11,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
+    // ── Project Details ──
+    projectSection: {
+      marginHorizontal: 40,
+      marginBottom: 12,
+      backgroundColor: colors.headerBg,
+      padding: 12,
+      borderRadius: 6,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  // Budget Table
-  table: {
-    marginHorizontal: 40,
-    marginTop: 10,
-  },
+    projectTitle: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 8,
+      letterSpacing: 0.5,
+    },
 
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.slate700,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-  },
+    projectGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
 
-  tableHeaderCell: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 0.5,
-  },
+    projectItemThird: {
+      width: '33.33%',
+      marginBottom: 10,
+      minHeight: 30,
+    },
 
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.slate800,
-  },
+    projectLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      marginBottom: 2,
+    },
 
-  tableRowAlt: {
-    backgroundColor: colors.slate700,
-  },
+    projectValue: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      color: colors.white,
+      fontWeight: 700,
+    },
 
-  tableCell: {
-    fontSize: 10,
-    color: colors.text,
-  },
+    // ── Table ──
+    table: {
+      marginHorizontal: 40,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  tableCellMuted: {
-    fontSize: 9,
-    color: colors.textMuted,
-  },
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: colors.headerBg,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+      borderRadius: 6,
+    },
 
-  tableCellBold: {
-    fontSize: 10,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
+    tableHeaderCell: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.primary,
+      letterSpacing: 0.3,
+    },
 
-  // Column widths
-  colCategory: { width: '50%' },
-  colDescription: { width: '25%' },
-  colAmount: { width: '25%', textAlign: 'right' },
+    tableRow: {
+      flexDirection: 'row',
+      minHeight: 26,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+    },
 
-  // Separator
-  separator: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    backgroundColor: colors.slate700,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
+    tableRowAlt: {
+      backgroundColor: colors.panelBg,
+    },
 
-  // Total row
-  totalRow: {
-    flexDirection: 'row',
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    backgroundColor: colors.primary,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-  },
+    tableCell: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      color: colors.textLight,
+    },
 
-  totalCell: {
-    fontSize: 13,
-    color: colors.slate900,
-    fontWeight: 'bold',
-  },
+    tableCellBold: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      color: colors.white,
+      fontWeight: 700,
+    },
 
-  // Footer
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 10,
-  },
+    // Column widths
+    colCategory: { width: '40%' } as any,
+    colDescription: { width: '35%' } as any,
+    colAmount: { width: '25%', textAlign: 'right' } as any,
 
-  footerLeft: {
-    fontSize: 8,
-    color: colors.textMuted,
-  },
+    // Subtotal row
+    subtotalRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 10,
+      borderTopWidth: 2,
+      borderTopColor: colors.white,
+      alignItems: 'center',
+      marginTop: 2,
+    },
 
-  footerRight: {
-    fontSize: 8,
-    color: colors.textMuted,
-  },
+    // Total row — CSEV green
+    totalRow: {
+      flexDirection: 'row',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: colors.primary,
+      borderRadius: 6,
+      marginTop: 6,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.primaryDark,
+    },
 
-  // Confidential stamp
-  confidentialBadge: {
-    position: 'absolute',
-    top: 35,
-    right: 40,
-    backgroundColor: '#dc2626',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-  },
+    totalCell: {
+      fontFamily: 'Roboto',
+      fontSize: 12,
+      color: colors.pageBg,
+      fontWeight: 700,
+    },
 
-  confidentialText: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: colors.white,
-    letterSpacing: 1,
-  },
+    // ── Notes section ──
+    notesSection: {
+      marginHorizontal: 40,
+      marginTop: 15,
+      backgroundColor: colors.headerBg,
+      borderRadius: 6,
+      padding: 12,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  // Notes section
-  notesSection: {
-    marginHorizontal: 40,
-    marginTop: 20,
-    backgroundColor: colors.slate800,
-    borderRadius: 8,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+    notesTitle: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 6,
+      letterSpacing: 0.3,
+    },
 
-  notesTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 8,
-  },
-
-  notesText: {
-    fontSize: 9,
-    color: colors.textMuted,
-    lineHeight: 1.4,
-  },
-});
+    notesText: {
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      color: colors.textMuted,
+      lineHeight: 1.5,
+    },
+  });
+}
 
 interface BudgetLineItem {
   category: string;
@@ -348,13 +381,15 @@ function prepareBudgetLines(proposal: Proposal): BudgetLineItem[] {
 }
 
 export function BudgetDocument({ proposal }: BudgetDocumentProps) {
+  const theme: PdfTheme = proposal.pdfTheme || 'dark';
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors, theme);
+  const logoSrc = theme === 'dark' ? LOGO_DARK_BASE64 : LOGO_LIGHT_BASE64;
+
   const lines = prepareBudgetLines(proposal);
   const totalCost = proposal.totalActualCost;
-
-  // Calculate total ports
   const totalPorts = calculateTotalPorts(proposal.evseItems);
 
-  // Format date
   const budgetDate = proposal.preparedDate
     ? new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
@@ -363,67 +398,95 @@ export function BudgetDocument({ proposal }: BudgetDocumentProps) {
       }).format(new Date(proposal.preparedDate))
     : new Date().toLocaleDateString();
 
-  const projectNumber = generateProposalNumber();
+  const generatedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
 
-  // Full address
-  const fullAddress = [
-    proposal.customerAddress,
-    [proposal.customerCity, proposal.customerState, proposal.customerZip]
-      .filter(Boolean)
-      .join(', '),
-  ]
+  const projectNumber = generateProposalNumber();
+  const projectTypeLabel = PROJECT_TYPES[proposal.projectType]?.label || proposal.projectType;
+
+  const cityStateZip = [proposal.customerCity, proposal.customerState, proposal.customerZip]
     .filter(Boolean)
     .join(', ');
+
+  const utility = proposal.utilityId ? getUtilityById(proposal.utilityId) : undefined;
+  const utilityName = utility?.name || 'Not selected';
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {/* Confidential Badge */}
-        <View style={styles.confidentialBadge}>
-          <Text style={styles.confidentialText}>INTERNAL USE ONLY</Text>
+        {/* Background nodes */}
+        <View style={styles.backgroundNodes}>
+          <Image src={NODES_IMAGE_BASE64} style={styles.backgroundNodesImage} />
         </View>
 
-        {/* Header */}
+        {/* Top confidential banner */}
+        <View style={styles.bannerTop}>
+          <Text style={styles.bannerText}>CONFIDENTIAL - NOT FOR DISTRIBUTION:  INTERNAL USE ONLY</Text>
+        </View>
+
+        {/* Bottom confidential banner */}
+        <View style={styles.bannerBottom}>
+          <Text style={styles.bannerText}>CONFIDENTIAL - NOT FOR DISTRIBUTION:  INTERNAL USE ONLY</Text>
+        </View>
+
+        {/* Header — Title + Company Info | Logo + Details */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.budgetTitle}>PROJECT BUDGET</Text>
-            <Text style={styles.budgetSubtitle}>Internal Cost Summary</Text>
+            <Text style={styles.budgetTitle}>Project Budget</Text>
             <Text style={styles.companyName}>{COMPANY_INFO.legalName}</Text>
+            <Text style={styles.companyInfo}>{COMPANY_INFO.address}</Text>
+            <Text style={styles.companyInfo}>{COMPANY_INFO.city}, {COMPANY_INFO.state} {COMPANY_INFO.zip}</Text>
             <Text style={styles.companyInfo}>{COMPANY_INFO.email} | {COMPANY_INFO.phone}</Text>
           </View>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>
-              <Text style={styles.logoCharge}>Charge</Text>
-              <Text style={styles.logoSmart}>Smart EV</Text>
-            </Text>
+          <View style={styles.headerRight}>
+            <Image src={logoSrc} style={styles.logo} />
           </View>
         </View>
 
-        {/* Project Info */}
+        {/* Project Details */}
         <View style={styles.projectSection}>
           <Text style={styles.projectTitle}>PROJECT DETAILS</Text>
           <View style={styles.projectGrid}>
-            <View style={styles.projectItem}>
+            {/* Row 1 */}
+            <View style={styles.projectItemThird}>
               <Text style={styles.projectLabel}>Customer</Text>
               <Text style={styles.projectValue}>{proposal.customerName || 'Not specified'}</Text>
             </View>
-            <View style={styles.projectItem}>
+            <View style={styles.projectItemThird}>
+              <Text style={styles.projectLabel}>Site Address</Text>
+              <Text style={styles.projectValue}>{proposal.customerAddress || 'Not specified'}</Text>
+              {cityStateZip ? <Text style={styles.projectValue}>{cityStateZip}</Text> : null}
+            </View>
+            <View style={styles.projectItemThird}>
+              <Text style={styles.projectLabel}>Generated Date</Text>
+              <Text style={styles.projectValue}>{generatedDate}</Text>
+            </View>
+            {/* Row 2 */}
+            <View style={styles.projectItemThird}>
               <Text style={styles.projectLabel}>Project #</Text>
               <Text style={styles.projectValue}>{projectNumber}</Text>
             </View>
-            <View style={styles.projectItem}>
-              <Text style={styles.projectLabel}>Site Address</Text>
-              <Text style={styles.projectValue}>{fullAddress || 'Not specified'}</Text>
+            <View style={styles.projectItemThird}>
+              <Text style={styles.projectLabel}>Project Type</Text>
+              <Text style={styles.projectValue}>{projectTypeLabel}</Text>
             </View>
-            <View style={styles.projectItem}>
-              <Text style={styles.projectLabel}>Date</Text>
-              <Text style={styles.projectValue}>{budgetDate}</Text>
+            <View style={styles.projectItemThird}>
+              <Text style={styles.projectLabel}>Access Type</Text>
+              <Text style={styles.projectValue}>{proposal.accessType === 'public' ? 'Public' : 'Private'}</Text>
             </View>
-            <View style={styles.projectItem}>
+            {/* Row 3 */}
+            <View style={styles.projectItemThird}>
+              <Text style={styles.projectLabel}>Utility Program</Text>
+              <Text style={styles.projectValue}>{utilityName}</Text>
+            </View>
+            <View style={styles.projectItemThird}>
               <Text style={styles.projectLabel}>Total Ports</Text>
               <Text style={styles.projectValue}>{totalPorts}</Text>
             </View>
-            <View style={styles.projectItem}>
+            <View style={styles.projectItemThird}>
               <Text style={styles.projectLabel}>Network Term</Text>
               <Text style={styles.projectValue}>{proposal.networkYears} Year(s)</Text>
             </View>
@@ -434,26 +497,19 @@ export function BudgetDocument({ proposal }: BudgetDocumentProps) {
         <View style={styles.table}>
           {/* Table header */}
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, styles.colCategory]}>COST CATEGORY</Text>
-            <Text style={[styles.tableHeaderCell, styles.colDescription]}>DESCRIPTION</Text>
-            <Text style={[styles.tableHeaderCell, styles.colAmount]}>OUR COST</Text>
+            <Text style={[styles.tableHeaderCell, styles.colCategory]}>Cost Category</Text>
+            <Text style={[styles.tableHeaderCell, styles.colDescription]}>Description</Text>
+            <Text style={[styles.tableHeaderCell, styles.colAmount]}>Our Cost</Text>
           </View>
 
           {/* Line items */}
           {lines.map((item, index) => (
-            <View key={index} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
+            <View key={index} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}, index === lines.length - 1 ? { borderBottomWidth: 0 } : {}]}>
               <Text style={[styles.tableCellBold, styles.colCategory]}>{item.category}</Text>
-              <Text style={[styles.tableCellMuted, styles.colDescription]}>{item.description}</Text>
+              <Text style={[styles.tableCell, styles.colDescription]}>{item.description}</Text>
               <Text style={[styles.tableCellBold, styles.colAmount]}>{formatCurrency(item.amount)}</Text>
             </View>
           ))}
-
-          {/* Separator */}
-          <View style={styles.separator}>
-            <Text style={[styles.tableCellMuted, styles.colCategory]}></Text>
-            <Text style={[styles.tableCellMuted, styles.colDescription]}></Text>
-            <Text style={[styles.tableCellMuted, styles.colAmount]}></Text>
-          </View>
 
           {/* Total */}
           <View style={styles.totalRow}>
@@ -465,22 +521,12 @@ export function BudgetDocument({ proposal }: BudgetDocumentProps) {
 
         {/* Notes */}
         <View style={styles.notesSection}>
-          <Text style={styles.notesTitle}>NOTES</Text>
+          <Text style={styles.notesTitle}>Notes</Text>
           <Text style={styles.notesText}>
-            This budget represents ChargeSmart EV internal costs for this project.
-            EVSE Equipment cost is based on pricebook unit costs. Installation cost reflects
-            actual cost basis ({proposal.csmrCostBasisPercent}% of pricebook prices).
-            Utility allowance, shipping, and network plan are pass-through costs with no margin applied.
-          </Text>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerLeft}>
-            Generated: {new Date().toLocaleDateString()} | CONFIDENTIAL - NOT FOR DISTRIBUTION
-          </Text>
-          <Text style={styles.footerRight}>
-            {COMPANY_INFO.name}
+            This budget represents ChargeSmart EV internal costs only. EVSE Equipment cost is based on
+            pricebook unit costs. Installation cost reflects actual cost basis ({proposal.csmrCostBasisPercent}% of
+            pricebook prices). Utility allowance, shipping, and network plan are pass-through costs with no margin.
+            This document is confidential and not intended for customer distribution.
           </Text>
         </View>
       </Page>

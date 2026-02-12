@@ -240,6 +240,23 @@ templates/
 - Line items grouped by utility category mapping (National Grid, NYSEG/RG&E) or subgroup
 - CSMR margin applied to installation line items
 
+### Budget PDF (`BudgetDocument.tsx`)
+- Dark/light mode via `proposal.pdfTheme`, uses `getPdfColors()`, proper logos per theme
+- Background nodes matching Proposal/Estimate (120% width, 360px)
+- Orbitron title ("Project Budget") + Roboto body fonts
+- Full-width red confidential banners top and bottom (10px from page edges, 22px tall)
+  - Text: "CONFIDENTIAL - NOT FOR DISTRIBUTION:  INTERNAL USE ONLY"
+- Header: Title + Company left | Logo right (no detail rows under logo)
+- Project Details: green left border box, 3x3 grid layout (33.33% width items, minHeight 30)
+  - Row 1: Customer | Site Address (street + city/state/zip) | Generated Date
+  - Row 2: Project # | Project Type | Access Type (Public/Private)
+  - Row 3: Utility Program (from getUtilityById) | Total Ports | Network Term
+- Table: green left border header, 10px font, 26px minHeight rows, no subtotal row
+- Total row: CSEV green background, primaryDark border, dark text (pageBg color)
+- Notes section: green left border box, 10px title, 9px body text
+- No footer — banners serve as visual boundary
+- Single page layout, all content fits within banner boundaries
+
 ### react-pdf Gotchas
 - `flex: 1` on content can cause page overflow — use fixed heights instead
 - `gap` works in flex rows but can be unreliable
