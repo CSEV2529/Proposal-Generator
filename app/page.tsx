@@ -66,6 +66,16 @@ function PDFDownloadButton({ proposal, fileName }: { proposal: Proposal; fileNam
   }
 
   const { PDFDownloadLink, ProposalDocument } = PDFComponents;
+  const isDistribution = proposal.projectType === 'distribution';
+
+  if (isDistribution) {
+    return (
+      <Button variant="primary" size="lg" className="w-full opacity-50 cursor-not-allowed" disabled>
+        <FileDown size={20} className="mr-2" />
+        Download Proposal
+      </Button>
+    );
+  }
 
   return (
     <PDFDownloadLink
@@ -331,12 +341,15 @@ function FieldRecap({ proposal }: { proposal: Proposal }) {
   // Installation Scope
   const installCount = proposal.installationItems.length;
 
-  // Financial — top 4 pricing settings
-  const pricingComplete =
-    proposal.evseMarginPercent > 0 &&
-    proposal.csmrCostBasisPercent > 0 &&
-    proposal.csmrMarginPercent > 0 &&
-    proposal.salesTaxRate >= 0;
+  // Financial — top 4 pricing settings (0 = incomplete)
+  const pricingFields = [
+    proposal.evseMarginPercent !== 0,
+    proposal.salesTaxRate !== 0,
+    proposal.csmrCostBasisPercent !== 0,
+    proposal.csmrMarginPercent !== 0,
+  ];
+  const pricingIncomplete = pricingFields.filter(f => !f).length;
+  const pricingComplete = pricingIncomplete === 0;
 
   // Incentives — check both fields
   const hasMakeReady = proposal.makeReadyIncentive > 0;
@@ -346,7 +359,7 @@ function FieldRecap({ proposal }: { proposal: Proposal }) {
   // Payment options — count enabled
   const configEntries = getPaymentOptions(proposal.projectType);
   const enabledFlags = getEffectivePaymentOptionEnabled(proposal);
-  const enabledCount = configEntries.filter((_, i) => enabledFlags[i] ?? true).length;
+  const enabledCount = enabledFlags.filter(Boolean).length;
 
   // Site map
   const hasSiteMap = !!proposal.siteMapImage;
@@ -388,7 +401,12 @@ function FieldRecap({ proposal }: { proposal: Proposal }) {
       sectionId: 'section-financial',
       status: pricingComplete
         ? <span className="text-csev-green">ALL COMPLETED</span>
-        : <span className="text-red-400">PRICING INCOMPLETE</span>,
+        : (
+          <span className="inline-flex items-center gap-1 text-red-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            {pricingIncomplete} FIELD{pricingIncomplete > 1 ? 'S' : ''} INCOMPLETE
+          </span>
+        ),
     },
     {
       label: 'Incentives & Rebates',
@@ -404,7 +422,7 @@ function FieldRecap({ proposal }: { proposal: Proposal }) {
     },
     {
       label: 'Payment Options',
-      sectionId: 'section-financial',
+      sectionId: 'section-payment-overrides',
       status: enabledCount >= 3
         ? <span className="text-csev-green">{enabledCount} OPTIONS ENABLED</span>
         : (

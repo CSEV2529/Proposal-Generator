@@ -203,31 +203,32 @@ export function analyzePaymentOption(
   option: PaymentOption,
   costDollarOverride?: number
 ): PaymentOptionAnalysis {
-  const grossProjectCost = proposal.grossProjectCost;
+  const netProjectCost = proposal.netProjectCost;
 
   // Use actual cost override if provided, otherwise use estimated cost
   const csevCost = proposal.actualCostOverride && proposal.actualCostOverride > 0
     ? proposal.actualCostOverride
     : proposal.totalActualCost;
 
-  // Customer Discount = percentage of Gross Cost they DON'T pay
-  // e.g., Cost% = 70% means customer pays 70%, discount = 30% of Gross
-  // If dollar override is set, discount = Gross - dollar override amount
+  // Customer Discount = percentage of Net Project Cost they DON'T pay
+  // e.g., Cost% = 70% means customer pays 70% of net, discount = 30% of net
+  // If dollar override is set, discount = Net - dollar override amount
   let customerDiscount: number;
   let customerPays: number;
   if (costDollarOverride !== undefined && costDollarOverride >= 0) {
     customerPays = costDollarOverride;
-    customerDiscount = grossProjectCost - costDollarOverride;
+    customerDiscount = netProjectCost - costDollarOverride;
   } else {
-    customerDiscount = grossProjectCost * (1 - option.costPercentage / 100);
-    customerPays = grossProjectCost - customerDiscount;
+    customerDiscount = netProjectCost * (1 - option.costPercentage / 100);
+    customerPays = netProjectCost - customerDiscount;
   }
 
-  // What CSEV receives = gross project cost minus customer discount
-  const csevRevenue = grossProjectCost - customerDiscount;
+  // What CSEV receives = net project cost minus customer discount
+  const csevRevenue = netProjectCost - Math.abs(customerDiscount);
 
-  // CSEV profit = Gross Project Cost - Customer Discount - CSEV Cost
-  const csevProfit = grossProjectCost - customerDiscount - csevCost;
+  // CSEV Profit = Gross Cost - Customer Discount - CSEV Cost
+  // Discount and cost are always positive values subtracted from gross
+  const csevProfit = proposal.grossProjectCost - Math.abs(customerDiscount) - Math.abs(csevCost);
 
   // Margin calculation (avoid division by zero)
   let csevMarginPercent = 0;

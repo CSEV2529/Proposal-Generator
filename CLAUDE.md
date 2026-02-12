@@ -120,7 +120,7 @@ templates/
 
 - **EVSE margin**: default 50%, formula: `cost / (1 - margin%)`, decimal precision (step 0.1)
 - **CSMR cost basis**: default 100% + margin default 40%, decimal precision (step 0.1)
-- **Quoted price adjustments**: +/- dollar fields to fine-tune EVSE/CSMR quoted prices after margin calc
+- **Quoted price adjustments**: Removed from webapp; margin output notes shown below pricing boxes instead
 - **Shipping cost**: auto-calculated from EVSE SKUs, overridable via shippingCostOverride
 - **Sales tax**: applies to EPC + Site Host only (not distribution)
 - **Network plans**: 1/3/5 year options with cost vs. price
@@ -133,7 +133,9 @@ templates/
   - Per-proposal overrides: paymentOptionCostPercentOverrides, paymentOptionRevShareOverrides, paymentOptionCostOverrides (dollar)
   - paymentOptionEnabled[] controls PDF output; all options always visible in webapp
   - Option 1 always enabled by default; Site Host Options 2+ off by default
-  - Profitability: Customer Discount = (1 - costPercent/100) * grossProjectCost
+  - Profitability: Customer Discount = (1 - costPercent/100) * netProjectCost
+  - CSEV Profit = grossProjectCost - |customerDiscount| - |csevCost|
+  - Level 2 EPC defaults: Opt1 100%/100%, Opt2 50%/75%, Opt3 0%/50% (cost/revShare)
   - costLabel on warrantyUpgrades for custom display text (used by mixed-epc dual pricing)
   - Warranty text splits on `;` in PDF for multi-level display (L2/DCFC)
 
@@ -203,12 +205,38 @@ templates/
 - SOW Disclaimer: shown via PageWrapper's disclaimer footer with `disclaimerBorder={false}` (no green line)
 - Uses `showDisclaimer={true}` with custom `disclaimerText`
 
+### PDF Theme — Light Mode
+- Light palette in `pdfTheme.ts` uses stronger backgrounds/borders for visibility on white:
+  `panelBg: #EDF0F4`, `headerBg: #E2E6EB`, `border: #B0B8C1`, `borderLight: #C8CED6`
+- Section header bars (Pages 3-6): `borderRadius: 6` for rounded look matching Page 2 boxes
+- Page 5 cost badge: `borderWidth: 2`, `borderColor: colors.white` (dark on light, white on dark)
+- Page 5 rev share badge: solid green fill (`colors.primary`), white text, `borderWidth: 2`
+- Option box corners: child panel radii = parent radius (4) − border width (1) = 3
+
+### PDF Disclaimer
+- Pages 4-5: "Customer Owned" disclaimer about usage charges and Network Agreement
+- Page 6: no disclaimer (`showDisclaimer={false}`), Site Map Approval pinned to bottom above footer
+- Page 6 Date Signed: no trailing signature line (just label)
+
+### Estimate PDF (`EstimateDocument.tsx`)
+- Dark/light mode via `proposal.pdfTheme`, uses `getPdfColors()`, proper logos per theme
+- Background nodes matching Proposal (120% width, 360px, 0.075/0.12 opacity)
+- No footer (no page number)
+- Layout: Header (Title+Company | Logo+Details) → Bill To/Ship To 50/50 → Line Items Table → Acceptance
+- Row height: `minHeight: 20`, `paddingVertical: 4` — rows grow for long descriptions
+- Incentive rows: light green background, CSEV green bold text
+- Net Project Cost total row: dark grey/charcoal (not green), white text
+- Acceptance: "Accepted Date" / "Accepted By" with 28px gap to signature lines, no top border, 10px labels
+- Line items grouped by utility category mapping (National Grid, NYSEG/RG&E) or subgroup
+- CSMR margin applied to installation line items
+
 ### react-pdf Gotchas
 - `flex: 1` on content can cause page overflow — use fixed heights instead
 - `gap` works in flex rows but can be unreliable
 - Images need explicit width/height dimensions
 - `textDecoration` and `fontStyle: 'italic'` not supported
 - Fixed heights preferred for page-constrained layouts
+- `overflow: 'hidden'` does NOT reliably clip children to parent borderRadius — set inner radii explicitly
 
 ## Pricebook Data
 
@@ -224,7 +252,18 @@ templates/
 - Header: `sticky top-0 z-40`
 - Sidebar (right): `sticky top-[104px]` — calibrated to match header height + main padding
 - Grid: no `items-start` (breaks sticky behavior)
-- Stat values: `clamp(1.25rem, 4vw, 2rem)` with overflow hidden
+- Stat values: `clamp(0.95rem, 2.5vw, 1.75rem)` with overflow hidden — sized to always fit container
+- **Field Recap** sidebar section: completion checks for all form sections
+  - Clickable section names scroll to corresponding form (via `id="section-*"` wrappers)
+  - Color-coded: green (complete), amber (warning), red (incomplete)
+  - Checks: Customer Info fields, Project Template, EVSE items, Installation lines,
+    Financial pricing (0 = incomplete), Incentives (both fields), Payment Options (1=red, 2=amber, 3=green), Site Map
+  - Payment Options jumps to `section-payment-overrides` inside FinancialForm
+  - Financial Summary and Incentives show hazard triangle + count when incomplete
+- **Distribution project type**: Download Proposal button greyed out/disabled (no proposal PDF generated)
+- **Pricing Settings**: field order: EVSE Margin, Sales Tax, CSMR Cost Basis, CSMR Margin
+  - Helper text describes each field on 2 lines; note below says "Enter Values Below to Change Quoted Pricing"
+- **Access Type badge**: PUBLIC ACCESS (green) / PRIVATE ACCESS (red) pill next to Incentives & Rebates header in FinancialForm
 
 ## Important Notes
 

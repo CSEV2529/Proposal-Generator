@@ -1,9 +1,13 @@
 import React from 'react';
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Proposal, InstallationItem } from '@/lib/types';
-import { COMPANY_INFO, LABOR_RATE_PER_HOUR } from '@/lib/constants';
+import { COMPANY_INFO, LABOR_RATE_PER_HOUR, PROJECT_TYPES } from '@/lib/constants';
 import { formatCurrency, generateProposalNumber } from '@/lib/calculations';
 import { getProductById } from '@/lib/pricebook';
+import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
+import { LOGO_DARK_BASE64 } from './logoDark';
+import { LOGO_LIGHT_BASE64 } from './logoLight';
+import { NODES_IMAGE_BASE64 } from './nodesImage';
 
 // Utilities with custom category mappings
 const UTILITIES_WITH_CATEGORY_MAPPING = ['national-grid', 'national-grid-ma', 'nyseg', 'rge'];
@@ -57,12 +61,10 @@ const NYSEG_RGE_SUBGROUP_MAP: { [subgroup: string]: string } = {
 // Get the category name for an installation item based on utility
 function getItemCategory(item: InstallationItem, utilityId: string | undefined): string {
   if (!utilityId || !UTILITIES_WITH_CATEGORY_MAPPING.includes(utilityId)) {
-    // No utility mapping - use subgroup as category
     return item.subgroup;
   }
 
   if (utilityId === 'national-grid' || utilityId === 'national-grid-ma') {
-    // Check item-specific mapping first
     if (NATIONAL_GRID_ITEM_MAP[item.itemId]) {
       return NATIONAL_GRID_ITEM_MAP[item.itemId];
     }
@@ -70,264 +72,281 @@ function getItemCategory(item: InstallationItem, utilityId: string | undefined):
   }
 
   if (utilityId === 'nyseg' || utilityId === 'rge') {
-    // Check item-specific mapping first
     if (NYSEG_RGE_ITEM_MAP[item.itemId]) {
       return NYSEG_RGE_ITEM_MAP[item.itemId];
     }
     return NYSEG_RGE_SUBGROUP_MAP[item.subgroup] || 'Other [please describe]';
   }
 
-  // Fallback to subgroup
   return item.subgroup;
 }
 
-const colors = {
-  primary: '#45B7AA',
-  primaryLight: '#E8F5F3',
-  text: '#333333',
-  textLight: '#666666',
-  border: '#DDDDDD',
-  borderDark: '#333333',
-  white: '#FFFFFF',
-  green: '#28a745',
-};
+const ROW_HEIGHT = 20;
 
-const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    backgroundColor: colors.white,
-    paddingBottom: 80,
-  },
+function getStyles(colors: PdfColorPalette, theme: PdfTheme) {
+  return StyleSheet.create({
+    page: {
+      fontFamily: 'Roboto',
+      fontSize: 9,
+      backgroundColor: colors.pageBg,
+      position: 'relative',
+    },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 40,
-    paddingTop: 30,
-    paddingBottom: 20,
-  },
+    // Background nodes — matches PageWrapper exactly
+    backgroundNodes: {
+      position: 'absolute',
+      top: -30,
+      left: '-10%',
+      width: '120%',
+      height: 360,
+      opacity: theme === 'dark' ? 0.075 : 0.12,
+    },
 
-  headerLeft: {
-    flex: 1,
-  },
+    backgroundNodesImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+    },
 
-  estimateTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 10,
-    letterSpacing: 3,
-  },
+    // ── Header row: Title + Company | Logo + Details ──
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 40,
+      paddingTop: 30,
+      paddingBottom: 15,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  companyName: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 2,
-  },
+    headerLeft: {},
 
-  companyInfo: {
-    fontSize: 9,
-    color: colors.textLight,
-    marginBottom: 1,
-  },
+    headerRight: {
+      alignItems: 'flex-end',
+    },
 
-  logoContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-  },
+    estimateTitle: {
+      fontFamily: 'Orbitron',
+      fontSize: 26,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 6,
+    },
 
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+    companyName: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      fontWeight: 700,
+      color: colors.white,
+      marginBottom: 2,
+    },
 
-  logoCharge: {
-    color: colors.primary,
-  },
+    companyInfo: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      marginBottom: 1,
+    },
 
-  logoSmart: {
-    color: colors.text,
-  },
+    logo: {
+      width: 140,
+      height: 42,
+      objectFit: 'contain',
+      marginBottom: 8,
+    },
 
-  // Address section
-  addressSection: {
-    flexDirection: 'row',
-    backgroundColor: colors.primaryLight,
-    marginHorizontal: 40,
-    marginBottom: 20,
-  },
+    // Estimate details — under logo, right-aligned
+    detailRow: {
+      flexDirection: 'row',
+      marginBottom: 2,
+    },
 
-  addressColumn: {
-    flex: 1,
-    padding: 15,
-  },
+    detailLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textMuted,
+      width: 75,
+      textAlign: 'right',
+      marginRight: 6,
+    },
 
-  addressLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 6,
-  },
+    detailValue: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.white,
+      fontWeight: 700,
+      width: 80,
+    },
 
-  addressText: {
-    fontSize: 9,
-    color: colors.text,
-    marginBottom: 2,
-  },
+    // ── Bill to / Ship to — 50/50 ──
+    addressRow: {
+      flexDirection: 'row',
+      marginHorizontal: 40,
+      marginBottom: 15,
+      gap: 8,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  // Estimate details
-  detailsSection: {
-    marginHorizontal: 40,
-    marginBottom: 25,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: 15,
-  },
+    addressBox: {
+      flex: 1,
+      backgroundColor: colors.headerBg,
+      padding: 10,
+      borderRadius: 6,
+    },
 
-  detailsTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 8,
-  },
+    addressLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      fontWeight: 700,
+      color: colors.primary,
+      marginBottom: 4,
+      letterSpacing: 0.5,
+    },
 
-  detailRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
+    addressText: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textLight,
+      marginBottom: 1,
+    },
 
-  detailLabel: {
-    fontSize: 9,
-    color: colors.textLight,
-    width: 90,
-  },
+    // ── Table ──
+    table: {
+      marginHorizontal: 40,
+      position: 'relative',
+      zIndex: 1,
+    },
 
-  detailValue: {
-    fontSize: 9,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: colors.headerBg,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+      borderRadius: 6,
+    },
 
-  // Table
-  table: {
-    marginHorizontal: 40,
-  },
+    tableHeaderCell: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      fontWeight: 700,
+      color: colors.primary,
+      letterSpacing: 0.3,
+    },
 
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.primaryLight,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
+    tableRow: {
+      flexDirection: 'row',
+      minHeight: ROW_HEIGHT,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+    },
 
-  tableHeaderCell: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
+    tableRowAlt: {
+      backgroundColor: colors.panelBg,
+    },
 
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    tableCell: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textLight,
+    },
 
-  tableRowAlt: {
-    backgroundColor: '#FAFAFA',
-  },
+    tableCellBold: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.white,
+      fontWeight: 700,
+    },
 
-  tableCell: {
-    fontSize: 9,
-    color: colors.text,
-  },
+    // Column widths
+    colProduct: { width: '35%' } as any,
+    colDescription: { width: '25%' } as any,
+    colQty: { width: '10%', textAlign: 'right' } as any,
+    colRate: { width: '15%', textAlign: 'right' } as any,
+    colAmount: { width: '15%', textAlign: 'right' } as any,
 
-  tableCellBold: {
-    fontSize: 9,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
+    // Subtotal row
+    subtotalRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 10,
+      borderTopWidth: 2,
+      borderTopColor: colors.white,
+      alignItems: 'center',
+      marginTop: 2,
+    },
 
-  // Column widths
-  colProduct: { width: '35%' },
-  colDescription: { width: '25%' },
-  colQty: { width: '10%', textAlign: 'right' },
-  colRate: { width: '15%', textAlign: 'right' },
-  colAmount: { width: '15%', textAlign: 'right' },
+    // Incentive rows
+    incentiveRow: {
+      flexDirection: 'row',
+      height: ROW_HEIGHT,
+      paddingHorizontal: 10,
+      alignItems: 'center',
+      backgroundColor: theme === 'dark' ? 'rgba(75, 188, 136, 0.08)' : 'rgba(75, 188, 136, 0.12)',
+      borderRadius: 4,
+    },
 
-  // Subtotal row
-  subtotalRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderTopWidth: 2,
-    borderTopColor: colors.borderDark,
-    marginTop: 5,
-  },
+    incentiveText: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.primary,
+      fontWeight: 700,
+    },
 
-  // Incentive rows
-  incentiveRow: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#E8F5E9',
-  },
+    // Total row — dark grey/charcoal instead of green
+    totalRow: {
+      flexDirection: 'row',
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: theme === 'dark' ? '#2A2A2A' : '#3A3A3A',
+      borderRadius: 6,
+      marginTop: 4,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme === 'dark' ? '#444444' : '#555555',
+    },
 
-  incentiveText: {
-    fontSize: 9,
-    color: colors.green,
-  },
+    totalCell: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      color: '#FFFFFF',
+      fontWeight: 700,
+    },
 
-  // Total row
-  totalRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    backgroundColor: colors.primary,
-    marginTop: 2,
-  },
+    // ── Acceptance — pinned to bottom ──
+    acceptanceSection: {
+      position: 'absolute',
+      bottom: 35,
+      left: 40,
+      right: 40,
+      flexDirection: 'row',
+      gap: 60,
+    },
 
-  totalCell: {
-    fontSize: 11,
-    color: colors.white,
-    fontWeight: 'bold',
-  },
+    acceptanceColumn: {
+      flex: 1,
+    },
 
-  // Acceptance section
-  acceptanceSection: {
-    position: 'absolute',
-    bottom: 40,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 15,
-  },
+    acceptanceLabel: {
+      fontFamily: 'Roboto',
+      fontSize: 10,
+      color: colors.textLight,
+      fontWeight: 700,
+      marginBottom: 28,
+    },
 
-  acceptanceColumn: {
-    flex: 1,
-    marginRight: 30,
-  },
-
-  acceptanceLabel: {
-    fontSize: 9,
-    color: colors.textLight,
-    marginBottom: 5,
-  },
-
-  signatureLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.text,
-    height: 25,
-  },
-});
+    signatureLine: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.textMuted,
+      height: 0,
+    },
+  });
+}
 
 interface EstimateLineItem {
   product: string;
@@ -370,7 +389,6 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
   proposal.installationItems.forEach(item => {
     const category = getItemCategory(item, proposal.utilityId);
 
-    // Sum materials by category (pricebook cost, margin will be applied to total)
     if (item.totalMaterial > 0) {
       if (!materialsByCategory[category]) {
         materialsByCategory[category] = 0;
@@ -378,7 +396,6 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
       materialsByCategory[category] += item.totalMaterial;
     }
 
-    // Sum labor by category (pricebook cost, margin will be applied to total)
     if (item.totalLabor > 0) {
       if (!laborByCategory[category]) {
         laborByCategory[category] = 0;
@@ -387,10 +404,8 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
     }
   });
 
-  // Get all unique categories and sort them
   const allCategories = new Set([...Object.keys(materialsByCategory), ...Object.keys(laborByCategory)]);
 
-  // Add lines for each category (material + labor combined per category)
   Array.from(allCategories).sort().forEach(category => {
     const materialCost = materialsByCategory[category] || 0;
     const laborCost = laborByCategory[category] || 0;
@@ -403,7 +418,6 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
         proposal.csmrMarginPercent
       );
 
-      // Calculate labor hours for display
       const laborHours = laborCost > 0 ? Math.round(laborCost / LABOR_RATE_PER_HOUR) : 0;
       const description = laborHours > 0 ? `Materials & Labor (${laborHours} hrs)` : 'Materials';
 
@@ -417,7 +431,7 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
     }
   });
 
-  // Shipping (pass-through, no margin)
+  // Shipping (pass-through)
   if (proposal.shippingCost > 0) {
     lines.push({
       product: 'Shipping & Handling',
@@ -428,7 +442,7 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
     });
   }
 
-  // Network Plan (pass-through, no margin)
+  // Network Plan (pass-through)
   if (proposal.networkPlanCost > 0) {
     lines.push({
       product: `CSEV Network (${proposal.networkYears} Year)`,
@@ -439,7 +453,7 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
     });
   }
 
-  // Utility Allowance (pass-through, no margin)
+  // Utility Allowance (pass-through)
   if (proposal.utilityAllowance > 0) {
     lines.push({
       product: 'Utility Make-Ready',
@@ -454,19 +468,17 @@ function prepareEstimateLines(proposal: Proposal): EstimateLineItem[] {
 }
 
 export function EstimateDocument({ proposal }: EstimateDocumentProps) {
+  const theme: PdfTheme = proposal.pdfTheme || 'dark';
+  const colors = getPdfColors(theme);
+  const styles = getStyles(colors, theme);
+  const logoSrc = theme === 'dark' ? LOGO_DARK_BASE64 : LOGO_LIGHT_BASE64;
+
   const lines = prepareEstimateLines(proposal);
-
-  // Calculate subtotal from line items
   const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
-
-  // Incentives
   const makeReadyIncentive = proposal.makeReadyIncentive || 0;
   const evseIncentive = proposal.nyseradaIncentive || 0;
-
-  // Net total
   const netTotal = subtotal - makeReadyIncentive - evseIncentive;
 
-  // Format date
   const estimateDate = proposal.preparedDate
     ? new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
@@ -476,58 +488,59 @@ export function EstimateDocument({ proposal }: EstimateDocumentProps) {
     : new Date().toLocaleDateString();
 
   const estimateNumber = generateProposalNumber();
+  const projectTypeLabel = PROJECT_TYPES[proposal.projectType]?.label || proposal.projectType;
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {/* Header */}
+        {/* Background nodes — matches Proposal pages */}
+        <View style={styles.backgroundNodes}>
+          <Image src={NODES_IMAGE_BASE64} style={styles.backgroundNodesImage} />
+        </View>
+
+        {/* Header — Title + Company Info | Logo + Estimate Details */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.estimateTitle}>ESTIMATE</Text>
+            <Text style={styles.estimateTitle}>Estimate</Text>
             <Text style={styles.companyName}>{COMPANY_INFO.legalName}</Text>
             <Text style={styles.companyInfo}>{COMPANY_INFO.address}</Text>
             <Text style={styles.companyInfo}>{COMPANY_INFO.city}, {COMPANY_INFO.state} {COMPANY_INFO.zip}</Text>
-            <Text style={styles.companyInfo}>{COMPANY_INFO.email}</Text>
-            <Text style={styles.companyInfo}>{COMPANY_INFO.phone}</Text>
+            <Text style={styles.companyInfo}>{COMPANY_INFO.email} | {COMPANY_INFO.phone}</Text>
           </View>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>
-              <Text style={styles.logoCharge}>Charge</Text>
-              <Text style={styles.logoSmart}>Smart EV</Text>
-            </Text>
+          <View style={styles.headerRight}>
+            <Image src={logoSrc} style={styles.logo} />
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Estimate No.</Text>
+              <Text style={styles.detailValue}>{estimateNumber}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date</Text>
+              <Text style={styles.detailValue}>{estimateDate}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Project Type</Text>
+              <Text style={styles.detailValue}>{projectTypeLabel}</Text>
+            </View>
           </View>
         </View>
 
-        {/* Bill to / Ship to */}
-        <View style={styles.addressSection}>
-          <View style={styles.addressColumn}>
-            <Text style={styles.addressLabel}>Bill to</Text>
+        {/* Bill to | Ship to — 50/50 */}
+        <View style={styles.addressRow}>
+          <View style={styles.addressBox}>
+            <Text style={styles.addressLabel}>BILL TO</Text>
             <Text style={styles.addressText}>{proposal.customerName || 'Customer Name'}</Text>
             <Text style={styles.addressText}>{proposal.customerAddress}</Text>
             <Text style={styles.addressText}>
               {[proposal.customerCity, proposal.customerState, proposal.customerZip].filter(Boolean).join(', ')}
             </Text>
           </View>
-          <View style={styles.addressColumn}>
-            <Text style={styles.addressLabel}>Ship to</Text>
+          <View style={styles.addressBox}>
+            <Text style={styles.addressLabel}>SHIP TO</Text>
             <Text style={styles.addressText}>{proposal.customerName || 'Customer Name'}</Text>
             <Text style={styles.addressText}>{proposal.customerAddress}</Text>
             <Text style={styles.addressText}>
               {[proposal.customerCity, proposal.customerState, proposal.customerZip].filter(Boolean).join(', ')}
             </Text>
-          </View>
-        </View>
-
-        {/* Estimate details */}
-        <View style={styles.detailsSection}>
-          <Text style={styles.detailsTitle}>Estimate details</Text>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Estimate no.:</Text>
-            <Text style={styles.detailValue}>{estimateNumber}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Estimate date:</Text>
-            <Text style={styles.detailValue}>{estimateDate}</Text>
           </View>
         </View>
 
@@ -593,14 +606,14 @@ export function EstimateDocument({ proposal }: EstimateDocumentProps) {
           </View>
         </View>
 
-        {/* Acceptance */}
+        {/* Acceptance — pinned to bottom */}
         <View style={styles.acceptanceSection}>
           <View style={styles.acceptanceColumn}>
-            <Text style={styles.acceptanceLabel}>Accepted date</Text>
+            <Text style={styles.acceptanceLabel}>Accepted Date</Text>
             <View style={styles.signatureLine} />
           </View>
           <View style={styles.acceptanceColumn}>
-            <Text style={styles.acceptanceLabel}>Accepted by</Text>
+            <Text style={styles.acceptanceLabel}>Accepted By</Text>
             <View style={styles.signatureLine} />
           </View>
         </View>

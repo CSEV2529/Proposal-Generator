@@ -60,6 +60,9 @@ export function FinancialForm() {
         {/* Pricing Settings */}
         <div className="space-y-4">
           <h4 className="section-header">Pricing Settings</h4>
+          <p className="text-xs text-csev-text-muted -mt-2">
+            Enter Values Below to Change Quoted Pricing (e.g., 40 = 40.0%)
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
               label="EVSE Margin %"
@@ -69,29 +72,7 @@ export function FinancialForm() {
               step="0.1"
               value={proposal.evseMarginPercent}
               onChange={handlePricingChange('evseMarginPercent')}
-              helperText="Target margin on equipment (e.g., 40 = 40%)"
-            />
-
-            <Input
-              label="CSMR Cost Basis %"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              value={proposal.csmrCostBasisPercent}
-              onChange={handlePricingChange('csmrCostBasisPercent')}
-              helperText="% of pricebook that is our actual cost"
-            />
-
-            <Input
-              label="CSMR Margin %"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              value={proposal.csmrMarginPercent}
-              onChange={handlePricingChange('csmrMarginPercent')}
-              helperText="Target margin on installation work"
+              helperText={"Target Margin on\nEVSE Equipment"}
             />
 
             <Input
@@ -102,50 +83,52 @@ export function FinancialForm() {
               step="0.1"
               value={proposal.salesTaxRate}
               onChange={handlePricingChange('salesTaxRate')}
-              helperText={projectRequiresSalesTax(proposal.projectType) ? 'Applied to EVSE cost' : 'N/A for Distribution'}
+              helperText={projectRequiresSalesTax(proposal.projectType) ? 'Tax Applied to EVSE Cost' : 'N/A for Distribution'}
+            />
+
+            <Input
+              label="CSMR Cost Basis %"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={proposal.csmrCostBasisPercent}
+              onChange={handlePricingChange('csmrCostBasisPercent')}
+              helperText={"% of Pricebook Cost that\nis Our Actual Cost"}
+            />
+
+            <Input
+              label="CSMR Margin %"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={proposal.csmrMarginPercent}
+              onChange={handlePricingChange('csmrMarginPercent')}
+              helperText={"Target Margin on\nInstallation (CSMR) Work"}
             />
           </div>
 
-          {/* Quoted Price Adjustments */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-            <Input
-              label="EVSE Quoted Price Adjustment ($)"
-              type="number"
-              step="0.01"
-              value={proposal.evseQuotedPriceAdjustment || ''}
-              onChange={(e) => {
-                const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                dispatch({
-                  type: 'SET_PRICING_SETTINGS',
-                  payload: { evseQuotedPriceAdjustment: val },
-                });
-              }}
-              placeholder="0"
-              helperText={`Margin gives ${formatCurrencyWithCents(proposal.evseQuotedPrice - (proposal.evseQuotedPriceAdjustment || 0))} → adjusted to ${formatCurrencyWithCents(proposal.evseQuotedPrice)}`}
-            />
-            <Input
-              label="CSMR Quoted Price Adjustment ($)"
-              type="number"
-              step="0.01"
-              value={proposal.csmrQuotedPriceAdjustment || ''}
-              onChange={(e) => {
-                const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                dispatch({
-                  type: 'SET_PRICING_SETTINGS',
-                  payload: { csmrQuotedPriceAdjustment: val },
-                });
-              }}
-              placeholder="0"
-              helperText={(() => {
-                const base = proposal.csmrQuotedPrice - (proposal.csmrQuotedPriceAdjustment || 0);
+          {/* Margin output notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            <p className="text-xs text-csev-text-muted">
+              Margin outputs {formatCurrencyWithCents(proposal.evseQuotedPrice)} EVSE Quoted Price
+            </p>
+            <div className="text-xs text-csev-text-muted">
+              {(() => {
                 const matPricebook = calculateMaterialCost(proposal.installationItems);
                 const labPricebook = calculateLaborCost(proposal.installationItems);
                 const pricebookTotal = proposal.csmrPricebookTotal;
                 const matQuoted = pricebookTotal > 0 ? (matPricebook / pricebookTotal) * proposal.csmrQuotedPrice : 0;
                 const labQuoted = pricebookTotal > 0 ? (labPricebook / pricebookTotal) * proposal.csmrQuotedPrice : 0;
-                return `Margin gives ${formatCurrencyWithCents(base)} → adjusted to ${formatCurrencyWithCents(proposal.csmrQuotedPrice)}\nPDF output → Material: ${formatCurrencyWithCents(matQuoted)} | Labor: ${formatCurrencyWithCents(labQuoted)}`;
+                return (
+                  <>
+                    <div>Margin outputs {formatCurrencyWithCents(proposal.csmrQuotedPrice)} Installation (CSMR) Quoted Price —</div>
+                    <div>Material: {formatCurrencyWithCents(matQuoted)} | Labor: {formatCurrencyWithCents(labQuoted)}</div>
+                  </>
+                );
               })()}
-            />
+            </div>
           </div>
         </div>
 
@@ -480,7 +463,7 @@ export function FinancialForm() {
         </div>
 
         {/* Payment Option Overrides (PDF Page 5) */}
-        <div className="space-y-4">
+        <div id="section-payment-overrides" className="space-y-4">
           <h4 className="section-header">Payment Option Overrides (PDF Page 5)</h4>
           <p className="text-xs text-csev-text-muted -mt-2">
             Override defaults per-proposal. Uncheck an option to hide it from the PDF. At least one must be enabled.
