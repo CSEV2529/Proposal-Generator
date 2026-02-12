@@ -83,15 +83,16 @@ lib/
 │                         #   Cables, Trenching, Civil-Bases, Permits, Design, Striping
 │                         #   Each product: unitPrice, csevCost, networkPlan1/3/5Year, shippingCost, numberOfPlugs
 │                         #   Helpers: getSubgroups(), getServicesBySubgroup(), getProductById()
-├── calculations.ts       # EVSE: actualCost, quotedPrice (cost / (1 - margin%)), ports, network, shipping
+├── calculations.ts       # EVSE: actualCost, quotedPrice (cost / (1 - margin%) + adjustment), ports, network, shipping
 │                         #   Sales tax: only EPC + Site Host (not distribution)
-│                         #   CSMR: pricebookTotal, actualCost (×costBasis%), quotedPrice (÷(1-margin%))
+│                         #   CSMR: pricebookTotal, actualCost (×costBasis%), quotedPrice (÷(1-margin%) + adjustment)
+│                         #   Quoted price adjustments: evseQuotedPriceAdjustment, csmrQuotedPriceAdjustment
 │                         #   Project: grossCost, netCost, grossProfit, grossMargin%
 │                         #   Payment option analysis: revenue/profit/margin per option
 │                         #   Format helpers: formatCurrency(), formatDate(), generateProposalNumber()
 ├── templates.ts          # 50 US states, 200+ utilities mapped to states
-│                         #   7 scope templates: 4/6/8/10 Banger L2 (new/existing service),
-│                         #   4/8 Banger 320kW DCFC
+│                         #   8 scope templates: 4/6/8/10 Banger L2 (new/existing service),
+│                         #   4/8 Banger 320kW DCFC, NJ (20) L2 Station SH
 │                         #   Helpers: getAllStates(), getUtilitiesByState(), getScopeTemplateById()
 ├── supabase.ts           # Lazy client init, SSR dummy client, isSupabaseConfigured() guard
 ├── projectStorage.ts     # CRUD: getProjects(), getProject(id), createProject(), updateProject(),
@@ -117,11 +118,16 @@ templates/
 
 ## Financial System
 
-- **EVSE margin**: default 50%, formula: `cost / (1 - margin%)`
-- **CSMR cost basis**: default 100% + margin default 40%
+- **EVSE margin**: default 50%, formula: `cost / (1 - margin%)`, decimal precision (step 0.1)
+- **CSMR cost basis**: default 100% + margin default 40%, decimal precision (step 0.1)
+- **Quoted price adjustments**: +/- dollar fields to fine-tune EVSE/CSMR quoted prices after margin calc
+- **Shipping cost**: auto-calculated from EVSE SKUs, overridable via shippingCostOverride
 - **Sales tax**: applies to EPC + Site Host only (not distribution)
 - **Network plans**: 1/3/5 year options with cost vs. price
 - **Incentives**: Make Ready, NYSERDA
+- **Additional terms**: per-project-type in constants.ts; L2 Site Host has dual Customer Owned/CSEV Owned notes
+  - Term rows auto-expand height for multi-line content (minHeight instead of fixed height)
+  - L2 Site Host network fees: hybrid dynamic years (Customer Owned) + static (CSEV Owned)
 - **Payment options**: Per-project-type PaymentOptionConfig[] arrays in constants.ts
   - Each project type owns 1-3 options with independent cost%, rev share%, warranty, descriptions
   - Per-proposal overrides: paymentOptionCostPercentOverrides, paymentOptionRevShareOverrides, paymentOptionCostOverrides (dollar)
