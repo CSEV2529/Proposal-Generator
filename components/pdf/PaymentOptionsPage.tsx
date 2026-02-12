@@ -259,14 +259,16 @@ function getStyles(colors: PdfColorPalette) {
       justifyContent: 'flex-end',
       alignItems: 'center',
       borderLeftWidth: 1,
-      borderLeftColor: colors.border,
-      backgroundColor: colors.headerBg,
+      borderLeftColor: colors.primaryDark,
+      backgroundColor: colors.primary,
       paddingBottom: 8,
+      borderTopRightRadius: 6,
+      borderBottomRightRadius: 6,
     },
 
     initialLine: {
       borderBottomWidth: 1,
-      borderBottomColor: colors.textMuted,
+      borderBottomColor: '#ffffff',
       width: 50,
       marginBottom: 4,
     },
@@ -274,7 +276,7 @@ function getStyles(colors: PdfColorPalette) {
     initialText: {
       fontFamily: 'Roboto',
       fontSize: 6,
-      color: colors.textMuted,
+      color: '#ffffff',
       textAlign: 'center',
       fontWeight: 700,
       letterSpacing: 0.3,

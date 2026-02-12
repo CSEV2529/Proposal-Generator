@@ -228,7 +228,6 @@ function getStyles(colors: PdfColorPalette) {
     acceptanceGrid: {
       flexDirection: 'row',
       gap: 25,
-      marginTop: 8,
     },
 
     acceptanceCol: {
@@ -391,7 +390,7 @@ export function FinancialSummaryPage({ proposal, theme }: FinancialSummaryPagePr
       <View style={{ flexGrow: 1 }} />
 
       {/* Proposal Acceptance — pinned above disclaimer */}
-      <View>
+      <View style={{ marginBottom: 15 }}>
         <View style={styles.sectionHeader}>
           <Text style={styles.acceptanceHeaderText}>Proposal Acceptance - CUSTOMER INFO</Text>
         </View>
@@ -410,13 +409,11 @@ export function FinancialSummaryPage({ proposal, theme }: FinancialSummaryPagePr
           </View>
 
           <View style={styles.acceptanceGrid}>
-            <View style={styles.acceptanceCol}>
+            <View style={[styles.acceptanceCol, styles.acceptanceRow]}>
               <Text style={styles.acceptanceLabel}>Signature</Text>
-              <View style={styles.acceptanceLine} />
             </View>
-            <View style={styles.acceptanceCol}>
+            <View style={[styles.acceptanceCol, styles.acceptanceRow]}>
               <Text style={styles.acceptanceLabel}>Date Signed</Text>
-              <View style={styles.acceptanceLine} />
             </View>
           </View>
         </View>

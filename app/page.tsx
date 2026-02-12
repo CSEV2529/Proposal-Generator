@@ -611,26 +611,38 @@ function HomePageContent() {
                   <h3 className="section-header">
                     Generate Documents
                   </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() =>
                         dispatch({
                           type: 'SET_TERMS',
-                          payload: { pdfTheme: proposal.pdfTheme === 'light' ? 'dark' : 'light' },
+                          payload: { pdfTheme: 'dark' },
                         })
                       }
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-l-lg text-xs font-medium transition-colors ${
+                        proposal.pdfTheme !== 'light'
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                          : 'bg-csev-slate-700 text-csev-text-muted border border-csev-border hover:bg-csev-slate-600'
+                      }`}
+                      title="Dark mode PDF"
+                    >
+                      <Moon size={12} /> Dark
+                    </button>
+                    <button
+                      onClick={() =>
+                        dispatch({
+                          type: 'SET_TERMS',
+                          payload: { pdfTheme: 'light' },
+                        })
+                      }
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-r-lg text-xs font-medium transition-colors ${
                         proposal.pdfTheme === 'light'
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                          : 'bg-csev-slate-700 text-csev-text-muted border border-csev-border'
+                          : 'bg-csev-slate-700 text-csev-text-muted border border-csev-border hover:bg-csev-slate-600'
                       }`}
-                      title={`Switch to ${proposal.pdfTheme === 'light' ? 'dark' : 'light'} mode PDF`}
+                      title="Light mode PDF"
                     >
-                      {proposal.pdfTheme === 'light' ? (
-                        <><Sun size={14} /> Light</>
-                      ) : (
-                        <><Moon size={14} /> Dark</>
-                      )}
+                      <Sun size={12} /> Light
                     </button>
                   </div>
                 </div>
