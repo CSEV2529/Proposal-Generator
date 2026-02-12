@@ -193,6 +193,8 @@ function getStyles(colors: PdfColorPalette, theme: PdfTheme) {
       backgroundColor: colors.headerBg,
       padding: 10,
       borderRadius: 6,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
     },
 
     addressLabel: {
@@ -557,7 +559,7 @@ export function EstimateDocument({ proposal }: EstimateDocumentProps) {
 
           {/* Line items */}
           {lines.map((item, index) => (
-            <View key={index} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
+            <View key={index} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}, index === lines.length - 1 ? { borderBottomWidth: 0 } : {}]}>
               <Text style={[styles.tableCellBold, styles.colProduct]}>{item.product}</Text>
               <Text style={[styles.tableCell, styles.colDescription]}>{item.description}</Text>
               <Text style={[styles.tableCell, styles.colQty]}>{item.qty}</Text>
@@ -587,7 +589,7 @@ export function EstimateDocument({ proposal }: EstimateDocumentProps) {
           )}
 
           {evseIncentive > 0 && (
-            <View style={styles.incentiveRow}>
+            <View style={[styles.incentiveRow, { marginTop: 4 }]}>
               <Text style={[styles.incentiveText, styles.colProduct]}>EVSE Program Incentive</Text>
               <Text style={[styles.incentiveText, styles.colDescription]}>State grant/rebate</Text>
               <Text style={[styles.incentiveText, styles.colQty]}></Text>
@@ -609,11 +611,11 @@ export function EstimateDocument({ proposal }: EstimateDocumentProps) {
         {/* Acceptance — pinned to bottom */}
         <View style={styles.acceptanceSection}>
           <View style={styles.acceptanceColumn}>
-            <Text style={styles.acceptanceLabel}>Accepted Date</Text>
+            <Text style={styles.acceptanceLabel}>Accepted By</Text>
             <View style={styles.signatureLine} />
           </View>
           <View style={styles.acceptanceColumn}>
-            <Text style={styles.acceptanceLabel}>Accepted By</Text>
+            <Text style={styles.acceptanceLabel}>Accepted Date</Text>
             <View style={styles.signatureLine} />
           </View>
         </View>
