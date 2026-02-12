@@ -27,10 +27,17 @@ export const WHY_CSEV_CONTENT = {
   ],
 
   whatWeOffer: [
-    'Turnkey charging solutions',
-    'Utilize potential incentives',
-    'Easy-to-use driver app',
-    'Cloud-based portal',
+    'Turnkey Charging Solutions',
+    'Utilize Potential Incentives',
+    'Easy-to-Use Driver App',
+    'Cloud-Based Portal',
+  ],
+
+  whatWeOfferExtra: [
+    '24/7 Phone Support',
+    'Growing Network (2,000+ Ports)',
+    'EV Infrastructure Experts',
+    'Real-Time Station Monitoring',
   ],
 
   missionTitle: "Our Company's Mission",

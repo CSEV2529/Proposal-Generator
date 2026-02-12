@@ -308,15 +308,27 @@ export function WhyCSEVPage({ projectType = 'level2-epc', theme }: WhyCSEVPagePr
           </View>
           <Text style={styles.andMore}>...and more</Text>
 
-          {/* What We Offer — spans full width of right column */}
+          {/* What We Offer — spans full width of right column, two columns */}
           <View style={styles.offerSection}>
             <Text style={styles.offerTitle}>What We Offer:</Text>
-            {WHY_CSEV_CONTENT.whatWeOffer.map((item, index) => (
-              <View key={index} style={styles.offerItem}>
-                <Text style={styles.offerBullet}>•</Text>
-                <Text style={styles.offerText}>{item}</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 1 }}>
+                {WHY_CSEV_CONTENT.whatWeOffer.map((item, index) => (
+                  <View key={index} style={styles.offerItem}>
+                    <Text style={styles.offerBullet}>•</Text>
+                    <Text style={styles.offerText}>{item}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+              <View style={{ flex: 1 }}>
+                {WHY_CSEV_CONTENT.whatWeOfferExtra.map((item, index) => (
+                  <View key={index} style={styles.offerItem}>
+                    <Text style={styles.offerBullet}>•</Text>
+                    <Text style={styles.offerText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
         </View>
       </View>
