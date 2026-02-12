@@ -35,6 +35,7 @@ export const commonStyles = StyleSheet.create({
     marginBottom: 0,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
+    borderRadius: 6,
   },
 
   sectionHeaderText: {
@@ -174,9 +175,9 @@ export const commonStyles = StyleSheet.create({
 
 // Shared text to be reused
 export const DISCLAIMER_TEXT =
-  "Customer understands they are responsible for all usage, electricity and demand charges that their utility provider may charge " +
-  "them, and that utility bill(s) will remain in their name, paid by the Customer. Term for Network Agreement is a minimum of 5 Years, " +
-  "and will be outlined in a full Network Agreement that must be signed before proceeding with project.";
+  'For all "Customer Owned" Projects, Customer understands they are responsible for all usage, electricity and demand charges that ' +
+  "their utility provider may charge them, and that utility bill(s) will remain in their name, paid by the Customer. Customer also " +
+  'understands that for all "Customer Owned" Projects, a complete Network Agreement must be signed before proceeding with project.';
 
 export const SOW_DISCLAIMER_TEXT =
   "Proposed Scope of Work (SOW) is an initial estimate based solely on satellite imagery and/or in-person site visit. " +

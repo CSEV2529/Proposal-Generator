@@ -50,17 +50,17 @@ const lightPalette: PdfColorPalette = {
   primaryDark: '#3da876',
 
   pageBg: '#FFFFFF',
-  panelBg: '#F6F8FA',
-  headerBg: '#F0F2F5',
-  elevatedBg: '#E8ECF0',
+  panelBg: '#EDF0F4',
+  headerBg: '#E2E6EB',
+  elevatedBg: '#D8DCE2',
 
   text: '#1F2328',
   textLight: '#424A53',
   textMuted: '#6E7781',
   textOnPrimary: '#FFFFFF',
 
-  border: '#D0D7DE',
-  borderLight: '#E0E6EB',
+  border: '#B0B8C1',
+  borderLight: '#C8CED6',
 
   white: '#1F2328',
 };

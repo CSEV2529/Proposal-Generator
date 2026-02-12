@@ -273,7 +273,16 @@ export function FinancialForm() {
 
         {/* Incentives */}
         <div className="space-y-4">
-          <h4 className="section-header">Incentives & Rebates</h4>
+          <div className="flex items-center gap-3">
+            <h4 className="section-header">Incentives & Rebates</h4>
+            <span className={`text-[10px] font-bold tracking-wide px-3 py-1 rounded-full select-none ${
+              proposal.accessType === 'public'
+                ? 'bg-csev-green/20 text-csev-green border border-csev-green/40'
+                : 'bg-red-500/20 text-red-400 border border-red-500/40'
+            }`}>
+              {proposal.accessType === 'public' ? 'PUBLIC ACCESS' : 'PRIVATE ACCESS'}
+            </span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Estimated Make Ready Incentive"

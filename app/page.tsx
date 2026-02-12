@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon } from 'lucide-react';
+import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useProposal } from '@/context/ProposalContext';
 import {
   CustomerInfoForm,
@@ -22,8 +22,9 @@ import {
   calculateGrossProjectCost,
   calculateNetProjectCost,
   hasEnabledPaymentOption,
+  getEffectivePaymentOptionEnabled,
 } from '@/lib/calculations';
-import { COMPANY_INFO, PROJECT_TYPES } from '@/lib/constants';
+import { COMPANY_INFO, PROJECT_TYPES, getPaymentOptions } from '@/lib/constants';
 import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
 import { supabase } from '@/lib/supabase';
 import { createProject, updateProject, getProject } from '@/lib/projectStorage';
@@ -299,6 +300,157 @@ function BudgetDownloadButton({ proposal, fileName }: { proposal: Proposal; file
   );
 }
 
+// Field Recap — checks each section for completeness
+function FieldRecap({ proposal }: { proposal: Proposal }) {
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Customer Information fields
+  const customerFields = [
+    { label: 'Customer Name', filled: !!proposal.customerName },
+    { label: 'Address', filled: !!proposal.customerAddress },
+    { label: 'City', filled: !!proposal.customerCity },
+    { label: 'State', filled: !!proposal.customerState },
+    { label: 'Zip', filled: !!proposal.customerZip },
+    { label: 'Location Type', filled: !!proposal.locationType },
+  ];
+  const customerIncomplete = customerFields.filter(f => !f.filled).length;
+
+  // Project Template fields
+  const templateFields = [
+    { label: 'State', filled: !!proposal.projectStateId },
+    { label: 'Utility', filled: !!proposal.utilityId },
+    { label: 'Scope Template', filled: !!proposal.scopeTemplateId },
+  ];
+  const templateIncomplete = templateFields.filter(f => !f.filled).length;
+
+  // EVSE Equipment
+  const evseCount = proposal.evseItems.length;
+
+  // Installation Scope
+  const installCount = proposal.installationItems.length;
+
+  // Financial — top 4 pricing settings
+  const pricingComplete =
+    proposal.evseMarginPercent > 0 &&
+    proposal.csmrCostBasisPercent > 0 &&
+    proposal.csmrMarginPercent > 0 &&
+    proposal.salesTaxRate >= 0;
+
+  // Incentives — check both fields
+  const hasMakeReady = proposal.makeReadyIncentive > 0;
+  const hasSecondary = proposal.nyseradaIncentive > 0;
+  const incentiveIncomplete = (!hasMakeReady ? 1 : 0) + (!hasSecondary ? 1 : 0);
+
+  // Payment options — count enabled
+  const configEntries = getPaymentOptions(proposal.projectType);
+  const enabledFlags = getEffectivePaymentOptionEnabled(proposal);
+  const enabledCount = configEntries.filter((_, i) => enabledFlags[i] ?? true).length;
+
+  // Site map
+  const hasSiteMap = !!proposal.siteMapImage;
+
+  // Payment options color: 1=red, 2=amber, 3=green
+  const paymentColor = enabledCount >= 3 ? 'text-csev-green' : enabledCount === 2 ? 'text-amber-400' : 'text-red-400';
+
+  const rows: { label: string; sectionId: string; status: React.ReactNode }[] = [
+    {
+      label: 'Customer Information',
+      sectionId: 'section-customer',
+      status: customerIncomplete === 0
+        ? <span className="text-csev-green">ALL COMPLETED</span>
+        : <span className="text-red-400">{customerIncomplete} FIELD{customerIncomplete > 1 ? 'S' : ''} INCOMPLETE</span>,
+    },
+    {
+      label: 'Project Template',
+      sectionId: 'section-template',
+      status: templateIncomplete === 0
+        ? <span className="text-csev-green">ALL COMPLETED</span>
+        : <span className="text-red-400">{templateIncomplete} FIELD{templateIncomplete > 1 ? 'S' : ''} INCOMPLETE</span>,
+    },
+    {
+      label: 'EVSE Equipment',
+      sectionId: 'section-evse',
+      status: evseCount > 0
+        ? <span className="text-csev-green">{evseCount} ITEM{evseCount > 1 ? 'S' : ''} ADDED</span>
+        : <span className="text-red-400">NO ITEMS ADDED</span>,
+    },
+    {
+      label: 'Installation Scope',
+      sectionId: 'section-installation',
+      status: installCount > 0
+        ? <span className="text-csev-green">{installCount} LINE{installCount > 1 ? 'S' : ''} ADDED</span>
+        : <span className="text-red-400">NO LINES ADDED</span>,
+    },
+    {
+      label: 'Financial Summary',
+      sectionId: 'section-financial',
+      status: pricingComplete
+        ? <span className="text-csev-green">ALL COMPLETED</span>
+        : <span className="text-red-400">PRICING INCOMPLETE</span>,
+    },
+    {
+      label: 'Incentives & Rebates',
+      sectionId: 'section-financial',
+      status: incentiveIncomplete === 0
+        ? <span className="text-csev-green">BOTH COMPLETED</span>
+        : (
+          <span className={`inline-flex items-center gap-1 ${incentiveIncomplete === 2 ? 'text-red-400' : 'text-amber-400'}`}>
+            <AlertTriangle size={10} className="shrink-0" />
+            {incentiveIncomplete} FIELD{incentiveIncomplete > 1 ? 'S' : ''} INCOMPLETE
+          </span>
+        ),
+    },
+    {
+      label: 'Payment Options',
+      sectionId: 'section-financial',
+      status: enabledCount >= 3
+        ? <span className="text-csev-green">{enabledCount} OPTIONS ENABLED</span>
+        : (
+          <span className={`inline-flex items-center gap-1 ${paymentColor}`}>
+            <AlertTriangle size={10} className="shrink-0" />
+            {enabledCount} OPTION{enabledCount !== 1 ? 'S' : ''} ENABLED
+          </span>
+        ),
+    },
+    {
+      label: 'Site Map',
+      sectionId: 'section-sitemap',
+      status: hasSiteMap
+        ? <span className="text-csev-green">UPLOADED</span>
+        : (
+          <span className="inline-flex items-center gap-1 text-amber-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            NO IMAGE UPLOADED
+          </span>
+        ),
+    },
+  ];
+
+  return (
+    <div className="bg-csev-slate-800 rounded-lg p-4 border border-csev-border">
+      <div className="flex items-baseline gap-2 mb-3">
+        <h3 className="section-header">Field Recap</h3>
+        <span className="text-[10px] text-csev-text-muted">— Click name to jump to section</span>
+      </div>
+      <div className="space-y-1.5">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center text-xs">
+            <button
+              onClick={() => scrollTo(row.sectionId)}
+              className="text-csev-text-secondary hover:text-csev-green transition-colors text-left shrink-0 w-[140px] mr-3"
+            >
+              {row.label}
+            </button>
+            <div className="text-left font-medium">{row.status}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -512,12 +664,12 @@ function HomePageContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form Area */}
           <div className="lg:col-span-2 space-y-6">
-            <CustomerInfoForm />
-            <TemplateSelector />
-            <EVSEForm />
-            <InstallationScopeForm />
-            <FinancialForm />
-            <SiteMapForm />
+            <div id="section-customer"><CustomerInfoForm /></div>
+            <div id="section-template"><TemplateSelector /></div>
+            <div id="section-evse"><EVSEForm /></div>
+            <div id="section-installation"><InstallationScopeForm /></div>
+            <div id="section-financial"><FinancialForm /></div>
+            <div id="section-sitemap"><SiteMapForm /></div>
           </div>
 
           {/* Sidebar - Summary & Actions */}
@@ -700,14 +852,16 @@ function HomePageContent() {
 
               {/* Help Info */}
               <div className="bg-csev-slate-800 rounded-lg p-4 border border-csev-border">
-                <h4 className="font-medium text-csev-green mb-2">Quick Tips</h4>
+                <h3 className="section-header mb-2">Quick Tips</h3>
                 <ul className="text-sm text-csev-text-secondary space-y-1">
                   <li>• Click edit icon to override pricebook prices</li>
-                  <li>• Add notes to EVSE items for customization</li>
                   <li>• Upload a site map for a complete proposal</li>
                   <li>• Review payment options on page 5 of PDF</li>
                 </ul>
               </div>
+
+              {/* Field Recap */}
+              <FieldRecap proposal={proposal} />
             </div>
           </div>
         </div>

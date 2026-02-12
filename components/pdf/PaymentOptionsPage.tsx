@@ -33,6 +33,7 @@ function getStyles(colors: PdfColorPalette) {
       paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      borderRadius: 6,
       marginBottom: 6,
     },
 
@@ -63,6 +64,8 @@ function getStyles(colors: PdfColorPalette) {
       backgroundColor: colors.headerBg,
       borderRightWidth: 1,
       borderRightColor: colors.border,
+      borderTopLeftRadius: 3,
+      borderBottomLeftRadius: 3,
     },
 
     optionTitle: {
@@ -151,8 +154,8 @@ function getStyles(colors: PdfColorPalette) {
 
     costBadge: {
       backgroundColor: colors.panelBg,
-      borderWidth: 1,
-      borderColor: colors.border,
+      borderWidth: 2,
+      borderColor: colors.white,
       paddingVertical: 3,
       paddingHorizontal: 10,
       borderRadius: 3,
@@ -180,20 +183,20 @@ function getStyles(colors: PdfColorPalette) {
     },
 
     revShareBadge: {
-      backgroundColor: colors.headerBg,
+      backgroundColor: colors.primary,
       paddingVertical: 3,
       borderRadius: 3,
-      borderWidth: 1,
-      borderColor: colors.primary,
-      width: 45,
+      borderWidth: 2,
+      borderColor: colors.primaryDark,
+      width: 48,
       alignItems: 'center',
     },
 
     revShareBadgeText: {
       fontFamily: 'Roboto',
-      fontSize: 9,
+      fontSize: 10,
       fontWeight: 700,
-      color: colors.primary,
+      color: '#FFFFFF',
     },
 
     // Warranty upgrade checkboxes (Option 1 & 2)
@@ -262,8 +265,8 @@ function getStyles(colors: PdfColorPalette) {
       borderLeftColor: colors.primaryDark,
       backgroundColor: colors.primary,
       paddingBottom: 8,
-      borderTopRightRadius: 6,
-      borderBottomRightRadius: 6,
+      borderTopRightRadius: 3,
+      borderBottomRightRadius: 3,
     },
 
     initialLine: {
@@ -300,6 +303,7 @@ function getStyles(colors: PdfColorPalette) {
       paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      borderRadius: 6,
     },
 
     valuePropHeaderText: {

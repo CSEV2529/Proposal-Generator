@@ -33,6 +33,7 @@ function getStyles(colors: PdfColorPalette) {
       paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      borderRadius: 6,
     },
 
     sectionHeaderLabel: {

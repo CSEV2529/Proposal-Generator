@@ -62,6 +62,7 @@ function getStyles(colors: PdfColorPalette) {
       paddingHorizontal: 15,
       borderLeftWidth: 4,
       borderLeftColor: colors.primary,
+      borderRadius: 6,
     },
 
     sectionHeaderText: {
@@ -107,7 +108,7 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
   const styles = getStyles(colors);
 
   return (
-    <PageWrapper pageNumber={6} showDisclaimer={true} disclaimerBorder={false} theme={theme}>
+    <PageWrapper pageNumber={6} showDisclaimer={false} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Proposed Site Map</Text>
 
@@ -127,8 +128,8 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
         )}
       </View>
 
-      {/* Site Map Approval — pinned to bottom */}
-      <View style={{ marginBottom: 15 }}>
+      {/* Site Map Approval — pinned to bottom just above footer */}
+      <View>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionHeaderText}>Site Map Approval</Text>
         </View>
@@ -143,9 +144,8 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
             <Text style={styles.signatureLabel}>Signature</Text>
             <View style={styles.signatureLine} />
           </View>
-          <View style={styles.signatureRow}>
+          <View style={{ marginBottom: 6 }}>
             <Text style={styles.signatureLabel}>Date Signed</Text>
-            <View style={styles.signatureLine} />
           </View>
         </View>
       </View>
