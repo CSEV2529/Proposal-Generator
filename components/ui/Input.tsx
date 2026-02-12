@@ -42,7 +42,7 @@ export function Input({
       />
       {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-csev-text-muted">{helperText}</p>
+        <p className="mt-1 text-sm text-csev-text-muted whitespace-pre-line">{helperText}</p>
       )}
     </div>
   );
@@ -90,7 +90,7 @@ export function TextArea({
       />
       {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-csev-text-muted">{helperText}</p>
+        <p className="mt-1 text-sm text-csev-text-muted whitespace-pre-line">{helperText}</p>
       )}
     </div>
   );

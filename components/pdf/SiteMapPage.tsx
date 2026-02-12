@@ -37,14 +37,15 @@ function getStyles(colors: PdfColorPalette) {
 
     placeholder: {
       textAlign: 'center',
-      padding: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
     },
 
     placeholderText: {
-      fontFamily: 'Roboto',
-      fontSize: 14,
+      fontFamily: 'Orbitron',
+      fontSize: 28,
       color: colors.textMuted,
-      marginBottom: 10,
     },
 
     placeholderSubtext: {
@@ -121,10 +122,7 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
           <Image src={proposal.siteMapImage} style={styles.siteMapImage} />
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>[Site Map Image]</Text>
-            <Text style={styles.placeholderSubtext}>
-              Upload a site map image in the app to display here
-            </Text>
+            <Text style={styles.placeholderText}>Site Map TBD</Text>
           </View>
         )}
       </View>

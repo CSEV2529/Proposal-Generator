@@ -15,6 +15,8 @@ import {
   calculateNetProjectCost,
   getEffectivePaymentOptionEnabled,
   calculateShippingCost,
+  calculateMaterialCost,
+  calculateLaborCost,
 } from '@/lib/calculations';
 import { getIncentiveLabels, getAdditionalTerms, getPaymentOptions } from '@/lib/constants';
 
@@ -134,7 +136,15 @@ export function FinancialForm() {
                 });
               }}
               placeholder="0"
-              helperText={`Margin gives ${formatCurrencyWithCents(proposal.csmrQuotedPrice - (proposal.csmrQuotedPriceAdjustment || 0))} → adjusted to ${formatCurrencyWithCents(proposal.csmrQuotedPrice)}`}
+              helperText={(() => {
+                const base = proposal.csmrQuotedPrice - (proposal.csmrQuotedPriceAdjustment || 0);
+                const matPricebook = calculateMaterialCost(proposal.installationItems);
+                const labPricebook = calculateLaborCost(proposal.installationItems);
+                const pricebookTotal = proposal.csmrPricebookTotal;
+                const matQuoted = pricebookTotal > 0 ? (matPricebook / pricebookTotal) * proposal.csmrQuotedPrice : 0;
+                const labQuoted = pricebookTotal > 0 ? (labPricebook / pricebookTotal) * proposal.csmrQuotedPrice : 0;
+                return `Margin gives ${formatCurrencyWithCents(base)} → adjusted to ${formatCurrencyWithCents(proposal.csmrQuotedPrice)}\nPDF output → Material: ${formatCurrencyWithCents(matQuoted)} | Labor: ${formatCurrencyWithCents(labQuoted)}`;
+              })()}
             />
           </div>
         </div>
