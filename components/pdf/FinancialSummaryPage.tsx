@@ -278,7 +278,7 @@ export function FinancialSummaryPage({ proposal, theme }: FinancialSummaryPagePr
   }));
 
   return (
-    <PageWrapper pageNumber={4} showDisclaimer={true} theme={theme}>
+    <PageWrapper pageNumber={4} showDisclaimer={true} disclaimerBorder={false} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Financial Summary</Text>
 

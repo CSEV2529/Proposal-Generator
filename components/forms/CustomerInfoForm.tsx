@@ -123,16 +123,22 @@ export function CustomerInfoForm() {
           }))}
         />
 
-        <Select
-          label="Location Type"
-          name="locationType"
-          value={proposal.locationType}
-          onChange={handleLocationTypeChange}
-          options={Object.entries(LOCATION_TYPES).map(([value, { label }]) => ({
-            value,
-            label,
-          }))}
-        />
+        <div>
+          <Select
+            label="Location Type"
+            name="locationType"
+            value={proposal.locationType}
+            onChange={handleLocationTypeChange}
+            placeholder="Select a location type..."
+            options={Object.entries(LOCATION_TYPES).map(([value, { label }]) => ({
+              value,
+              label,
+            }))}
+          />
+          <p className="mt-1 text-xs text-csev-text-muted">
+            This selection determines the Industry Value Proposition shown on Page 5 of the Proposal PDF.
+          </p>
+        </div>
 
         <Select
           label="Access Type"

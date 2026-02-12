@@ -418,7 +418,7 @@ export function FinancialForm() {
             </table>
           </div>
           <p className="text-xs text-csev-text-muted">
-            Option 2 gives customer 50% discount, Option 3 gives customer 100% discount (FREE).
+            Profitability is based on the Cost % below, which determines the Customer Discount from Gross Project Cost.
           </p>
         </div>
 

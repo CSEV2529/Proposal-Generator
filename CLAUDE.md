@@ -71,11 +71,11 @@ lib/
 │                         #   PricebookProduct, InstallationService, PaymentOption, PaymentOptionAnalysis
 │                         #   ProjectType: level2-epc, level3-epc, mixed-epc, site-host, level2-site-host, distribution
 │                         #   ChargingLevel: level2, dcfc, both | AccessType: private, public
-│                         #   LocationType: apartments, commercial, dealership, hospitality, municipalities, retail
+│                         #   LocationType: apartments, hospitality, dealership, retail, workplace, municipalities, other
 ├── constants.ts          # COMPANY_INFO, LABOR_RATE ($125/hr), WHY_CSEV_CONTENT,
-│                         #   RESPONSIBILITIES, LOCATION_VALUE_PROPS,
-│                         #   INCENTIVE_LABEL_DEFAULTS, FOOTNOTES, COVER_PAGE_TITLES
+│                         #   RESPONSIBILITIES, INCENTIVE_LABEL_DEFAULTS, FOOTNOTES, COVER_PAGE_TITLES
 │                         #   PaymentOptionConfig[], PAYMENT_OPTIONS_BY_PROJECT_TYPE (per-project-type arrays)
+│                         #   INDUSTRY_VALUE_PROPS (keyed by LocationType, exactly 4 lines each)
 │                         #   getPaymentOptions(), getValuePropForContext(), getAdditionalTerms()
 ├── pricebook.ts          # 27 EVSE SKUs (Autel L2 + DCFC 60-320kW), 2 accessories,
 │                         #   90+ installation services grouped by subgroup:

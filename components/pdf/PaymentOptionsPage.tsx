@@ -182,10 +182,11 @@ function getStyles(colors: PdfColorPalette) {
     revShareBadge: {
       backgroundColor: colors.headerBg,
       paddingVertical: 3,
-      paddingHorizontal: 8,
       borderRadius: 3,
       borderWidth: 1,
       borderColor: colors.primary,
+      width: 45,
+      alignItems: 'center',
     },
 
     revShareBadgeText: {
@@ -309,24 +310,25 @@ function getStyles(colors: PdfColorPalette) {
 
     valuePropContent: {
       paddingHorizontal: 15,
-      paddingTop: 6,
-    },
-
-    valuePropIntro: {
-      fontFamily: 'Roboto',
-      fontSize: 8,
-      color: colors.textLight,
-      marginBottom: 6,
-      lineHeight: 1.4,
+      paddingTop: 4,
     },
 
     valuePropPoint: {
       fontFamily: 'Roboto',
-      fontSize: 7.5,
+      fontSize: 8,
       color: colors.textLight,
-      paddingVertical: 4,
+      paddingVertical: 3,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+      lineHeight: 1.4,
+    },
+
+    valuePropPointLast: {
+      fontFamily: 'Roboto',
+      fontSize: 8,
+      color: colors.textLight,
+      paddingVertical: 3,
+      borderBottomWidth: 0,
       lineHeight: 1.4,
     },
   });
@@ -371,7 +373,7 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
   const valueProp = getValuePropForContext(proposal.locationType, proposal.projectType);
 
   return (
-    <PageWrapper pageNumber={5} showDisclaimer={true} theme={theme}>
+    <PageWrapper pageNumber={5} showDisclaimer={true} disclaimerBorder={false} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Payment Options</Text>
 
@@ -463,15 +465,17 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
       {/* Footnote */}
       <Text style={styles.footnote}>{FOOTNOTES.revenueShare}</Text>
 
-      {/* Value Proposition Section — always shows with 4 lines */}
-      <View>
+      {/* Spacer pushes value prop to bottom of page */}
+      <View style={{ flexGrow: 1 }} />
+
+      {/* Value Proposition Section — anchored to bottom, fixed height: header + 4 lines */}
+      <View style={{ height: 88, marginBottom: 8 }}>
         <View style={styles.valuePropHeader}>
           <Text style={styles.valuePropHeaderText}>{valueProp?.title || 'Industry Value Proposition'}</Text>
         </View>
         <View style={styles.valuePropContent}>
-          <Text style={styles.valuePropIntro}>{valueProp?.intro || ' '}</Text>
           {[0, 1, 2, 3].map((index) => (
-            <Text key={index} style={styles.valuePropPoint}>
+            <Text key={index} style={index === 3 ? styles.valuePropPointLast : styles.valuePropPoint}>
               {valueProp?.points?.[index] || ' '}
             </Text>
           ))}

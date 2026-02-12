@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useProposal } from '@/context/ProposalContext';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
@@ -10,6 +10,18 @@ export function TemplateSelector() {
   const { proposal, dispatch } = useProposal();
 
   const allStates = getAllStates();
+
+  // Auto-sync: when customer state changes, match template state
+  useEffect(() => {
+    if (proposal.customerState) {
+      const matchedState = allStates.find(
+        s => s.abbreviation === proposal.customerState.toUpperCase()
+      );
+      if (matchedState && matchedState.id !== proposal.projectStateId) {
+        dispatch({ type: 'SET_PROJECT_STATE', payload: matchedState.id });
+      }
+    }
+  }, [proposal.customerState]); // eslint-disable-line react-hooks/exhaustive-deps
   // Put NY and NJ at the top, then the rest alphabetically
   const states = [
     ...allStates.filter(s => s.id === 'ny'),

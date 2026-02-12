@@ -306,17 +306,6 @@ export const PAYMENT_OPTIONS_BY_PROJECT_TYPE: Record<ProjectType, PaymentOptionC
   'distribution': DISTRIBUTION_OPTIONS,
 };
 
-export const HOTEL_VALUE_PROPOSITION = {
-  title: 'Turn Charging into Check-Ins',
-  intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-  points: [
-    "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-    "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-    "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-    "Every 100kWh charged generates about $600 in additional room bookings",
-  ],
-};
-
 // Additional Terms by Project Type — update these when project types change
 // Each entry is an array of { label, notes } rows displayed on Page 4
 // Network Fees row is generated dynamically based on networkYears selection
@@ -424,22 +413,25 @@ export const PROJECT_TYPES = {
 
 export const LOCATION_TYPES = {
   'apartments': {
-    label: 'Apartments / Multi Unit Dwelling',
-  },
-  'commercial': {
-    label: 'Commercial / Workspace',
-  },
-  'dealership': {
-    label: 'Dealership',
+    label: 'Apartments / Multi Unit Dwellings (MUDs)',
   },
   'hospitality': {
-    label: 'Hospitality / Hotels',
+    label: 'Hotel / Hospitality',
   },
-  'municipalities': {
-    label: 'Municipalities / Public Destinations',
+  'dealership': {
+    label: 'Auto Dealerships',
   },
   'retail': {
-    label: 'Retail / Restaurant',
+    label: 'Retail / Shopping Plazas',
+  },
+  'workplace': {
+    label: 'Workplace / Restaurants',
+  },
+  'municipalities': {
+    label: 'Municipalities / Public Destination',
+  },
+  'other': {
+    label: 'All Other',
   },
 };
 
@@ -488,364 +480,92 @@ export function getIncentiveLabels(utilityId?: string): { makeReady: string; sec
   return INCENTIVE_LABEL_DEFAULTS['default'];
 }
 
-// Location-specific value proposition sections (legacy — kept for backward compat)
-export const LOCATION_VALUE_PROPS: Record<string, { title: string; intro: string; points: string[] }> = {
-  'hospitality': {
-    title: 'Turn Charging into Check-Ins',
-    intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
+// ============================================
+// Industry Value Propositions — keyed by LocationType only
+// Each entry: title (header), intro (one line), points (EXACTLY 4 lines — always 4, no more, no less)
+// To update: edit the title/intro/points for each location type below
+// The PDF renders exactly 4 point lines regardless — extra points are ignored, missing ones show blank
+// ============================================
+export const INDUSTRY_VALUE_PROPS: Record<LocationType, { title: string; intro: string; points: string[] }> = {
+  'apartments': {
+    title: 'Charge Up Your Residents',
+    intro: '',
     points: [
-      "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-      "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
+      "Attract and retain high-value residents to your property",
+      "Increase property value and offer the ability to charge higher rental pricing",
+      "80% of EV charging happens where the driver lives, making easy charging access \"at home\" the single most important factor in EV ownership",
+      " ",
+    ],
+  },
+  'hospitality': {
+    title: 'Powering Guest Stays',
+    intro: '',
+    points: [
+      "30+ Monthly Bookings - at $150/room, that's $4,500+ in added monthly revenue",
+      "Boost RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
       "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-      "Every 100kWh charged generates about $600 in additional room bookings",
+      "Every 100 kWh charged generates about $600 in additional room bookings",
     ],
-  },
-  'apartments': {
-    title: 'Charge Up Your Portfolio',
-    intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-    points: [
-      "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-      "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-      "Increase property value by $50-100K+ per building with installed EV infrastructure",
-      "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-    ],
-  },
-};
-
-// ============================================
-// Value Propositions Matrix (LocationType × ProjectType)
-// ============================================
-
-export const VALUE_PROPS_MATRIX: Record<LocationType, Partial<Record<ProjectType, { title: string; intro: string; points: string[] } | null>>> = {
-  'hospitality': {
-    'level2-epc': {
-      title: 'Turn Charging into Check-Ins',
-      intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-      points: [
-        "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-        "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-        "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-        "Every 100kWh charged generates about $600 in additional room bookings",
-      ],
-    },
-    'level3-epc': {
-      title: 'Turn Charging into Check-Ins',
-      intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-      points: [
-        "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-        "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-        "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-        "Every 100kWh charged generates about $600 in additional room bookings",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Turn Charging into Check-Ins',
-      intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-      points: [
-        "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-        "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-        "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-        "Every 100kWh charged generates about $600 in additional room bookings",
-      ],
-    },
-    'site-host': {
-      title: 'Turn Charging into Check-Ins',
-      intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-      points: [
-        "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-        "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-        "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-        "Every 100kWh charged generates about $600 in additional room bookings",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Turn Charging into Check-Ins',
-      intro: 'Hotels with EV chargers see an average of 30+ extra bookings per month, and adding nearly $500K in property value',
-      points: [
-        "30+ Monthly Books - at $150/room that's $4,500 in added monthly revenue, turning a small utility cost into $52.2k in annual profit",
-        "Boosted RevPAR - 48% of EV drivers won't stay at a hotel without EV charging",
-        "$52k Annual NOI Boost - drives long-term value at an 11% cap rate (~$475K)",
-        "Every 100kWh charged generates about $600 in additional room bookings",
-      ],
-    },
-    'distribution': null,
-  },
-  'apartments': {
-    'level2-epc': {
-      title: 'Charge Up Your Portfolio',
-      intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-      points: [
-        "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-        "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-        "Increase property value by $50-100K+ per building with installed EV infrastructure",
-        "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-      ],
-    },
-    'level3-epc': {
-      title: 'Charge Up Your Portfolio',
-      intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-      points: [
-        "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-        "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-        "Increase property value by $50-100K+ per building with installed EV infrastructure",
-        "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Charge Up Your Portfolio',
-      intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-      points: [
-        "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-        "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-        "Increase property value by $50-100K+ per building with installed EV infrastructure",
-        "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-      ],
-    },
-    'site-host': {
-      title: 'Charge Up Your Portfolio',
-      intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-      points: [
-        "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-        "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-        "Increase property value by $50-100K+ per building with installed EV infrastructure",
-        "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Charge Up Your Portfolio',
-      intro: 'Multi-family properties with EV chargers attract higher-quality tenants and command premium rents',
-      points: [
-        "Attract eco-conscious tenants willing to pay 5-10% more in monthly rent",
-        "Reduce turnover - 73% of EV drivers say charging availability impacts their housing decisions",
-        "Increase property value by $50-100K+ per building with installed EV infrastructure",
-        "Future-proof your property as EV adoption grows to 50%+ of new car sales",
-      ],
-    },
-    'distribution': null,
-  },
-  'commercial': {
-    'level2-epc': {
-      title: 'Power Your Workplace Forward',
-      intro: 'Workplace charging is the #2 most common charging location — attract and retain top talent with EV amenities',
-      points: [
-        "Employee retention - 67% of EV drivers consider workplace charging a top benefit",
-        "Attract new talent - EV charging signals a forward-thinking, sustainable employer",
-        "Low cost-per-use with Level 2 charging during long workday dwell times",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'level3-epc': {
-      title: 'Power Your Workplace Forward',
-      intro: 'Workplace charging is the #2 most common charging location — attract and retain top talent with EV amenities',
-      points: [
-        "Employee retention - 67% of EV drivers consider workplace charging a top benefit",
-        "Attract new talent - EV charging signals a forward-thinking, sustainable employer",
-        "DCFC enables fleet and visitor fast-charging alongside employee Level 2 stations",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Power Your Workplace Forward',
-      intro: 'Workplace charging is the #2 most common charging location — attract and retain top talent with EV amenities',
-      points: [
-        "Employee retention - 67% of EV drivers consider workplace charging a top benefit",
-        "Attract new talent - EV charging signals a forward-thinking, sustainable employer",
-        "Mixed L2 + DCFC serves both long-dwell employees and quick-stop visitors",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'site-host': {
-      title: 'Power Your Workplace Forward',
-      intro: 'Workplace charging is the #2 most common charging location — attract and retain top talent with EV amenities',
-      points: [
-        "Employee retention - 67% of EV drivers consider workplace charging a top benefit",
-        "Zero upfront cost with site host model — CSEV handles everything",
-        "Low cost-per-use with Level 2 charging during long workday dwell times",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Power Your Workplace Forward',
-      intro: 'Workplace charging is the #2 most common charging location — attract and retain top talent with EV amenities',
-      points: [
-        "Employee retention - 67% of EV drivers consider workplace charging a top benefit",
-        "Low cost-per-use with Level 2 charging during long workday dwell times",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-        "Flexible payment options including site host lease agreements",
-      ],
-    },
-    'distribution': null,
   },
   'dealership': {
-    'level2-epc': {
-      title: 'Sell More EVs, Service More Customers',
-      intro: 'Dealerships with on-site EV charging see higher EV sales conversion and increased service revenue',
-      points: [
-        "Demonstrate EV charging to buyers on-site — increases test drive-to-sale conversion",
-        "Service department revenue from EV maintenance and charging during visits",
-        "Attract EV owners from competing brands for service and future trade-ins",
-        "Meet manufacturer EV-readiness requirements ahead of mandates",
-      ],
-    },
-    'level3-epc': {
-      title: 'Sell More EVs, Service More Customers',
-      intro: 'Dealerships with on-site EV charging see higher EV sales conversion and increased service revenue',
-      points: [
-        "Demonstrate EV fast-charging to buyers on-site — increases test drive-to-sale conversion",
-        "DCFC enables rapid top-offs for service customers and delivery prep",
-        "Attract EV owners from competing brands for service and future trade-ins",
-        "Meet manufacturer EV-readiness requirements ahead of mandates",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Sell More EVs, Service More Customers',
-      intro: 'Dealerships with on-site EV charging see higher EV sales conversion and increased service revenue',
-      points: [
-        "Demonstrate EV charging to buyers on-site — increases test drive-to-sale conversion",
-        "L2 for lot inventory management, DCFC for rapid delivery prep and customer charging",
-        "Attract EV owners from competing brands for service and future trade-ins",
-        "Meet manufacturer EV-readiness requirements ahead of mandates",
-      ],
-    },
-    'site-host': {
-      title: 'Sell More EVs, Service More Customers',
-      intro: 'Dealerships with on-site EV charging see higher EV sales conversion and increased service revenue',
-      points: [
-        "Demonstrate EV charging to buyers on-site — increases test drive-to-sale conversion",
-        "Zero upfront cost with site host model — CSEV handles everything",
-        "Attract EV owners from competing brands for service and future trade-ins",
-        "Meet manufacturer EV-readiness requirements ahead of mandates",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Sell More EVs, Service More Customers',
-      intro: 'Dealerships with on-site EV charging see higher EV sales conversion and increased service revenue',
-      points: [
-        "Demonstrate EV charging to buyers on-site — increases test drive-to-sale conversion",
-        "Service department revenue from EV maintenance and charging during visits",
-        "Attract EV owners from competing brands for service and future trade-ins",
-        "Meet manufacturer EV-readiness requirements ahead of mandates",
-      ],
-    },
-    'distribution': null,
-  },
-  'municipalities': {
-    'level2-epc': {
-      title: 'Lead the Charge for Your Community',
-      intro: 'Public EV infrastructure demonstrates environmental leadership and attracts economic development',
-      points: [
-        "Demonstrate environmental leadership and meet sustainability goals",
-        "Attract visitors and economic activity to downtown and public spaces",
-        "Generate revenue from public charging fees to offset utility costs",
-        "Access federal, state, and utility incentives designed for public entities",
-      ],
-    },
-    'level3-epc': {
-      title: 'Lead the Charge for Your Community',
-      intro: 'Public EV infrastructure demonstrates environmental leadership and attracts economic development',
-      points: [
-        "DCFC enables corridor charging that brings travelers into your community",
-        "Demonstrate environmental leadership and meet sustainability goals",
-        "Generate significant revenue from public fast-charging fees",
-        "Access federal, state, and utility incentives designed for public entities",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Lead the Charge for Your Community',
-      intro: 'Public EV infrastructure demonstrates environmental leadership and attracts economic development',
-      points: [
-        "L2 for municipal lots and parks, DCFC for corridor and downtown locations",
-        "Demonstrate environmental leadership and meet sustainability goals",
-        "Generate revenue from public charging fees to offset utility costs",
-        "Access federal, state, and utility incentives designed for public entities",
-      ],
-    },
-    'site-host': {
-      title: 'Lead the Charge for Your Community',
-      intro: 'Public EV infrastructure demonstrates environmental leadership and attracts economic development',
-      points: [
-        "Zero upfront cost with site host model — CSEV handles everything",
-        "Demonstrate environmental leadership and meet sustainability goals",
-        "Generate revenue from public charging fees to offset utility costs",
-        "Access federal, state, and utility incentives designed for public entities",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Lead the Charge for Your Community',
-      intro: 'Public EV infrastructure demonstrates environmental leadership and attracts economic development',
-      points: [
-        "Demonstrate environmental leadership and meet sustainability goals",
-        "Attract visitors and economic activity to downtown and public spaces",
-        "Generate revenue from public charging fees to offset utility costs",
-        "Access federal, state, and utility incentives designed for public entities",
-      ],
-    },
-    'distribution': null,
+    title: 'Accelerating EV Adoption',
+    intro: '',
+    points: [
+      "Drive higher EV sales conversion by letting buyers experience fast, reliable charging before they leave the lot",
+      "Keep service bays full — EV owners return for maintenance and top-offs, boosting per-visit revenue",
+      "Future-proof your dealership with scalable infrastructure that grows alongside OEM electrification mandates",
+      "Turn every charge session into brand exposure with custom-branded stations and on-screen dealership promotions",
+    ],
   },
   'retail': {
-    'level2-epc': {
-      title: 'Drive Foot Traffic & Dwell Time',
-      intro: 'Retail locations with EV charging see increased foot traffic, longer visits, and higher average spend',
-      points: [
-        "EV drivers spend 50% more time at locations with charging — more time = more spending",
-        "Attract the growing EV demographic with higher-than-average household income",
-        "Differentiate from competitors and drive repeat visits",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'level3-epc': {
-      title: 'Drive Foot Traffic & Dwell Time',
-      intro: 'Retail locations with EV charging see increased foot traffic, longer visits, and higher average spend',
-      points: [
-        "DCFC attracts highway travelers looking for a quick charge and a meal or shop",
-        "Attract the growing EV demographic with higher-than-average household income",
-        "Differentiate from competitors and drive repeat visits",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'mixed-epc': {
-      title: 'Drive Foot Traffic & Dwell Time',
-      intro: 'Retail locations with EV charging see increased foot traffic, longer visits, and higher average spend',
-      points: [
-        "L2 for regular shoppers, DCFC for highway travelers stopping for a quick charge",
-        "Attract the growing EV demographic with higher-than-average household income",
-        "Differentiate from competitors and drive repeat visits",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'site-host': {
-      title: 'Drive Foot Traffic & Dwell Time',
-      intro: 'Retail locations with EV charging see increased foot traffic, longer visits, and higher average spend',
-      points: [
-        "Zero upfront cost with site host model — CSEV handles everything",
-        "Attract the growing EV demographic with higher-than-average household income",
-        "Differentiate from competitors and drive repeat visits",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'level2-site-host': {
-      title: 'Drive Foot Traffic & Dwell Time',
-      intro: 'Retail locations with EV charging see increased foot traffic, longer visits, and higher average spend',
-      points: [
-        "EV drivers spend 50% more time at locations with charging — more time = more spending",
-        "Attract the growing EV demographic with higher-than-average household income",
-        "Differentiate from competitors and drive repeat visits",
-        "Eligible for federal tax credits and state incentives to offset installation costs",
-      ],
-    },
-    'distribution': null,
+    title: 'Charging Drives Commerce',
+    intro: '',
+    points: [
+      "EV drivers spend 2x longer at locations with charging — more dwell time means higher average ticket sizes",
+      "Capture the EV demographic — households with EVs earn 40% above median, driving premium spending",
+      "Stand out from competing plazas and create a reason for repeat visits with reliable, branded charging",
+      "Offset installation costs with federal tax credits, state incentives, and per-session charging revenue",
+    ],
+  },
+  'workplace': {
+    title: 'Energize Your Team',
+    intro: '',
+    points: [
+      "Workplace charging is the #2 most-used charging location — employees rank it as a top retention benefit",
+      "Signal innovation and sustainability to recruit top talent in a competitive hiring market",
+      "Level 2 charging during 8-hour workdays delivers full charges at minimal electricity cost per employee",
+      "Monetize unused parking with per-session fees or offer free charging as a tax-advantaged employee perk",
+    ],
+  },
+  'municipalities': {
+    title: 'Powering Public Progress',
+    intro: '',
+    points: [
+      "Demonstrate environmental leadership and advance community sustainability goals with visible EV infrastructure",
+      "Draw visitors, commuters, and economic activity to downtown corridors and public destinations",
+      "Generate ongoing revenue from public charging fees to offset municipal utility and maintenance costs",
+      "Maximize federal, state, and utility incentives specifically designed for public-sector EV deployments",
+    ],
+  },
+  'other': {
+    title: 'Benefits of Using ChargeSmart EV',
+    intro: '',
+    points: [
+      "Turnkey EV charging solutions — we handle everything from site design and permitting to installation and activation",
+      "Cloud-based monitoring portal and easy-to-use driver app with real-time station status and usage analytics",
+      "Maximize available incentives — our team identifies and facilitates federal, state, and utility rebate applications",
+      "Dedicated ongoing support with network management, maintenance coordination, and revenue optimization",
+    ],
   },
 };
 
-// Get value prop content based on location and project type (new matrix-based)
+// Get value prop content based on location type
 export function getValuePropForContext(
   locationType: LocationType,
-  projectType: ProjectType
+  _projectType?: ProjectType
 ): { title: string; intro: string; points: string[] } | null {
-  const locationProps = VALUE_PROPS_MATRIX[locationType];
-  if (!locationProps) return null;
-  const prop = locationProps[projectType];
-  if (prop === null || prop === undefined) return null;
+  const prop = INDUSTRY_VALUE_PROPS[locationType];
+  if (!prop) return null;
   return prop;
 }
 

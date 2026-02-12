@@ -106,7 +106,7 @@ export function SiteMapPage({ proposal, theme }: SiteMapPageProps) {
   const styles = getStyles(colors);
 
   return (
-    <PageWrapper pageNumber={6} showDisclaimer={true} theme={theme}>
+    <PageWrapper pageNumber={6} showDisclaimer={true} disclaimerBorder={false} theme={theme}>
       {/* Title */}
       <Text style={styles.title}>Proposed Site Map</Text>
 

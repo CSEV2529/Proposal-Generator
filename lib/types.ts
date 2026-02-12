@@ -3,11 +3,12 @@ export type ChargingLevel = 'level2' | 'dcfc' | 'both';
 export type AccessType = 'private' | 'public';
 export type LocationType =
   | 'apartments'
-  | 'commercial'
-  | 'dealership'
   | 'hospitality'
+  | 'dealership'
+  | 'retail'
+  | 'workplace'
   | 'municipalities'
-  | 'retail';
+  | 'other';
 
 export interface EVSEItem {
   id: string;
@@ -196,7 +197,7 @@ export const defaultProposal: Proposal = {
   preparedDate: new Date(),
   projectType: 'level2-epc',
   accessType: 'public',
-  locationType: 'commercial',
+  locationType: '' as LocationType,
   evseItems: [],
   installationItems: [],
 
