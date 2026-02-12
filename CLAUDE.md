@@ -77,7 +77,8 @@ lib/
 │                         #   PaymentOptionConfig[], PAYMENT_OPTIONS_BY_PROJECT_TYPE (per-project-type arrays)
 │                         #   INDUSTRY_VALUE_PROPS (keyed by LocationType, exactly 4 lines each)
 │                         #   getPaymentOptions(), getValuePropForContext(), getAdditionalTerms()
-├── pricebook.ts          # 27 EVSE SKUs (Autel L2 + DCFC 60-320kW), 2 accessories,
+├── pricebook.ts          # 29 EVSE products (L2 + DCFC + accessories) with warranty costs per unit,
+│                         #   warranty5YrParts/warranty3YrFull/warranty5YrFull fields on each product
 │                         #   90+ installation services grouped by subgroup:
 │                         #   New Service, Breakers, Panels, Transformers, Conduit,
 │                         #   Cables, Trenching, Civil-Bases, Permits, Design, Striping
@@ -136,8 +137,14 @@ templates/
   - Profitability: Customer Discount = (1 - costPercent/100) * netProjectCost
   - CSEV Profit = grossProjectCost - |customerDiscount| - |csevCost|
   - Level 2 EPC defaults: Opt1 100%/100%, Opt2 50%/75%, Opt3 0%/50% (cost/revShare)
+  - Level 2 Site Host defaults: Opt1 100%/100% (Customer), Opt2 50%/50% (Customer), Opt3 0%/10% (CSEV Owned)
   - costLabel on warrantyUpgrades for custom display text (used by mixed-epc dual pricing)
   - Warranty text splits on `;` in PDF for multi-level display (L2/DCFC)
+  - Warranty upgrades use `tier: WarrantyTier` referencing pricebook warranty costs per EVSE item
+  - `calculateWarrantyTotals(items)` sums warranty costs across all EVSE items × quantities per tier
+  - Ownership badge: medium gray (#555555) solid bg, white centered text, borderRadius 3
+  - CUSTOMER OWNED desc: "SOLELY the Customer's Responsibility" (2 lines with `\n`)
+  - CSEV OWNED desc: "Duration of Lease Term (10 Years Minimum)" + "Included and CSEV's Responsibility" + "(See Lease Agreement for Final Terms)" (3 lines)
 
 ## Branding / Tailwind
 
@@ -226,7 +233,10 @@ templates/
 - Row height: `minHeight: 20`, `paddingVertical: 4` — rows grow for long descriptions
 - Incentive rows: light green background, CSEV green bold text
 - Net Project Cost total row: dark grey/charcoal (not green), white text
-- Acceptance: "Accepted Date" / "Accepted By" with 28px gap to signature lines, no top border, 10px labels
+- Acceptance: "Accepted By" (left) / "Accepted Date" (right) with 28px gap to signature lines, no top border, 10px labels
+- Bill To / Ship To boxes: green left border (borderLeftWidth 4) matching table header
+- Last line item: no bottom border (thick subtotal border sits directly below)
+- Incentive rows: 4px marginTop gap between them so green backgrounds don't touch
 - Line items grouped by utility category mapping (National Grid, NYSEG/RG&E) or subgroup
 - CSMR margin applied to installation line items
 
