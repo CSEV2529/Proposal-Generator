@@ -69,7 +69,8 @@ export interface Proposal {
 
   // EVSE Financials (auto-calculated)
   evseActualCost: number;         // Sum of all EVSE item costs
-  evseQuotedPrice: number;        // Sum of all EVSE item prices (with margin)
+  evseQuotedPrice: number;        // Sum of all EVSE item prices (with margin + adjustment)
+  evseQuotedPriceAdjustment?: number; // +/- adjustment to fine-tune quoted EVSE price
 
   // Sales Tax (applies to EPC and Site Host projects only)
   salesTaxRate: number;           // Sales tax rate as percentage (e.g., 7 = 7%)
@@ -79,10 +80,12 @@ export interface Proposal {
   csmrPricebookTotal: number;     // Raw pricebook total (material + labor)
   csmrActualCost: number;         // csmrPricebookTotal * costBasisPercent
   csmrQuotedPrice: number;        // csmrActualCost * (1 + marginPercent)
+  csmrQuotedPriceAdjustment?: number; // +/- adjustment to fine-tune quoted CSMR price
 
   // Other Costs (pass-through, no margin)
   utilityAllowance: number;
   shippingCost: number;
+  shippingCostOverride?: number;
   networkYears: 1 | 3 | 5;
   networkPlanCost: number;      // What we charge the customer
   networkActualCost: number;    // Our actual cost
@@ -188,12 +191,12 @@ export interface PaymentOptionAnalysis {
 
 export const defaultProposal: Proposal = {
   // TODO: Remove test defaults after testing
-  customerName: 'Best Western Inn & Suites',
-  customerAddress: '123 Main St',
-  customerCity: 'Rochester',
-  customerState: 'NY',
-  customerZip: '14624',
-  projectStateId: 'ny',
+  customerName: 'The Mews at North Bergen',
+  customerAddress: '1305 Paterson Plank Rd',
+  customerCity: 'North Bergen',
+  customerState: 'NJ',
+  customerZip: '07047',
+  projectStateId: 'nj',
   preparedDate: new Date(),
   projectType: 'level2-epc',
   accessType: 'public',

@@ -306,7 +306,8 @@ export function hasEnabledPaymentOption(proposal: Proposal): boolean {
 export function recalculateProposalFinancials(proposal: Proposal): Partial<Proposal> {
   // EVSE calculations
   const evseActualCost = calculateEVSEActualCost(proposal.evseItems);
-  const evseQuotedPrice = calculateEVSEQuotedPrice(proposal.evseItems);
+  const evseBaseQuotedPrice = calculateEVSEQuotedPrice(proposal.evseItems);
+  const evseQuotedPrice = evseBaseQuotedPrice + (proposal.evseQuotedPriceAdjustment || 0);
 
   // Sales tax on EVSE (only for EPC and Site Host projects)
   const evseSalesTax = calculateEVSESalesTax(evseActualCost, proposal.salesTaxRate, proposal.projectType);
@@ -314,14 +315,17 @@ export function recalculateProposalFinancials(proposal: Proposal): Partial<Propo
   // CSMR calculations
   const csmrPricebookTotal = calculateCSMRPricebookTotal(proposal.installationItems);
   const csmrActualCost = calculateCSMRActualCost(csmrPricebookTotal, proposal.csmrCostBasisPercent);
-  const csmrQuotedPrice = calculateCSMRQuotedPrice(csmrActualCost, proposal.csmrMarginPercent);
+  const csmrBaseQuotedPrice = calculateCSMRQuotedPrice(csmrActualCost, proposal.csmrMarginPercent);
+  const csmrQuotedPrice = csmrBaseQuotedPrice + (proposal.csmrQuotedPriceAdjustment || 0);
 
   // Network cost (what we charge customer) and actual cost (what we pay)
   const networkPlanCost = calculateNetworkCost(proposal.evseItems, proposal.networkYears);
   const networkActualCost = calculateActualNetworkCost(proposal.evseItems, proposal.networkYears);
 
-  // Shipping cost (auto-calculated from EVSE SKUs)
-  const shippingCost = calculateShippingCost(proposal.evseItems);
+  // Shipping cost (use override if set, otherwise auto-calculate from EVSE SKUs)
+  const shippingCost = (proposal.shippingCostOverride !== undefined && proposal.shippingCostOverride >= 0)
+    ? proposal.shippingCostOverride
+    : calculateShippingCost(proposal.evseItems);
 
   // Build partial proposal with calculated values
   const updates: Partial<Proposal> = {

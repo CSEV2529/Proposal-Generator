@@ -542,7 +542,32 @@ export const scopeTemplates: ScopeOfWorkTemplate[] = [
       { serviceId: 'ev-stencil', quantity: 4 },
     ],
   },
-  // Add more scope templates as needed...
+  {
+    id: 'nj-20-l2-station-sh',
+    name: 'NJ (20) L2 Station SH',
+    description: '20 port Level 2 Site Host installation in NJ',
+    evseItems: [
+      { productId: 'csev-ac-sp-48a-pedestal', quantity: 20, notes: 'MaxiCharger ACUltra Single Port 48A Pedestal' },
+    ],
+    installationItems: [
+      { serviceId: 'service-200a-208v', quantity: 5 },
+      { serviceId: 'breaker-60a-2p', quantity: 20 },
+      { serviceId: 'conduit-60a-pvc-2in', quantity: 1000 },
+      { serviceId: 'conduit-fittings', quantity: 20 },
+      { serviceId: 'wire-60a', quantity: 3000 },
+      { serviceId: 'mount-station-l2', quantity: 20 },
+      { serviceId: 'terminate-station', quantity: 20 },
+      { serviceId: 'activation', quantity: 20 },
+      { serviceId: 'trenching-grass', quantity: 500 },
+      { serviceId: 'trenching-asphalt', quantity: 100 },
+      { serviceId: 'concrete-l2-footing', quantity: 20 },
+      { serviceId: 'bollard-bolt-on', quantity: 40 },
+      { serviceId: 'permit-fee', quantity: 1 },
+      { serviceId: 'design-fee', quantity: 1 },
+      { serviceId: 'project-management', quantity: 1 },
+      { serviceId: 'engineering-site', quantity: 1 },
+    ],
+  },
 ];
 
 // ============================================

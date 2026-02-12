@@ -171,8 +171,9 @@ function getStyles(colors: PdfColorPalette) {
 
     termRow: {
       flexDirection: 'row',
-      height: ROW_HEIGHT,
+      minHeight: ROW_HEIGHT,
       paddingHorizontal: 15,
+      paddingVertical: 3,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
       alignItems: 'center',

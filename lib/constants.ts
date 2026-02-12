@@ -332,15 +332,14 @@ export const ADDITIONAL_TERMS_BY_PROJECT_TYPE: Record<string, Array<{ label: str
     { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
     { label: 'Agreement Terms (Years)', notes: '10 Years Minimum (See Lease Agreement for Final Terms)' },
     { label: 'Recommended $/kWh', notes: '$0.40 / kWh for Level 2 units; $0.55 / kWh for DCFC units' },
-    { label: 'Party Responsible for Paying Network Fees', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
-    { label: 'Party Responsible for Paying Utility Bills', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
+    { label: 'Party Responsible for Paying Network Fees', notes: 'ChargeSmart EV (See Lease Agreement for Final Terms)' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'ChargeSmart EV (See Lease Agreement for Final Terms)' },
   ],
   'level2-site-host': [
     { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
-    { label: 'Agreement Terms (Years)', notes: '10 Years Minimum (See Lease Agreement for Final Terms)' },
+    { label: 'Agreement Terms (Years)', notes: '5 Years for Customer Owned;\n10 Years Min. for CSEV Owned (See Lease Agreement for Final Terms)' },
     { label: 'Recommended $/kWh', notes: '$0.40 / kWh' },
-    { label: 'Party Responsible for Paying Network Fees', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
-    { label: 'Party Responsible for Paying Utility Bills', notes: 'ChargeSmart EV for Site Lease Agreements Only; Otherwise Customer Pays' },
+    { label: 'Party Responsible for Paying Utility Bills', notes: 'Customer for Customer Owned;\nCSEV for CSEV Owned (See Lease Agreement for Final Terms)' },
   ],
   'distribution': [
     { label: 'Processing Fees', notes: '$0.49 per transaction + 9% standard processing' },
@@ -353,12 +352,12 @@ export const ADDITIONAL_TERMS_BY_PROJECT_TYPE: Record<string, Array<{ label: str
 // Generate dynamic network fees text based on years selected
 function getNetworkFeesText(networkYears: number): string {
   if (networkYears === 1) {
-    return 'CSEV Year 1; then Customer Years 2 and Beyond';
+    return 'CSEV Year 1; Customer Years 2 and Beyond';
   }
   if (networkYears === 3) {
-    return 'CSEV Years 1-3; then Customer Years 4 and Beyond';
+    return 'CSEV Years 1-3; Customer Years 4 and Beyond';
   }
-  return `CSEV Years 1-${networkYears}; then Customer Years ${networkYears + 1}+ after Renewal`;
+  return `CSEV Years 1-${networkYears}; Customer Years ${networkYears + 1}+ after Renewal`;
 }
 
 // Helper to get terms for a project type with dynamic network fees
@@ -366,9 +365,20 @@ function getNetworkFeesText(networkYears: number): string {
 export function getAdditionalTerms(projectType: string, networkYears: number = 5): Array<{ label: string; notes: string }> {
   const terms = [...(ADDITIONAL_TERMS_BY_PROJECT_TYPE[projectType] || ADDITIONAL_TERMS_BY_PROJECT_TYPE['level2-epc'])];
 
-  // Site Host types already have their own static Network Fees row in the data
-  // All other types get a dynamic Network Fees row inserted before Utility Bills
-  if (projectType !== 'site-host' && projectType !== 'level2-site-host') {
+  // Site Host has static Network Fees in data; EPC types get dynamic years;
+  // Level 2 Site Host gets hybrid (dynamic for Customer Owned + static for CSEV Owned)
+  if (projectType === 'level2-site-host') {
+    const utilityBillsIdx = terms.findIndex(t => t.label.includes('Utility Bills'));
+    const networkFeesRow = {
+      label: 'Party Responsible for Paying Network Fees',
+      notes: `${getNetworkFeesText(networkYears)} for Cust Owned;\nCSEV for CSEV Owned (See Lease Agreement for Final Terms)`,
+    };
+    if (utilityBillsIdx >= 0) {
+      terms.splice(utilityBillsIdx, 0, networkFeesRow);
+    } else {
+      terms.push(networkFeesRow);
+    }
+  } else if (projectType !== 'site-host') {
     const utilityBillsIdx = terms.findIndex(t => t.label.includes('Utility Bills'));
     const networkFeesRow = {
       label: 'Party Responsible for Paying Network Fees',

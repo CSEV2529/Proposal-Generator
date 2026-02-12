@@ -7,12 +7,14 @@ import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import {
   formatCurrency,
+  formatCurrencyWithCents,
   formatPercentage,
   calculateTotalPorts,
   analyzeAllPaymentOptions,
   projectRequiresSalesTax,
   calculateNetProjectCost,
   getEffectivePaymentOptionEnabled,
+  calculateShippingCost,
 } from '@/lib/calculations';
 import { getIncentiveLabels, getAdditionalTerms, getPaymentOptions } from '@/lib/constants';
 
@@ -62,7 +64,7 @@ export function FinancialForm() {
               type="number"
               min="0"
               max="100"
-              step="1"
+              step="0.1"
               value={proposal.evseMarginPercent}
               onChange={handlePricingChange('evseMarginPercent')}
               helperText="Target margin on equipment (e.g., 40 = 40%)"
@@ -73,7 +75,7 @@ export function FinancialForm() {
               type="number"
               min="0"
               max="100"
-              step="1"
+              step="0.1"
               value={proposal.csmrCostBasisPercent}
               onChange={handlePricingChange('csmrCostBasisPercent')}
               helperText="% of pricebook that is our actual cost"
@@ -84,7 +86,7 @@ export function FinancialForm() {
               type="number"
               min="0"
               max="100"
-              step="1"
+              step="0.1"
               value={proposal.csmrMarginPercent}
               onChange={handlePricingChange('csmrMarginPercent')}
               helperText="Target margin on installation work"
@@ -99,6 +101,40 @@ export function FinancialForm() {
               value={proposal.salesTaxRate}
               onChange={handlePricingChange('salesTaxRate')}
               helperText={projectRequiresSalesTax(proposal.projectType) ? 'Applied to EVSE cost' : 'N/A for Distribution'}
+            />
+          </div>
+
+          {/* Quoted Price Adjustments */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+            <Input
+              label="EVSE Quoted Price Adjustment ($)"
+              type="number"
+              step="0.01"
+              value={proposal.evseQuotedPriceAdjustment || ''}
+              onChange={(e) => {
+                const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                dispatch({
+                  type: 'SET_PRICING_SETTINGS',
+                  payload: { evseQuotedPriceAdjustment: val },
+                });
+              }}
+              placeholder="0"
+              helperText={`Margin gives ${formatCurrencyWithCents(proposal.evseQuotedPrice - (proposal.evseQuotedPriceAdjustment || 0))} → adjusted to ${formatCurrencyWithCents(proposal.evseQuotedPrice)}`}
+            />
+            <Input
+              label="CSMR Quoted Price Adjustment ($)"
+              type="number"
+              step="0.01"
+              value={proposal.csmrQuotedPriceAdjustment || ''}
+              onChange={(e) => {
+                const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                dispatch({
+                  type: 'SET_PRICING_SETTINGS',
+                  payload: { csmrQuotedPriceAdjustment: val },
+                });
+              }}
+              placeholder="0"
+              helperText={`Margin gives ${formatCurrencyWithCents(proposal.csmrQuotedPrice - (proposal.csmrQuotedPriceAdjustment || 0))} → adjusted to ${formatCurrencyWithCents(proposal.csmrQuotedPrice)}`}
             />
           </div>
         </div>
@@ -190,17 +226,19 @@ export function FinancialForm() {
               helperText="Estimated utility-side infrastructure costs"
             />
 
-            <div>
-              <label className="block text-sm font-medium text-csev-text-secondary mb-1">
-                Shipping Cost
-              </label>
-              <div className="mt-1 block w-full rounded-lg border border-csev-border bg-csev-slate-700 px-3 py-2 text-csev-text-primary">
-                {formatCurrency(proposal.shippingCost)}
-              </div>
-              <p className="text-xs text-csev-text-muted mt-1">
-                Auto-calculated from EVSE SKUs
-              </p>
-            </div>
+            <Input
+              label="Shipping Cost"
+              type="number"
+              min="0"
+              step="100"
+              value={proposal.shippingCostOverride ?? ''}
+              onChange={e => {
+                const v = e.target.value ? parseFloat(e.target.value) : undefined;
+                dispatch({ type: 'SET_FINANCIAL', payload: { shippingCostOverride: v } });
+              }}
+              placeholder={formatCurrency(calculateShippingCost(proposal.evseItems))}
+              helperText={`Auto: ${formatCurrency(calculateShippingCost(proposal.evseItems))} from EVSE SKUs. Leave empty to use auto.`}
+            />
 
             <div>
               <Select
