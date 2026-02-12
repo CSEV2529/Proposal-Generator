@@ -13,13 +13,13 @@ function getStyles(colors: PdfColorPalette, theme: PdfTheme) {
       position: 'relative',
     },
 
-    // Background nodes image overlay
+    // Background nodes image overlay — 20% larger, centered (spills off edges)
     backgroundNodes: {
       position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 300,
+      top: -30,
+      left: '-10%',
+      width: '120%',
+      height: 360,
       opacity: theme === 'dark' ? 0.075 : 0.12,
     },
 
