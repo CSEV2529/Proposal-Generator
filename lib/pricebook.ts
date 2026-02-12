@@ -19,6 +19,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 1925,
+    warranty3YrFull: 1375,
+    warranty5YrFull: 2475,
     chargingLevel: 'level2',
   },
   {
@@ -38,6 +41,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   {
@@ -57,6 +63,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   // Level 2 Chargers - 40A
@@ -77,6 +86,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 1925,
+    warranty3YrFull: 1375,
+    warranty5YrFull: 2475,
     chargingLevel: 'level2',
   },
   {
@@ -96,6 +108,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   {
@@ -115,6 +130,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   // Level 2 Chargers - 80A
@@ -135,6 +153,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 1925,
+    warranty3YrFull: 1375,
+    warranty5YrFull: 2475,
     chargingLevel: 'level2',
   },
   {
@@ -154,6 +175,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   {
@@ -173,6 +197,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   // Level 2 Chargers - 32A
@@ -193,6 +220,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 1925,
+    warranty3YrFull: 1375,
+    warranty5YrFull: 2475,
     chargingLevel: 'level2',
   },
   {
@@ -212,6 +242,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   {
@@ -231,6 +264,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 350,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   // ACPro Line
@@ -251,6 +287,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 175,
     numberOfPlugs: 1,
     category: 'charger',
+    warranty5YrParts: 1000,
+    warranty3YrFull: 700,
+    warranty5YrFull: 1300,
     chargingLevel: 'level2',
   },
   {
@@ -270,6 +309,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 0,
     numberOfPlugs: 0,
     category: 'accessory',
+    warranty5YrParts: 1100,
+    warranty3YrFull: 825,
+    warranty5YrFull: 1375,
     chargingLevel: 'level2',
   },
   // Accessories
@@ -290,6 +332,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 0,
     numberOfPlugs: 0,
     category: 'accessory',
+    warranty5YrParts: 1100,
+    warranty3YrFull: 825,
+    warranty5YrFull: 1375,
     chargingLevel: 'level2',
   },
   // DC Fast Chargers - CCS/CCS
@@ -310,6 +355,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 8470,
+    warranty3YrFull: 3410,
+    warranty5YrFull: 13530,
     chargingLevel: 'dcfc',
   },
   {
@@ -329,6 +377,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 11000,
+    warranty3YrFull: 4400,
+    warranty5YrFull: 17600,
     chargingLevel: 'dcfc',
   },
   {
@@ -348,6 +399,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 13420,
+    warranty3YrFull: 5390,
+    warranty5YrFull: 21450,
     chargingLevel: 'dcfc',
   },
   {
@@ -367,6 +421,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 15950,
+    warranty3YrFull: 6380,
+    warranty5YrFull: 25520,
     chargingLevel: 'dcfc',
   },
   // DC Fast Chargers - CCS/NACS
@@ -387,6 +444,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 8470,
+    warranty3YrFull: 3410,
+    warranty5YrFull: 13530,
     chargingLevel: 'dcfc',
   },
   {
@@ -406,6 +466,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 11000,
+    warranty3YrFull: 4400,
+    warranty5YrFull: 17600,
     chargingLevel: 'dcfc',
   },
   {
@@ -425,6 +488,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 13420,
+    warranty3YrFull: 5390,
+    warranty5YrFull: 21450,
     chargingLevel: 'dcfc',
   },
   {
@@ -444,6 +510,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 15950,
+    warranty3YrFull: 6380,
+    warranty5YrFull: 25520,
     chargingLevel: 'dcfc',
   },
   // DCHP Set of 4 - 640kW (4 ports per line item as shown in spreadsheet)
@@ -464,6 +533,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 4,
     category: 'charger',
+    warranty5YrParts: 55000,
+    warranty3YrFull: 44000,
+    warranty5YrFull: 66000,
     chargingLevel: 'dcfc',
   },
   {
@@ -483,6 +555,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 4,
     category: 'charger',
+    warranty5YrParts: 55000,
+    warranty3YrFull: 44000,
+    warranty5YrFull: 66000,
     chargingLevel: 'dcfc',
   },
   {
@@ -502,6 +577,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 4,
     category: 'charger',
+    warranty5YrParts: 55000,
+    warranty3YrFull: 44000,
+    warranty5YrFull: 66000,
     chargingLevel: 'dcfc',
   },
   // DCHP Set of 2 - 320kW (2 ports per line item as shown in spreadsheet)
@@ -522,6 +600,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 27500,
+    warranty3YrFull: 22000,
+    warranty5YrFull: 33000,
     chargingLevel: 'dcfc',
   },
   {
@@ -541,6 +622,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 27500,
+    warranty3YrFull: 22000,
+    warranty5YrFull: 33000,
     chargingLevel: 'dcfc',
   },
   {
@@ -560,6 +644,9 @@ export const pricebookProducts: PricebookProduct[] = [
     shippingCost: 1250,
     numberOfPlugs: 2,
     category: 'charger',
+    warranty5YrParts: 27500,
+    warranty3YrFull: 22000,
+    warranty5YrFull: 33000,
     chargingLevel: 'dcfc',
   },
 ];

@@ -79,6 +79,27 @@ export function calculateShippingCost(items: EVSEItem[]): number {
   }, 0);
 }
 
+// Calculate warranty upgrade totals based on actual EVSE items in proposal
+// Returns total cost for each warranty tier across all EVSE items × quantities
+export function calculateWarrantyTotals(items: EVSEItem[]): {
+  warranty5YrParts: number;
+  warranty3YrFull: number;
+  warranty5YrFull: number;
+} {
+  return items.reduce(
+    (totals, item) => {
+      const product = pricebookProducts.find(p => p.id === item.productId);
+      if (!product) return totals;
+      return {
+        warranty5YrParts: totals.warranty5YrParts + (product.warranty5YrParts * item.quantity),
+        warranty3YrFull: totals.warranty3YrFull + (product.warranty3YrFull * item.quantity),
+        warranty5YrFull: totals.warranty5YrFull + (product.warranty5YrFull * item.quantity),
+      };
+    },
+    { warranty5YrParts: 0, warranty3YrFull: 0, warranty5YrFull: 0 }
+  );
+}
+
 // Calculate EVSE item prices based on cost and margin
 export function calculateEVSEItemPrice(unitCost: number, marginPercent: number): number {
   // Price = Cost / (1 - margin%)

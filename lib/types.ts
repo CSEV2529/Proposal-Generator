@@ -156,6 +156,10 @@ export interface PricebookProduct {
   numberOfPlugs: number;
   category: 'charger' | 'accessory';
   chargingLevel: ChargingLevel;
+  // Warranty costs per unit (from pricebook Excel)
+  warranty5YrParts: number;
+  warranty3YrFull: number;
+  warranty5YrFull: number;
 }
 
 export interface InstallationService {

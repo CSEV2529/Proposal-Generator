@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Proposal } from '@/lib/types';
-import { formatCurrency, formatCurrencyWithCents, calculateNetProjectCost, calculatePaymentOptionCostWithOverride, getEffectivePaymentOptionEnabled } from '@/lib/calculations';
-import { getPaymentOptions, getValuePropForContext, FOOTNOTES } from '@/lib/constants';
+import { formatCurrency, formatCurrencyWithCents, calculateNetProjectCost, calculatePaymentOptionCostWithOverride, getEffectivePaymentOptionEnabled, calculateWarrantyTotals } from '@/lib/calculations';
+import { getPaymentOptions, getValuePropForContext, FOOTNOTES, WarrantyTier } from '@/lib/constants';
 import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
 import { PageWrapper } from './PageWrapper';
 
@@ -76,12 +76,24 @@ function getStyles(colors: PdfColorPalette) {
       marginBottom: 2,
     },
 
+    ownershipBadge: {
+      backgroundColor: '#555555',
+      borderRadius: 3,
+      borderWidth: 2,
+      borderColor: '#6a6a6a',
+      paddingVertical: 2,
+      paddingHorizontal: 4,
+      marginTop: 4,
+      marginBottom: 6,
+      alignItems: 'center',
+    },
+
     optionOwnership: {
       fontFamily: 'Roboto',
       fontSize: 8,
       fontWeight: 700,
-      color: colors.white,
-      marginBottom: 6,
+      color: '#FFFFFF',
+      textAlign: 'center',
     },
 
     warrantyLabel: {
@@ -227,14 +239,13 @@ function getStyles(colors: PdfColorPalette) {
       fontFamily: 'Roboto',
       fontSize: 7,
       color: colors.textLight,
-      flex: 1,
     },
 
-    upgradeCost: {
+    upgradeCostInline: {
       fontFamily: 'Roboto',
-      fontSize: 6,
-      color: colors.primary,
-      fontWeight: 500,
+      fontSize: 7,
+      color: colors.textLight,
+      fontWeight: 700,
     },
 
     // Description text for Options 2 & 3
@@ -350,6 +361,7 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
   const styles = getStyles(colors);
   const netCost = calculateNetProjectCost(proposal);
   const configEntries = getPaymentOptions(proposal.projectType);
+  const warrantyTotals = calculateWarrantyTotals(proposal.evseItems);
 
   // Overrides from proposal (may be undefined)
   const costOverrides = proposal.paymentOptionCostOverrides || [];
@@ -400,7 +412,9 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
           {/* Left — Option name, ownership, warranty */}
           <View style={styles.optionLeft}>
             <Text style={styles.optionTitle}>{option.title}</Text>
-            <Text style={styles.optionOwnership}>{option.ownership}</Text>
+            <View style={styles.ownershipBadge}>
+              <Text style={styles.optionOwnership}>{option.ownership}</Text>
+            </View>
 
             <Text style={styles.warrantyLabel}>Warranty Included:</Text>
             {option.warrantyIncluded.split(';').map((part, wi) => (
@@ -437,15 +451,17 @@ export function PaymentOptionsPage({ proposal, theme }: PaymentOptionsPageProps)
             {option.showCheckboxes && option.warrantyUpgrades && option.warrantyUpgrades.length > 0 && (
               <>
                 <Text style={styles.warrantyUpgradeTitle}>Warranty Upgrade (MUST SELECT ONE):</Text>
-                {option.warrantyUpgrades.map((upgrade, uIndex) => (
-                  <View key={uIndex} style={styles.warrantyUpgradeRow}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.upgradeName}>{upgrade.name}</Text>
-                    <Text style={styles.upgradeCost}>
-                      {upgrade.costLabel || `ADD ${formatCurrency(upgrade.cost)} TO NET COST PER STATION`}
-                    </Text>
-                  </View>
-                ))}
+                {option.warrantyUpgrades.map((upgrade, uIndex) => {
+                  const tierCost = upgrade.tier ? warrantyTotals[upgrade.tier as WarrantyTier] : 0;
+                  return (
+                    <View key={uIndex} style={styles.warrantyUpgradeRow}>
+                      <View style={styles.checkbox} />
+                      <Text style={styles.upgradeName}>
+                        {upgrade.name}  <Text style={styles.upgradeCostInline}>— Add {formatCurrency(tierCost)} to FINAL NET Cost</Text>
+                      </Text>
+                    </View>
+                  );
+                })}
                 <View style={styles.warrantyUpgradeRow}>
                   <View style={styles.checkbox} />
                   <Text style={styles.upgradeName}>OPT OUT OF ALL ADDITIONAL WARRANTY COVERAGE</Text>

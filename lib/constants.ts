@@ -71,6 +71,8 @@ export const RESPONSIBILITIES = {
 // Per-Project-Type Payment Option Configs
 // ============================================
 
+export type WarrantyTier = 'warranty5YrParts' | 'warranty3YrFull' | 'warranty5YrFull';
+
 export interface PaymentOptionConfig {
   title: string;
   ownership: string;
@@ -80,7 +82,7 @@ export interface PaymentOptionConfig {
   warrantyValue?: number;
   descriptionBold: string;
   descriptionText: string;
-  warrantyUpgrades: { name: string; cost: number; perStation: boolean; costLabel?: string }[];
+  warrantyUpgrades: { name: string; tier: WarrantyTier; cost?: number; perStation?: boolean; costLabel?: string }[];
 }
 
 // ── Level 2 EPC ──
@@ -91,12 +93,12 @@ const LEVEL2_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 100,
     revenueShare: 100,
     warrantyIncluded: 'L2: 3-Year Parts ONLY',
-    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -105,12 +107,12 @@ const LEVEL2_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 50,
     revenueShare: 75,
     warrantyIncluded: 'L2: 3-Year Parts ONLY',
-    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -119,12 +121,12 @@ const LEVEL2_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 0,
     revenueShare: 50,
     warrantyIncluded: 'L2: 3-Year Parts ONLY',
-    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
 ];
@@ -137,12 +139,12 @@ const LEVEL3_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 100,
     revenueShare: 100,
     warrantyIncluded: 'DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 10000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 20000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 40000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -151,12 +153,12 @@ const LEVEL3_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 50,
     revenueShare: 90,
     warrantyIncluded: 'DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 10000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 20000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 40000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -165,12 +167,12 @@ const LEVEL3_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 0,
     revenueShare: 75,
     warrantyIncluded: 'DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 10000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 20000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 40000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
 ];
@@ -183,12 +185,12 @@ const MIXED_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 100,
     revenueShare: 100,
     warrantyIncluded: 'L2: 3-Year Parts ONLY;DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true, costLabel: 'ADD $5,000 TO NET COST PER L2 STATION / $10,000 TO NET COST PER DCFC STATION' },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true, costLabel: 'ADD $10,000 TO NET COST PER L2 STATION / $20,000 TO NET COST PER DCFC STATION' },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true, costLabel: 'ADD $20,000 TO NET COST PER L2 STATION / $40,000 TO NET COST PER DCFC STATION' },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -197,12 +199,12 @@ const MIXED_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 50,
     revenueShare: 90,
     warrantyIncluded: 'L2: 3-Year Parts ONLY;DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true, costLabel: 'ADD $5,000 TO NET COST PER L2 STATION / $10,000 TO NET COST PER DCFC STATION' },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true, costLabel: 'ADD $10,000 TO NET COST PER L2 STATION / $20,000 TO NET COST PER DCFC STATION' },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true, costLabel: 'ADD $20,000 TO NET COST PER L2 STATION / $40,000 TO NET COST PER DCFC STATION' },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -211,12 +213,12 @@ const MIXED_EPC_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 0,
     revenueShare: 75,
     warrantyIncluded: 'L2: 3-Year Parts ONLY;DCFC: 2-Yr Parts ONLY',
-    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 3 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true, costLabel: 'ADD $5,000 TO NET COST PER L2 STATION / $10,000 TO NET COST PER DCFC STATION' },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true, costLabel: 'ADD $10,000 TO NET COST PER L2 STATION / $20,000 TO NET COST PER DCFC STATION' },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true, costLabel: 'ADD $20,000 TO NET COST PER L2 STATION / $40,000 TO NET COST PER DCFC STATION' },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
 ];
@@ -230,8 +232,8 @@ const SITE_HOST_OPTIONS: PaymentOptionConfig[] = [
     revenueShare: 10,
     warrantyIncluded: '10-Year FULL Parts & Labor',
     warrantyValue: 20000,
-    descriptionBold: 'Option 1 - CSEV Owns and Operates Chargers for 10 Years.',
-    descriptionText: 'All Utility Costs, Parts, Labor, Operations and Maintenance are Included.',
+    descriptionBold: 'Option 1 - CSEV Owns and Operates Chargers for Duration of Lease Term (10 Years Minimum).\nAll Utility Costs, Parts, Labor, Operations and Maintenance are Included and CSEV\u2019s Responsibility.\n(See Lease Agreement for Final Terms)',
+    descriptionText: '',
     warrantyUpgrades: [],
   },
   {
@@ -241,8 +243,8 @@ const SITE_HOST_OPTIONS: PaymentOptionConfig[] = [
     revenueShare: 10,
     warrantyIncluded: '10-Year FULL Parts & Labor',
     warrantyValue: 20000,
-    descriptionBold: 'Option 2 - CSEV Owns and Operates Chargers for 10 Years.',
-    descriptionText: 'All Utility Costs, Parts, Labor, Operations and Maintenance are Included.',
+    descriptionBold: 'Option 2 - CSEV Owns and Operates Chargers for Duration of Lease Term (10 Years Minimum).\nAll Utility Costs, Parts, Labor, Operations and Maintenance are Included and CSEV\u2019s Responsibility.\n(See Lease Agreement for Final Terms)',
+    descriptionText: '',
     warrantyUpgrades: [],
   },
   {
@@ -252,8 +254,8 @@ const SITE_HOST_OPTIONS: PaymentOptionConfig[] = [
     revenueShare: 10,
     warrantyIncluded: '10-Year FULL Parts & Labor',
     warrantyValue: 20000,
-    descriptionBold: 'Option 3 - CSEV Owns and Operates Chargers for 10 Years.',
-    descriptionText: 'All Utility Costs, Parts, Labor, Operations and Maintenance are Included.',
+    descriptionBold: 'Option 3 - CSEV Owns and Operates Chargers for Duration of Lease Term (10 Years Minimum).\nAll Utility Costs, Parts, Labor, Operations and Maintenance are Included and CSEV\u2019s Responsibility.\n(See Lease Agreement for Final Terms)',
+    descriptionText: '',
     warrantyUpgrades: [],
   },
 ];
@@ -269,26 +271,26 @@ const LEVEL2_SITE_HOST_OPTIONS: PaymentOptionConfig[] = [
     costPercentage: 100,
     revenueShare: 100,
     warrantyIncluded: 'L2: 3-Year Parts ONLY',
-    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 1 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
     title: 'Option 2',
     ownership: 'CUSTOMER OWNED',
     costPercentage: 50,
-    revenueShare: 90,
+    revenueShare: 50,
     warrantyIncluded: 'L2: 3-Year Parts ONLY',
-    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers. All Utility Costs, Parts, Labor, Operations, and Maintenance are Customer Responsibility.',
+    descriptionBold: 'Option 2 - Customer Owns and Operates Chargers.\nAll Utility Costs, Parts, Labor, Operations, and Maintenance are SOLELY the Customer\u2019s Responsibility.',
     descriptionText: '',
     warrantyUpgrades: [
-      { name: '5-Year Parts ONLY', cost: 5000, perStation: true },
-      { name: '3-Year FULL Parts & Labor', cost: 10000, perStation: true },
-      { name: '5-Year FULL Parts & Labor', cost: 20000, perStation: true },
+      { name: '5-Year Parts ONLY', tier: 'warranty5YrParts' },
+      { name: '3-Year FULL Parts & Labor', tier: 'warranty3YrFull' },
+      { name: '5-Year FULL Parts & Labor', tier: 'warranty5YrFull' },
     ],
   },
   {
@@ -298,8 +300,8 @@ const LEVEL2_SITE_HOST_OPTIONS: PaymentOptionConfig[] = [
     revenueShare: 10,
     warrantyIncluded: 'L2: 10-Year FULL Parts & Labor',
     warrantyValue: 20000,
-    descriptionBold: 'Option 3 - CSEV Owns and Operates Chargers for 10 Years.',
-    descriptionText: 'All Utility Costs, Parts, Labor, Operations and Maintenance are Included.',
+    descriptionBold: 'Option 3 - CSEV Owns and Operates Chargers for Duration of Lease Term (10 Years Minimum).\nAll Utility Costs, Parts, Labor, Operations and Maintenance are Included and CSEV\u2019s Responsibility.\n(See Lease Agreement for Final Terms)',
+    descriptionText: '',
     warrantyUpgrades: [],
   },
 ];
