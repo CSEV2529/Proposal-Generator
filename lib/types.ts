@@ -194,13 +194,12 @@ export interface PaymentOptionAnalysis {
 }
 
 export const defaultProposal: Proposal = {
-  // TODO: Remove test defaults after testing
-  customerName: 'The Mews at North Bergen',
-  customerAddress: '1305 Paterson Plank Rd',
-  customerCity: 'North Bergen',
-  customerState: 'NJ',
-  customerZip: '07047',
-  projectStateId: 'nj',
+  customerName: '',
+  customerAddress: '',
+  customerCity: '',
+  customerState: '',
+  customerZip: '',
+  projectStateId: '',
   preparedDate: new Date(),
   projectType: 'level2-epc',
   accessType: 'public',

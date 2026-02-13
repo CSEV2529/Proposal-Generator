@@ -48,10 +48,11 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
-      setMessage('Check your email for a confirmation link!');
+      router.push('/');
+      router.refresh();
     }
-    setLoading(false);
   };
 
   return (
