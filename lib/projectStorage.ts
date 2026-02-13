@@ -24,6 +24,7 @@ export interface ProjectSummary {
   customerName: string;
   customerAddress: string;
   status: 'draft' | 'sent' | 'accepted' | 'completed';
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,6 +66,7 @@ export async function getProjects(): Promise<ProjectSummary[]> {
     customerName: p.customer_name || '',
     customerAddress: formatAddress(p.project_data as Record<string, unknown>),
     status: p.status,
+    folderId: (p as any).folder_id || null,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
   }));
@@ -91,6 +93,7 @@ export async function getProject(id: string): Promise<ProjectWithData | null> {
     customerName: data.customer_name || '',
     customerAddress: formatAddress(data.project_data as Record<string, unknown>),
     status: data.status,
+    folderId: (data as any).folder_id || null,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     projectData: deserializeProposal(data.project_data as Record<string, unknown>),
@@ -190,7 +193,130 @@ export async function searchProjects(query: string): Promise<ProjectSummary[]> {
     customerName: p.customer_name || '',
     customerAddress: formatAddress(p.project_data as Record<string, unknown>),
     status: p.status,
+    folderId: (p as any).folder_id || null,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
   }));
+}
+
+// Duplicate a project
+export async function duplicateProject(id: string): Promise<string> {
+  const original = await getProject(id);
+  if (!original) throw new Error('Project not found');
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('Must be logged in');
+
+  const { data, error } = await supabase
+    .from('projects')
+    .insert({
+      user_id: userData.user.id,
+      name: `${original.name} (Copy)`,
+      customer_name: original.customerName || '',
+      project_data: serializeProposal(original.projectData),
+      status: 'draft',
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error duplicating project:', error);
+    throw error;
+  }
+
+  return data.id;
+}
+
+// Move a project to a folder
+export async function moveProjectToFolder(projectId: string, folderId: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('projects')
+    .update({ folder_id: folderId })
+    .eq('id', projectId);
+
+  if (error) {
+    console.error('Error moving project:', error);
+    throw error;
+  }
+}
+
+// Folder types
+export interface Folder {
+  id: string;
+  name: string;
+  parentId: string | null;
+  createdAt: string;
+}
+
+// Get all folders
+export async function getFolders(): Promise<Folder[]> {
+  const { data, error } = await supabase
+    .from('folders')
+    .select('id, name, parent_id, created_at')
+    .order('name');
+
+  if (error) {
+    // If folders table doesn't exist yet, return empty
+    if (error.code === '42P01') return [];
+    console.error('Error fetching folders:', error);
+    throw error;
+  }
+
+  return (data || []).map(f => ({
+    id: f.id,
+    name: f.name,
+    parentId: f.parent_id,
+    createdAt: f.created_at,
+  }));
+}
+
+// Create a folder
+export async function createFolder(name: string, parentId: string | null = null): Promise<string> {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('Must be logged in');
+
+  const { data, error } = await supabase
+    .from('folders')
+    .insert({
+      user_id: userData.user.id,
+      name,
+      parent_id: parentId,
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error creating folder:', error);
+    throw error;
+  }
+
+  return data.id;
+}
+
+// Rename a folder
+export async function renameFolder(id: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from('folders')
+    .update({ name })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error renaming folder:', error);
+    throw error;
+  }
+}
+
+// Delete a folder (projects in it become unfoldered)
+export async function deleteFolder(id: string): Promise<void> {
+  // Move all projects in this folder to root
+  await supabase.from('projects').update({ folder_id: null }).eq('folder_id', id);
+  // Move all subfolders to parent (or root)
+  const { data: folder } = await supabase.from('folders').select('parent_id').eq('id', id).single();
+  await supabase.from('folders').update({ parent_id: folder?.parent_id || null }).eq('parent_id', id);
+  // Delete the folder
+  const { error } = await supabase.from('folders').delete().eq('id', id);
+  if (error) {
+    console.error('Error deleting folder:', error);
+    throw error;
+  }
 }

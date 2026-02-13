@@ -3,19 +3,16 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,24 +20,6 @@ export default function LoginPage() {
     setError(null);
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      window.location.href = '/';
-    }
-  };
-
-  const handleSignUp = async () => {
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    const { error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -94,13 +73,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {message && (
-            <div className="bg-csev-green/10 border border-csev-green/30 text-csev-green p-3 rounded-lg text-sm">
-              {message}
-            </div>
-          )}
-
-          <div className="space-y-3 pt-2">
+          <div className="pt-2">
             <Button
               type="submit"
               variant="primary"
@@ -109,21 +82,11 @@ export default function LoginPage() {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleSignUp}
-              disabled={loading}
-            >
-              Create Account
-            </Button>
           </div>
         </form>
 
         <p className="text-xs text-csev-text-muted text-center mt-6">
-          Contact your administrator if you need access.
+          Contact your administrator for account access.
         </p>
       </div>
     </div>

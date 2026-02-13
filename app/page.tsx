@@ -441,6 +441,11 @@ function HomePageContent() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [loadingProject, setLoadingProject] = useState(false);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   const checkAuth = useCallback(async () => {
     try {
@@ -458,6 +463,7 @@ function HomePageContent() {
   }, []);
 
   const loadProject = useCallback(async (projectId: string) => {
+    setLoadingProject(true);
     try {
       const project = await getProject(projectId);
       if (project) {
@@ -467,6 +473,10 @@ function HomePageContent() {
       }
     } catch (error) {
       console.error('Error loading project:', error);
+      setSaveMessage({ type: 'error', text: 'Failed to load project' });
+      setTimeout(() => setSaveMessage(null), 3000);
+    } finally {
+      setLoadingProject(false);
     }
   }, [dispatch]);
 
@@ -482,6 +492,47 @@ function HomePageContent() {
       loadProject(projectId);
     }
   }, [searchParams, mounted, loadProject]);
+
+  // Auto-save every 30 seconds when there's an existing project
+  useEffect(() => {
+    if (!currentProjectId || !mounted) return;
+
+    const timer = setInterval(async () => {
+      try {
+        setAutoSaveStatus('saving');
+        await updateProject(currentProjectId, proposal, projectName || undefined);
+        setLastAutoSave(new Date());
+        setAutoSaveStatus('saved');
+        // Also save to localStorage as crash recovery
+        try {
+          localStorage.setItem('proposal-draft-backup', JSON.stringify({
+            projectId: currentProjectId,
+            projectName,
+            proposal: { ...proposal, preparedDate: proposal.preparedDate.toISOString() },
+            savedAt: new Date().toISOString(),
+          }));
+        } catch {}
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+        setAutoSaveStatus('error');
+      }
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, [currentProjectId, mounted, proposal, projectName]);
+
+  // Save to localStorage on every change as crash backup (even before first save)
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      localStorage.setItem('proposal-draft-backup', JSON.stringify({
+        projectId: currentProjectId,
+        projectName,
+        proposal: { ...proposal, preparedDate: proposal.preparedDate.toISOString() },
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {}
+  }, [proposal, currentProjectId, projectName, mounted]);
 
   const handleSave = async () => {
     const nameToSave = projectName.trim() || (proposal.customerName ? `${proposal.customerName} Proposal` : '');
@@ -519,20 +570,23 @@ function HomePageContent() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   const grossCost = calculateGrossProjectCost(proposal);
   const netCost = calculateNetProjectCost(proposal);
 
   const handleReset = () => {
-    if (confirm('Are you sure you want to reset the proposal? All data will be lost.')) {
-      dispatch({ type: 'RESET_PROPOSAL' });
-      setCurrentProjectId(null);
-      setProjectName('');
-      // Remove project ID from URL
-      window.history.replaceState({}, '', '/');
-    }
+    setShowResetDialog(true);
+  };
+
+  const confirmReset = () => {
+    dispatch({ type: 'RESET_PROPOSAL' });
+    setCurrentProjectId(null);
+    setProjectName('');
+    setShowResetDialog(false);
+    setAutoSaveStatus('idle');
+    window.history.replaceState({}, '', '/');
   };
 
   const generateFileName = () => {
@@ -578,6 +632,15 @@ function HomePageContent() {
                   Proposal Generator
                   {currentProjectId && projectName && (
                     <span className="ml-2 text-csev-green">- {projectName}</span>
+                  )}
+                  {currentProjectId && autoSaveStatus === 'saving' && (
+                    <span className="ml-2 text-csev-text-muted text-xs animate-pulse">Saving...</span>
+                  )}
+                  {currentProjectId && autoSaveStatus === 'saved' && (
+                    <span className="ml-2 text-csev-text-muted text-xs">Auto-saved</span>
+                  )}
+                  {currentProjectId && autoSaveStatus === 'error' && (
+                    <span className="ml-2 text-red-400 text-xs">Save failed</span>
                   )}
                 </p>
               </div>
@@ -878,6 +941,36 @@ function HomePageContent() {
                 {saving ? 'Saving...' : currentProjectId ? 'Update' : 'Save'}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Dialog */}
+      {showResetDialog && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-csev-panel rounded-lg shadow-xl border border-csev-border p-6 w-full max-w-md mx-4 animate-fade-in">
+            <h3 className="text-lg font-semibold text-csev-text-primary mb-2">Reset Proposal</h3>
+            <p className="text-sm text-csev-text-secondary mb-6">
+              Are you sure you want to reset? All unsaved changes will be lost and the form will be cleared.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => setShowResetDialog(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={confirmReset} className="bg-red-500 hover:bg-red-600">
+                Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {loadingProject && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-csev-panel rounded-lg shadow-xl border border-csev-border p-8 animate-fade-in text-center">
+            <div className="text-csev-green animate-pulse text-lg mb-2">Loading Project...</div>
+            <p className="text-sm text-csev-text-muted">Fetching proposal data</p>
           </div>
         </div>
       )}
