@@ -55,7 +55,7 @@ export interface SavedProject {
   name: string;
   customer_name: string;
   project_data: string; // JSON stringified Proposal
-  status: 'draft' | 'sent' | 'accepted' | 'completed';
+  status: 'draft' | 'sent' | 'completed';
   created_at: string;
   updated_at: string;
 }

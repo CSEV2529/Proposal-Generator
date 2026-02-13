@@ -292,12 +292,41 @@ templates/
   - Helper text describes each field on 2 lines; note below says "Enter Values Below to Change Quoted Pricing"
 - **Access Type badge**: PUBLIC ACCESS (green) / PRIVATE ACCESS (red) pill next to Incentives & Rebates header in FinancialForm
 
+## Output File Naming Convention
+
+All document outputs follow a unified naming pattern:
+`CustomerName-City ST-DocType-MM.DD.YYYY.ext`
+
+- **Proposal PDF**: `CustomerName-City ST-Proposal-MM.DD.YYYY.pdf`
+- **Estimate PDF**: `CustomerName-City ST-Estimate-MM.DD.YYYY.pdf`
+- **Budget PDF**: `CustomerName-City ST-Budget (INTERNAL ONLY)-MM.DD.YYYY.pdf`
+- **National Grid Excel**: `CustomerName-City ST-National Grid Breakdown-MM.DD.YYYY.xlsx`
+- **NYSEG Excel**: `CustomerName-City ST-NYSEG Breakdown-MM.DD.YYYY.xlsx`
+- **RG&E Excel**: `CustomerName-City ST-RG&E Breakdown-MM.DD.YYYY.xlsx`
+
+- `buildDocFileName(docType, ext)` in `app/page.tsx` — main builder downloads
+- `buildDownloadName(proposal, docType, ext)` in `app/projects/page.tsx` — bulk downloads
+- `buildExcelFileName(utilityLabel)` in `app/api/export-excel/route.ts` — server-side Excel filename
+- `ExcelExportData.utilityLabel` field passes specific utility name (NYSEG vs RG&E) from client to API
+- Only filesystem-unsafe chars removed (`/\:*?"<>|`); preserves spaces, `&`, etc.
+
+## Auto-Save System
+
+- **New proposals**: localStorage backup on every change; red "Unsaved draft" indicator in header
+  - No Supabase writes until first manual save (avoids orphan drafts and UI disruption)
+- **Saved projects**: Auto-save to Supabase every 30 seconds via `setInterval`
+  - Header shows "Saving..." → "Auto-saved" / "Save failed"
+  - Also backs up to localStorage (`proposal-draft-backup`) on every change
+- **Dirty tracking**: Snapshots proposal JSON after load; compares on every change to set `isDirty`
+- **Leave protection**: Warns when navigating away from unsaved new proposals or dirty existing projects
+
 ## Important Notes
 
 - PDF components use dynamic imports with `ssr: false` to avoid hydration issues
 - `next.config.js` disables canvas alias for @react-pdf/renderer compatibility
 - Default proposal has test data pre-filled (Best Western Inn & Suites, Rochester, NY)
 - Excel export is conditional — only shows for National Grid or NYSEG/RG&E utility selections
+- Excel exports use `utilityLabel` on `ExcelExportData` to distinguish NYSEG vs RG&E in filenames
 - Project save/load via URL query param `?project={id}`
 - Auth allows local dev without login (Supabase optional in dev)
 - All PDF page titles use Orbitron 28px white with marginBottom 12 (consistent across pages 2-6)

@@ -117,6 +117,7 @@ function getNYSEGRGECategory(item: InstallationItem): string {
 
 export interface ExcelExportData {
   utilityType: 'national-grid' | 'nyseg-rge';
+  utilityLabel?: string; // Display name for filename (e.g. "National Grid", "NYSEG", "RG&E")
   chargingLevel: 'level2' | 'dcfc';
   customerName: string;
   siteAddress: string;
@@ -209,6 +210,7 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
 
   return {
     utilityType: 'national-grid',
+    utilityLabel: 'National Grid',
     chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
     customerName: proposal.customerName || '',
     siteAddress: proposal.customerAddress || '',

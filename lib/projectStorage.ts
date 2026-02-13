@@ -23,10 +23,15 @@ export interface ProjectSummary {
   name: string;
   customerName: string;
   customerAddress: string;
-  status: 'draft' | 'sent' | 'accepted' | 'completed';
+  status: 'draft' | 'sent' | 'completed';
   folderId: string | null;
   createdAt: string;
   updatedAt: string;
+  // Preview fields extracted from project_data
+  projectType: string;
+  totalPorts: number;
+  grossProjectCost: number;
+  evseItemCount: number;
 }
 
 export interface ProjectWithData extends ProjectSummary {
@@ -48,11 +53,40 @@ function formatAddress(projectData: Record<string, unknown> | null): string {
   return parts.join(', ');
 }
 
+// Extract preview fields from project_data JSONB
+function extractPreview(pd: Record<string, unknown> | null) {
+  if (!pd) return { projectType: '', totalPorts: 0, grossProjectCost: 0, evseItemCount: 0 };
+  const evseItems = (pd.evseItems as Array<Record<string, unknown>>) || [];
+  return {
+    projectType: (pd.projectType as string) || '',
+    totalPorts: (pd.totalPorts as number) || 0,
+    grossProjectCost: (pd.grossProjectCost as number) || 0,
+    evseItemCount: evseItems.length,
+  };
+}
+
+// Map a raw DB row to ProjectSummary
+function mapToSummary(p: Record<string, unknown>): ProjectSummary {
+  const pd = p.project_data as Record<string, unknown> | null;
+  const preview = extractPreview(pd);
+  return {
+    id: p.id as string,
+    name: p.name as string,
+    customerName: (p.customer_name as string) || '',
+    customerAddress: formatAddress(pd),
+    status: p.status as ProjectSummary['status'],
+    folderId: (p.folder_id as string) || null,
+    createdAt: p.created_at as string,
+    updatedAt: p.updated_at as string,
+    ...preview,
+  };
+}
+
 // Get all projects for the current user
 export async function getProjects(): Promise<ProjectSummary[]> {
   const { data, error } = await supabase
     .from('projects')
-    .select('id, name, customer_name, status, created_at, updated_at, project_data')
+    .select('id, name, customer_name, status, created_at, updated_at, project_data, folder_id')
     .order('updated_at', { ascending: false });
 
   if (error) {
@@ -60,16 +94,7 @@ export async function getProjects(): Promise<ProjectSummary[]> {
     throw error;
   }
 
-  return (data || []).map(p => ({
-    id: p.id,
-    name: p.name,
-    customerName: p.customer_name || '',
-    customerAddress: formatAddress(p.project_data as Record<string, unknown>),
-    status: p.status,
-    folderId: (p as any).folder_id || null,
-    createdAt: p.created_at,
-    updatedAt: p.updated_at,
-  }));
+  return (data || []).map(p => mapToSummary(p as Record<string, unknown>));
 }
 
 // Get a single project with full data
@@ -87,38 +112,39 @@ export async function getProject(id: string): Promise<ProjectWithData | null> {
 
   if (!data) return null;
 
+  const pd = data.project_data as Record<string, unknown>;
   return {
-    id: data.id,
-    name: data.name,
-    customerName: data.customer_name || '',
-    customerAddress: formatAddress(data.project_data as Record<string, unknown>),
-    status: data.status,
-    folderId: (data as any).folder_id || null,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    projectData: deserializeProposal(data.project_data as Record<string, unknown>),
+    ...mapToSummary(data as Record<string, unknown>),
+    projectData: deserializeProposal(pd),
   };
 }
 
 // Save a new project
 export async function createProject(
   name: string,
-  proposal: Proposal
+  proposal: Proposal,
+  folderId?: string | null
 ): Promise<string> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) {
     throw new Error('Must be logged in to save projects');
   }
 
+  const insertData: Record<string, unknown> = {
+    user_id: userData.user.id,
+    name: name,
+    customer_name: proposal.customerName || '',
+    project_data: serializeProposal(proposal),
+    status: 'draft',
+  };
+
+  if (folderId) {
+    insertData.folder_id = folderId;
+  }
+
   const { data, error } = await supabase
     .from('projects')
-    .insert({
-      user_id: userData.user.id,
-      name: name,
-      customer_name: proposal.customerName || '',
-      project_data: serializeProposal(proposal),
-      status: 'draft',
-    })
+    .insert(insertData)
     .select('id')
     .single();
 
@@ -135,7 +161,7 @@ export async function updateProject(
   id: string,
   proposal: Proposal,
   name?: string,
-  status?: 'draft' | 'sent' | 'accepted' | 'completed'
+  status?: 'draft' | 'sent' | 'completed'
 ): Promise<void> {
   const updateData: Record<string, unknown> = {
     project_data: serializeProposal(proposal),
@@ -161,6 +187,35 @@ export async function updateProject(
   }
 }
 
+// Update just the status of a project
+export async function updateProjectStatus(
+  id: string,
+  status: 'draft' | 'sent' | 'completed'
+): Promise<void> {
+  const { error } = await supabase
+    .from('projects')
+    .update({ status })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating project status:', error);
+    throw error;
+  }
+}
+
+// Rename a project
+export async function renameProject(id: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from('projects')
+    .update({ name })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error renaming project:', error);
+    throw error;
+  }
+}
+
 // Delete a project
 export async function deleteProject(id: string): Promise<void> {
   const { error } = await supabase
@@ -178,7 +233,7 @@ export async function deleteProject(id: string): Promise<void> {
 export async function searchProjects(query: string): Promise<ProjectSummary[]> {
   const { data, error } = await supabase
     .from('projects')
-    .select('id, name, customer_name, status, created_at, updated_at, project_data')
+    .select('id, name, customer_name, status, created_at, updated_at, project_data, folder_id')
     .ilike('customer_name', `%${query}%`)
     .order('updated_at', { ascending: false });
 
@@ -187,35 +242,29 @@ export async function searchProjects(query: string): Promise<ProjectSummary[]> {
     throw error;
   }
 
-  return (data || []).map(p => ({
-    id: p.id,
-    name: p.name,
-    customerName: p.customer_name || '',
-    customerAddress: formatAddress(p.project_data as Record<string, unknown>),
-    status: p.status,
-    folderId: (p as any).folder_id || null,
-    createdAt: p.created_at,
-    updatedAt: p.updated_at,
-  }));
+  return (data || []).map(p => mapToSummary(p as Record<string, unknown>));
 }
 
 // Duplicate a project
-export async function duplicateProject(id: string): Promise<string> {
+export async function duplicateProject(id: string, customName?: string, folderId?: string | null): Promise<string> {
   const original = await getProject(id);
   if (!original) throw new Error('Project not found');
 
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('Must be logged in');
 
+  const insertData: Record<string, unknown> = {
+    user_id: userData.user.id,
+    name: customName || `${original.name} (Copy)`,
+    customer_name: original.customerName || '',
+    project_data: serializeProposal(original.projectData),
+    status: 'draft',
+    folder_id: folderId !== undefined ? folderId : (original.folderId || null),
+  };
+
   const { data, error } = await supabase
     .from('projects')
-    .insert({
-      user_id: userData.user.id,
-      name: `${original.name} (Copy)`,
-      customer_name: original.customerName || '',
-      project_data: serializeProposal(original.projectData),
-      status: 'draft',
-    })
+    .insert(insertData)
     .select('id')
     .single();
 

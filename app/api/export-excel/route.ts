@@ -192,6 +192,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No export data provided' }, { status: 400 });
     }
 
+    // Build filename: CustomerName-City ST-UtilityName Breakdown-MM.DD.YYYY.xlsx
+    const buildExcelFileName = (utilityLabel: string) => {
+      const name = exportData.customerName || 'Customer';
+      const city = exportData.siteCity || '';
+      const state = exportData.siteState || '';
+      const cityState = [city, state].filter(Boolean).join(' ');
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const date = `${mm}.${dd}.${yyyy}`;
+      const parts = [name, cityState, `${utilityLabel} Breakdown`, date].filter(Boolean);
+      return parts.join('-').replace(/[/\\:*?"<>|]/g, '') + '.xlsx';
+    };
+
     let fileBuffer: Buffer;
     let fileName: string;
 
@@ -203,7 +218,7 @@ export async function POST(request: NextRequest) {
         }, { status: 404 });
       }
       fileBuffer = await writeNationalGridExcel(exportData);
-      fileName = `National Grid Breakdown - ${exportData.customerName || 'Project'}.xlsx`;
+      fileName = buildExcelFileName(exportData.utilityLabel || 'National Grid');
     } else if (exportData.utilityType === 'nyseg-rge') {
       // Check if file exists
       if (!fs.existsSync(NYSEG_RGE_FILE)) {
@@ -212,7 +227,7 @@ export async function POST(request: NextRequest) {
         }, { status: 404 });
       }
       fileBuffer = await writeNYSEGRGEExcel(exportData);
-      fileName = `NYSEG RGE Breakdown - ${exportData.customerName || 'Project'}.xlsx`;
+      fileName = buildExcelFileName(exportData.utilityLabel || 'NYSEG-RGE');
     } else {
       return NextResponse.json({ error: 'Unknown utility type' }, { status: 400 });
     }

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle } from 'lucide-react';
+import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle, ChevronRight, List } from 'lucide-react';
 import { useProposal } from '@/context/ProposalContext';
 import {
   CustomerInfoForm,
@@ -27,7 +27,7 @@ import {
 import { COMPANY_INFO, PROJECT_TYPES, getPaymentOptions } from '@/lib/constants';
 import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
 import { supabase } from '@/lib/supabase';
-import { createProject, updateProject, getProject } from '@/lib/projectStorage';
+import { createProject, updateProject, getProject, getFolders, Folder } from '@/lib/projectStorage';
 import type { Proposal } from '@/lib/types';
 
 // Utilities that support Excel export
@@ -37,6 +37,77 @@ const EXCEL_EXPORT_UTILITIES = {
   'nyseg': 'NYSEG',
   'rge': 'RG&E',
 };
+
+// Check if a folder has a descendant matching the target id
+function hasFolderDescendant(folderId: string, targetId: string | null, allFolders: Folder[]): boolean {
+  if (!targetId) return false;
+  const children = allFolders.filter(f => f.parentId === folderId);
+  for (const child of children) {
+    if (child.id === targetId || hasFolderDescendant(child.id, targetId, allFolders)) return true;
+  }
+  return false;
+}
+
+// Expandable folder tree node for save/duplicate dialogs — auto-expands when selected folder is within
+function SaveFolderNode({ folder, folders, selectedFolderId, onSelect, depth }: {
+  folder: Folder;
+  folders: Folder[];
+  selectedFolderId: string | null;
+  onSelect: (id: string) => void;
+  depth: number;
+}) {
+  const children = folders.filter(f => f.parentId === folder.id);
+  const hasChildren = children.length > 0;
+  const isSelected = selectedFolderId === folder.id;
+  const containsSelected = hasFolderDescendant(folder.id, selectedFolderId, folders);
+  const shouldExpand = isSelected || containsSelected;
+  const [expanded, setExpanded] = useState(shouldExpand);
+
+  // Auto-expand when selected folder is this or a descendant
+  useEffect(() => {
+    if (shouldExpand) setExpanded(true);
+  }, [shouldExpand]);
+
+  return (
+    <div>
+      <div className="flex items-center">
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="p-0.5 text-csev-text-muted hover:text-csev-text-primary shrink-0"
+            style={{ marginLeft: `${depth * 16}px` }}
+          >
+            <ChevronRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
+          </button>
+        ) : (
+          <span style={{ marginLeft: `${depth * 16 + 16}px` }} />
+        )}
+        <button
+          type="button"
+          onClick={() => onSelect(folder.id)}
+          className={`flex-1 text-left px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 text-sm ${
+            isSelected
+              ? 'bg-csev-green/20 text-csev-green'
+              : 'text-csev-text-secondary hover:bg-csev-slate-700'
+          }`}
+        >
+          <FolderOpen size={14} /> {folder.name}
+        </button>
+      </div>
+      {expanded && children.map(child => (
+        <SaveFolderNode
+          key={child.id}
+          folder={child}
+          folders={folders}
+          selectedFolderId={selectedFolderId}
+          onSelect={onSelect}
+          depth={depth + 1}
+        />
+      ))}
+    </div>
+  );
+}
 
 // PDF Download component — generates on click, not on every render
 function PDFDownloadButton({ proposal, fileName }: { proposal: Proposal; fileName: string }) {
@@ -110,6 +181,7 @@ function ExcelExportButton({ proposal }: { proposal: Proposal }) {
         exportData = prepareNationalGridExport(proposal);
       } else if (utilityId === 'nyseg' || utilityId === 'rge') {
         exportData = prepareNYSEGRGEExport(proposal);
+        exportData.utilityLabel = utilityId === 'rge' ? 'RG&E' : 'NYSEG';
       } else {
         throw new Error('Unsupported utility');
       }
@@ -129,7 +201,7 @@ function ExcelExportButton({ proposal }: { proposal: Proposal }) {
         // Get filename from header or use default
         const contentDisposition = response.headers.get('Content-Disposition');
         const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-        const filename = filenameMatch ? filenameMatch[1] : `${utilityName} Breakdown.xlsx`;
+        const filename = filenameMatch ? filenameMatch[1] : buildDocFileName(`${utilityName} Breakdown`, 'xlsx');
         a.download = filename;
         document.body.appendChild(a);
         a.click();
@@ -443,9 +515,14 @@ function HomePageContent() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [loadingProject, setLoadingProject] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
   const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [initialProposalRef, setInitialProposalRef] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -486,14 +563,49 @@ function HomePageContent() {
   }, [checkAuth]);
 
   useEffect(() => {
-    // Load project if ID is in URL
+    if (!mounted) return;
     const projectId = searchParams.get('project');
-    if (projectId && mounted) {
+    const isNew = searchParams.get('new');
+    if (isNew) {
+      // Coming from "New Proposal" button — reset to blank
+      dispatch({ type: 'RESET_PROPOSAL' });
+      setCurrentProjectId(null);
+      setProjectName('');
+      setAutoSaveStatus('idle');
+      setIsDirty(false);
+        // Clear ref so next mount effect snapshots the fresh default
+      setInitialProposalRef(null);
+      window.history.replaceState({}, '', '/');
+    } else if (projectId) {
       loadProject(projectId);
     }
-  }, [searchParams, mounted, loadProject]);
+  }, [searchParams, mounted, loadProject, dispatch]);
 
-  // Auto-save every 30 seconds when there's an existing project
+  // Track dirty state — snapshot proposal after load, compare on change
+  useEffect(() => {
+    if (!mounted) return;
+    // Snapshot on initial mount (no project loaded yet)
+    if (!initialProposalRef) {
+      setInitialProposalRef(JSON.stringify({ ...proposal, preparedDate: '' }));
+    }
+  }, [mounted]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update dirty flag whenever proposal changes
+  useEffect(() => {
+    if (!initialProposalRef) return;
+    const current = JSON.stringify({ ...proposal, preparedDate: '' });
+    setIsDirty(current !== initialProposalRef);
+  }, [proposal, initialProposalRef]);
+
+  // Snapshot after project load completes
+  useEffect(() => {
+    if (!loadingProject && currentProjectId && mounted) {
+      setInitialProposalRef(JSON.stringify({ ...proposal, preparedDate: '' }));
+      setIsDirty(false);
+    }
+  }, [loadingProject]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save every 30 seconds — only for projects that have been saved at least once
   useEffect(() => {
     if (!currentProjectId || !mounted) return;
 
@@ -503,15 +615,6 @@ function HomePageContent() {
         await updateProject(currentProjectId, proposal, projectName || undefined);
         setLastAutoSave(new Date());
         setAutoSaveStatus('saved');
-        // Also save to localStorage as crash recovery
-        try {
-          localStorage.setItem('proposal-draft-backup', JSON.stringify({
-            projectId: currentProjectId,
-            projectName,
-            proposal: { ...proposal, preparedDate: proposal.preparedDate.toISOString() },
-            savedAt: new Date().toISOString(),
-          }));
-        } catch {}
       } catch (error) {
         console.error('Auto-save failed:', error);
         setAutoSaveStatus('error');
@@ -535,7 +638,7 @@ function HomePageContent() {
   }, [proposal, currentProjectId, projectName, mounted]);
 
   const handleSave = async () => {
-    const nameToSave = projectName.trim() || (proposal.customerName ? `${proposal.customerName} Proposal` : '');
+    const nameToSave = projectName.trim() || (proposal.customerName ? `${proposal.customerName} - ${new Date().toLocaleDateString()}` : '');
 
     if (!nameToSave) {
       setSaveMessage({ type: 'error', text: 'Please enter a project name' });
@@ -551,7 +654,7 @@ function HomePageContent() {
         setProjectName(nameToSave);
         setSaveMessage({ type: 'success', text: 'Project saved!' });
       } else {
-        const newId = await createProject(nameToSave, proposal);
+        const newId = await createProject(nameToSave, proposal, selectedFolderId);
         setCurrentProjectId(newId);
         setProjectName(nameToSave);
         setSaveMessage({ type: 'success', text: 'Project created!' });
@@ -559,6 +662,8 @@ function HomePageContent() {
         window.history.replaceState({}, '', `/?project=${newId}`);
       }
       setShowSaveDialog(false);
+      setInitialProposalRef(JSON.stringify({ ...proposal, preparedDate: '' }));
+      setIsDirty(false);
     } catch (error) {
       console.error('Error saving project:', error);
       setSaveMessage({ type: 'error', text: 'Failed to save project' });
@@ -586,32 +691,29 @@ function HomePageContent() {
     setProjectName('');
     setShowResetDialog(false);
     setAutoSaveStatus('idle');
+    setIsDirty(false);
+    setInitialProposalRef(null);
     window.history.replaceState({}, '', '/');
   };
 
-  const generateFileName = () => {
-    const customerName = proposal.customerName
-      ? proposal.customerName.replace(/[^a-zA-Z0-9]/g, '_')
-      : 'Customer';
-    const date = proposal.preparedDate.toISOString().split('T')[0];
-    return `CSEV_Proposal_${customerName}_${date}.pdf`;
+  const buildDocFileName = (docType: string, ext = 'pdf') => {
+    const name = proposal.customerName || 'Customer';
+    const city = proposal.customerCity || '';
+    const state = proposal.customerState || '';
+    const cityState = [city, state].filter(Boolean).join(' ');
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const date = `${mm}.${dd}.${yyyy}`;
+    const parts = [name, cityState, docType, date].filter(Boolean);
+    // Remove filesystem-unsafe chars but keep spaces, &, etc.
+    return parts.join('-').replace(/[/\\:*?"<>|]/g, '') + `.${ext}`;
   };
 
-  const generateEstimateFileName = () => {
-    const customerName = proposal.customerName
-      ? proposal.customerName.replace(/[^a-zA-Z0-9]/g, '_')
-      : 'Customer';
-    const date = proposal.preparedDate.toISOString().split('T')[0];
-    return `CSEV_Estimate_${customerName}_${date}.pdf`;
-  };
-
-  const generateBudgetFileName = () => {
-    const customerName = proposal.customerName
-      ? proposal.customerName.replace(/[^a-zA-Z0-9]/g, '_')
-      : 'Customer';
-    const date = proposal.preparedDate.toISOString().split('T')[0];
-    return `CSEV_Budget_${customerName}_${date}.pdf`;
-  };
+  const generateFileName = () => buildDocFileName('Proposal');
+  const generateEstimateFileName = () => buildDocFileName('Estimate');
+  const generateBudgetFileName = () => buildDocFileName('Budget (INTERNAL ONLY)');
 
   return (
     <div className="min-h-screen bg-csev-slate-900">
@@ -633,6 +735,9 @@ function HomePageContent() {
                   {currentProjectId && projectName && (
                     <span className="ml-2 text-csev-green">- {projectName}</span>
                   )}
+                  {!currentProjectId && isDirty && (
+                    <span className="ml-2 text-red-400 text-xs font-medium">Unsaved draft</span>
+                  )}
                   {currentProjectId && autoSaveStatus === 'saving' && (
                     <span className="ml-2 text-csev-text-muted text-xs animate-pulse">Saving...</span>
                   )}
@@ -651,24 +756,60 @@ function HomePageContent() {
               )}
               <Button
                 variant="ghost"
-                onClick={() => router.push('/projects')}
+                onClick={() => {
+                  if (isDirty && !currentProjectId) {
+                    // Unsaved new proposal — warn user
+                    setShowLeaveDialog(true);
+                  } else if (isDirty && currentProjectId) {
+                    // Existing project with unsaved edits — auto-save then navigate
+                    updateProject(currentProjectId, proposal, projectName || undefined)
+                      .then(() => router.push('/projects'))
+                      .catch(() => setShowLeaveDialog(true));
+                  } else {
+                    router.push('/projects');
+                  }
+                }}
               >
                 <FolderOpen size={18} className="mr-2" />
                 Projects
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  // Auto-populate project name if not set
-                  if (!projectName && proposal.customerName) {
-                    setProjectName(`${proposal.customerName} Proposal`);
+                onClick={async () => {
+                  if (currentProjectId) {
+                    // Quick save — no dialog needed
+                    setSaving(true);
+                    setSaveMessage(null);
+                    try {
+                      const nameToSave = projectName.trim() || (proposal.customerName ? `${proposal.customerName} - ${new Date().toLocaleDateString()}` : 'Untitled Project');
+                      await updateProject(currentProjectId, proposal, nameToSave);
+                      setProjectName(nameToSave);
+                      setInitialProposalRef(JSON.stringify({ ...proposal, preparedDate: '' }));
+                      setIsDirty(false);
+                      setSaveMessage({ type: 'success', text: 'Saved!' });
+                    } catch (error) {
+                      console.error('Error saving project:', error);
+                      setSaveMessage({ type: 'error', text: 'Failed to save' });
+                    } finally {
+                      setSaving(false);
+                      setTimeout(() => setSaveMessage(null), 3000);
+                    }
+                  } else {
+                    // New project — show dialog for name + folder
+                    if (!projectName && proposal.customerName) {
+                      setProjectName(`${proposal.customerName} - ${new Date().toLocaleDateString()}`);
+                    }
+                    try {
+                      const folderData = await getFolders();
+                      setFolders(folderData);
+                    } catch {}
+                    setShowSaveDialog(true);
                   }
-                  setShowSaveDialog(true);
                 }}
                 disabled={saving}
               >
                 <Save size={18} className="mr-2" />
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? 'Saving...' : currentProjectId ? 'Save' : 'Save As...'}
               </Button>
               <Button
                 variant="ghost"
@@ -694,7 +835,11 @@ function HomePageContent() {
             </div>
           </div>
           {saveMessage && (
-            <div className={`mt-2 text-sm ${saveMessage.type === 'success' ? 'text-csev-green' : 'text-red-400'}`}>
+            <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-lg border animate-fade-in text-sm font-medium ${
+              saveMessage.type === 'success'
+                ? 'bg-csev-green/20 border-csev-green/30 text-csev-green'
+                : 'bg-red-500/20 border-red-500/30 text-red-400'
+            }`}>
               {saveMessage.text}
             </div>
           )}
@@ -921,10 +1066,40 @@ function HomePageContent() {
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder={proposal.customerName ? `${proposal.customerName} Proposal` : 'Enter project name'}
+                placeholder={proposal.customerName ? `${proposal.customerName} - ${new Date().toLocaleDateString()}` : 'Enter project name'}
                 autoFocus
               />
             </div>
+            {!currentProjectId && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-csev-text-secondary mb-1">
+                  Save to Folder
+                </label>
+                <div className="max-h-[200px] overflow-y-auto border border-csev-border rounded-lg p-2 space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFolderId(null)}
+                    className={`w-full text-left px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 text-sm ${
+                      selectedFolderId === null
+                        ? 'bg-csev-green/20 text-csev-green'
+                        : 'text-csev-text-secondary hover:bg-csev-slate-700'
+                    }`}
+                  >
+                    <List size={14} /> All Projects
+                  </button>
+                  {folders.filter(f => !f.parentId).map(folder => (
+                    <SaveFolderNode
+                      key={folder.id}
+                      folder={folder}
+                      folders={folders}
+                      selectedFolderId={selectedFolderId}
+                      onSelect={setSelectedFolderId}
+                      depth={0}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex gap-3 justify-end">
               <Button
                 variant="ghost"
@@ -959,6 +1134,60 @@ function HomePageContent() {
               </Button>
               <Button variant="primary" onClick={confirmReset} className="bg-red-500 hover:bg-red-600">
                 Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Without Saving Dialog */}
+      {showLeaveDialog && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-csev-panel rounded-lg shadow-xl border border-csev-border w-full max-w-sm mx-4 animate-fade-in">
+            <div className="p-5">
+              <div className="flex items-start gap-3 mb-1">
+                <div className="p-1.5 bg-amber-500/10 rounded-lg shrink-0 mt-0.5">
+                  <AlertTriangle size={18} className="text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-csev-text-primary">Unsaved Changes</h3>
+                  <p className="text-sm text-csev-text-secondary mt-1">
+                    You have unsaved changes that will be lost if you leave.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 pb-5">
+              <button
+                onClick={() => setShowLeaveDialog(false)}
+                className="px-3 py-1.5 text-sm text-csev-text-secondary hover:text-csev-text-primary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowLeaveDialog(false); router.push('/projects'); }}
+                className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 transition-colors"
+              >
+                Discard
+              </button>
+              <Button variant="primary" size="sm" onClick={async () => {
+                setShowLeaveDialog(false);
+                if (currentProjectId) {
+                  await updateProject(currentProjectId, proposal, projectName || undefined);
+                  router.push('/projects');
+                } else {
+                  if (!projectName && proposal.customerName) {
+                    setProjectName(`${proposal.customerName} - ${new Date().toLocaleDateString()}`);
+                  }
+                  try {
+                    const folderData = await getFolders();
+                    setFolders(folderData);
+                  } catch {}
+                  setShowSaveDialog(true);
+                }
+              }}>
+                <Save size={14} className="mr-1.5" />
+                Save
               </Button>
             </div>
           </div>
