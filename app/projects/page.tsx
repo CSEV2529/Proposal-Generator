@@ -1121,19 +1121,17 @@ export default function ProjectsPage() {
                       >
                         <Edit size={13} />
                       </button>
-                      {p.folderId && (
-                        <button
-                          onClick={() => {
-                            setCurrentFolderId(p.folderId);
-                            setExpandedId(p.id);
-                            setCurrentPage(1);
-                          }}
-                          title={`Go to ${getFolderName(p.folderId)}`}
-                          className="p-1.5 text-csev-text-secondary hover:text-csev-green transition-colors shrink-0 mr-0.5"
-                        >
-                          <FolderOpen size={13} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          setCurrentFolderId(p.folderId || null);
+                          setExpandedId(p.id);
+                          setCurrentPage(1);
+                        }}
+                        title={p.folderId ? `Go to ${getFolderName(p.folderId)}` : 'Go to All Projects'}
+                        className="p-1.5 text-csev-text-secondary hover:text-csev-green transition-colors shrink-0 mr-0.5"
+                      >
+                        <FolderOpen size={13} />
+                      </button>
                     </div>
                   ))}
                 </div>
