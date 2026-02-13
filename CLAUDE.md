@@ -154,7 +154,11 @@ templates/
 - UI: `csev-panel`, `csev-elevated`, `csev-hover`, `csev-border`
 - Shadows: `shadow-glow`, `shadow-card`, `shadow-card-hover`
 - Animations: `animate-pulse-glow`, `animate-fade-in`
-- Fonts: `font-heading`, `font-body` (CSS vars, falls back to system-ui)
+- Fonts: `font-heading` = Orbitron (loaded via next/font/google in layout.tsx, CSS var `--font-heading`), `font-body` falls back to system-ui
+- Webapp header: CSEV leaf symbol (`/CSEV-Leaf Symbol TIGHT.png`) + Orbitron "ChargeSmart EV" text (green "Charge", white "Smart EV")
+- Webapp footer: `1Asset 10@2x.png` logo image + Orbitron website/phone line, white text, clickable URL
+- Login page: same leaf symbol + Orbitron text branding
+- Phone: (888) 717-4544
 
 ## PDF Page Design (dev-alex branch)
 

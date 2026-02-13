@@ -737,9 +737,9 @@ function HomePageContent() {
         <div className="max-w-7xl mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={44} height={44} className="rounded-lg" />
+              <Image src="/CSEV-Leaf Symbol TIGHT.png" alt="CSEV" width={40} height={40} />
               <div>
-                <h1 className="text-2xl font-bold text-csev-text-primary">
+                <h1 className="text-2xl font-heading font-bold text-white">
                   <span className="text-csev-green">Charge</span>Smart EV
                 </h1>
                 <p className="text-sm text-csev-text-secondary">
@@ -1219,13 +1219,12 @@ function HomePageContent() {
       {/* Footer */}
       <footer className="bg-csev-slate-800 border-t border-csev-border text-csev-text-muted py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          <p className="font-heading text-white">
-            <span className="text-csev-green">Charge</span>Smart EV
-            <span className="font-body text-csev-text-secondary ml-2">- {COMPANY_INFO.tagline}</span>
-          </p>
-          <p className="mt-1 text-white">
+          <div className="flex justify-center mb-1">
+            <Image src="/1Asset 10@2x.png" alt="ChargeSmart EV" width={240} height={36} />
+          </div>
+          <p className="mt-1 font-heading text-white tracking-wide">
             <a href={`https://${COMPANY_INFO.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-csev-green transition-colors underline">{COMPANY_INFO.website}</a>
-            {' | '}
+            <span className="mx-2">|</span>
             {COMPANY_INFO.phone}
           </p>
         </div>

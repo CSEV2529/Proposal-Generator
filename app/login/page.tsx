@@ -37,9 +37,9 @@ export default function LoginPage() {
       <div className="bg-csev-panel rounded-lg shadow-card border border-csev-border p-8 w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={56} height={56} className="rounded-lg" />
+            <Image src="/CSEV-Leaf Symbol TIGHT.png" alt="CSEV" width={56} height={56} />
           </div>
-          <h1 className="text-2xl font-bold text-csev-text-primary">
+          <h1 className="text-2xl font-heading font-bold text-white">
             <span className="text-csev-green">Charge</span>Smart EV
           </h1>
           <p className="text-csev-text-secondary mt-2">Proposal Generator</p>

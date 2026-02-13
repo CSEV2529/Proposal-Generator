@@ -1061,9 +1061,9 @@ export default function ProjectsPage() {
       <header className="bg-csev-slate-800 border-b border-csev-border shadow-lg">
         <div className="max-w-[1400px] mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={40} height={40} className="rounded-lg" />
+            <Image src="/CSEV-Leaf Symbol TIGHT.png" alt="CSEV" width={36} height={36} />
             <div>
-              <h1 className="text-xl font-bold text-csev-text-primary">
+              <h1 className="text-xl font-heading font-bold text-white">
                 <span className="text-csev-green">Charge</span>Smart EV
               </h1>
               <p className="text-sm text-csev-text-secondary">Proposal Generator</p>
