@@ -38,35 +38,30 @@ const EXCEL_EXPORT_UTILITIES = {
   'rge': 'RG&E',
 };
 
-// PDF Download component that loads react-pdf only on client
+// PDF Download component — generates on click, not on every render
 function PDFDownloadButton({ proposal, fileName }: { proposal: Proposal; fileName: string }) {
-  const [PDFComponents, setPDFComponents] = useState<{
-    PDFDownloadLink: any;
-    ProposalDocument: any;
-  } | null>(null);
-
-  useEffect(() => {
-    Promise.all([
-      import('@react-pdf/renderer'),
-      import('@/components/pdf/ProposalDocument'),
-    ]).then(([pdfRenderer, proposalDoc]) => {
-      setPDFComponents({
-        PDFDownloadLink: pdfRenderer.PDFDownloadLink,
-        ProposalDocument: proposalDoc.ProposalDocument,
-      });
-    });
-  }, []);
-
-  if (!PDFComponents) {
-    return (
-      <Button variant="primary" size="lg" className="w-full" disabled>
-        <span className="animate-pulse">Loading PDF generator...</span>
-      </Button>
-    );
-  }
-
-  const { PDFDownloadLink, ProposalDocument } = PDFComponents;
+  const [generating, setGenerating] = useState(false);
   const isDistribution = proposal.projectType === 'distribution';
+
+  const handleDownload = async () => {
+    setGenerating(true);
+    try {
+      const [{ pdf }, { ProposalDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/pdf/ProposalDocument'),
+      ]);
+      const blob = await pdf(<ProposalDocument proposal={proposal} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+    }
+    setGenerating(false);
+  };
 
   if (isDistribution) {
     return (
@@ -78,31 +73,16 @@ function PDFDownloadButton({ proposal, fileName }: { proposal: Proposal; fileNam
   }
 
   return (
-    <PDFDownloadLink
-      document={<ProposalDocument proposal={proposal} />}
-      fileName={fileName}
-      className="block"
-    >
-      {({ loading, error }: { loading: boolean; error: any }) => (
-        <Button
-          variant="primary"
-          size="lg"
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="animate-pulse">Generating PDF...</span>
-          ) : error ? (
-            'Error generating PDF'
-          ) : (
-            <>
-              <FileDown size={20} className="mr-2" />
-              Download Proposal
-            </>
-          )}
-        </Button>
+    <Button variant="primary" size="lg" className="w-full" disabled={generating} onClick={handleDownload}>
+      {generating ? (
+        <span className="animate-pulse">Generating PDF...</span>
+      ) : (
+        <>
+          <FileDown size={20} className="mr-2" />
+          Download Proposal
+        </>
       )}
-    </PDFDownloadLink>
+    </Button>
   );
 }
 
@@ -194,119 +174,79 @@ function ExcelExportButton({ proposal }: { proposal: Proposal }) {
   );
 }
 
-// Estimate PDF Download component
+// Estimate PDF Download component — generates on click
 function EstimateDownloadButton({ proposal, fileName }: { proposal: Proposal; fileName: string }) {
-  const [PDFComponents, setPDFComponents] = useState<{
-    PDFDownloadLink: any;
-    EstimateDocument: any;
-  } | null>(null);
+  const [generating, setGenerating] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
-      import('@react-pdf/renderer'),
-      import('@/components/pdf/EstimateDocument'),
-    ]).then(([pdfRenderer, estimateDoc]) => {
-      setPDFComponents({
-        PDFDownloadLink: pdfRenderer.PDFDownloadLink,
-        EstimateDocument: estimateDoc.EstimateDocument,
-      });
-    });
-  }, []);
-
-  if (!PDFComponents) {
-    return (
-      <Button variant="secondary" size="lg" className="w-full" disabled>
-        <span className="animate-pulse">Loading...</span>
-      </Button>
-    );
-  }
-
-  const { PDFDownloadLink, EstimateDocument } = PDFComponents;
+  const handleDownload = async () => {
+    setGenerating(true);
+    try {
+      const [{ pdf }, { EstimateDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/pdf/EstimateDocument'),
+      ]);
+      const blob = await pdf(<EstimateDocument proposal={proposal} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+    }
+    setGenerating(false);
+  };
 
   return (
-    <PDFDownloadLink
-      document={<EstimateDocument proposal={proposal} />}
-      fileName={fileName}
-      className="block"
-    >
-      {({ loading, error }: { loading: boolean; error: any }) => (
-        <Button
-          variant="secondary"
-          size="lg"
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="animate-pulse">Generating...</span>
-          ) : error ? (
-            'Error generating PDF'
-          ) : (
-            <>
-              <FileDown size={20} className="mr-2" />
-              Download Estimate
-            </>
-          )}
-        </Button>
+    <Button variant="secondary" size="lg" className="w-full" disabled={generating} onClick={handleDownload}>
+      {generating ? (
+        <span className="animate-pulse">Generating...</span>
+      ) : (
+        <>
+          <FileDown size={20} className="mr-2" />
+          Download Estimate
+        </>
       )}
-    </PDFDownloadLink>
+    </Button>
   );
 }
 
-// Budget PDF Download component
+// Budget PDF Download component — generates on click
 function BudgetDownloadButton({ proposal, fileName }: { proposal: Proposal; fileName: string }) {
-  const [PDFComponents, setPDFComponents] = useState<{
-    PDFDownloadLink: any;
-    BudgetDocument: any;
-  } | null>(null);
+  const [generating, setGenerating] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
-      import('@react-pdf/renderer'),
-      import('@/components/pdf/BudgetDocument'),
-    ]).then(([pdfRenderer, budgetDoc]) => {
-      setPDFComponents({
-        PDFDownloadLink: pdfRenderer.PDFDownloadLink,
-        BudgetDocument: budgetDoc.BudgetDocument,
-      });
-    });
-  }, []);
-
-  if (!PDFComponents) {
-    return (
-      <Button variant="secondary" size="lg" className="w-full" disabled>
-        <span className="animate-pulse">Loading...</span>
-      </Button>
-    );
-  }
-
-  const { PDFDownloadLink, BudgetDocument } = PDFComponents;
+  const handleDownload = async () => {
+    setGenerating(true);
+    try {
+      const [{ pdf }, { BudgetDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/pdf/BudgetDocument'),
+      ]);
+      const blob = await pdf(<BudgetDocument proposal={proposal} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+    }
+    setGenerating(false);
+  };
 
   return (
-    <PDFDownloadLink
-      document={<BudgetDocument proposal={proposal} />}
-      fileName={fileName}
-      className="block"
-    >
-      {({ loading, error }: { loading: boolean; error: any }) => (
-        <Button
-          variant="secondary"
-          size="lg"
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="animate-pulse">Generating...</span>
-          ) : error ? (
-            'Error generating PDF'
-          ) : (
-            <>
-              <FileDown size={20} className="mr-2" />
-              Download Budget (Internal)
-            </>
-          )}
-        </Button>
+    <Button variant="secondary" size="lg" className="w-full" disabled={generating} onClick={handleDownload}>
+      {generating ? (
+        <span className="animate-pulse">Generating...</span>
+      ) : (
+        <>
+          <FileDown size={20} className="mr-2" />
+          Download Budget (Internal)
+        </>
       )}
-    </PDFDownloadLink>
+    </Button>
   );
 }
 
