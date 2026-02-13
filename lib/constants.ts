@@ -3,7 +3,7 @@ export const COMPANY_INFO = {
   legalName: 'ChargeSmart EV LLC',
   tagline: 'Power That Moves You',
   website: 'www.chargesmartev.com',
-  phone: '+1 (585) 943-9980',
+  phone: '(888) 717-4544',
   email: 'sal@chargesmartev.com',
   address: '5 Southside Dr, Suite 11-184',
   city: 'Clifton Park',

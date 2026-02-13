@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RotateCcw, Eye, EyeOff, Zap, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle, ChevronRight, List } from 'lucide-react';
+import { FileDown, RotateCcw, Eye, EyeOff, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle, ChevronRight, List } from 'lucide-react';
+import Image from 'next/image';
 import { useProposal } from '@/context/ProposalContext';
 import {
   CustomerInfoForm,
@@ -736,9 +737,7 @@ function HomePageContent() {
         <div className="max-w-7xl mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-csev-green/20 rounded-lg">
-                <Zap size={28} className="text-csev-green" />
-              </div>
+              <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={44} height={44} className="rounded-lg" />
               <div>
                 <h1 className="text-2xl font-bold text-csev-text-primary">
                   <span className="text-csev-green">Charge</span>Smart EV
@@ -1220,11 +1219,14 @@ function HomePageContent() {
       {/* Footer */}
       <footer className="bg-csev-slate-800 border-t border-csev-border text-csev-text-muted py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          <p className="text-csev-text-secondary">
-            <span className="text-csev-green">Charge</span>Smart EV - {COMPANY_INFO.tagline}
+          <p className="font-heading text-white">
+            <span className="text-csev-green">Charge</span>Smart EV
+            <span className="font-body text-csev-text-secondary ml-2">- {COMPANY_INFO.tagline}</span>
           </p>
-          <p className="mt-1">
-            {COMPANY_INFO.website} | {COMPANY_INFO.phone}
+          <p className="mt-1 text-white">
+            <a href={`https://${COMPANY_INFO.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-csev-green transition-colors underline">{COMPANY_INFO.website}</a>
+            {' | '}
+            {COMPANY_INFO.phone}
           </p>
         </div>
       </footer>

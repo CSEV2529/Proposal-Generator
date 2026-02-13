@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
-import { Zap } from 'lucide-react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -37,9 +37,7 @@ export default function LoginPage() {
       <div className="bg-csev-panel rounded-lg shadow-card border border-csev-border p-8 w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-csev-green/20 rounded-lg">
-              <Zap size={40} className="text-csev-green" />
-            </div>
+            <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={56} height={56} className="rounded-lg" />
           </div>
           <h1 className="text-2xl font-bold text-csev-text-primary">
             <span className="text-csev-green">Charge</span>Smart EV

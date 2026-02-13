@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import {
   getProjects, getProject, deleteProject, duplicateProject,
@@ -14,7 +15,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
-  Plus, Search, Trash2, Edit, LogOut, Zap, Copy,
+  Plus, Search, Trash2, Edit, LogOut, Copy,
   FolderPlus, FolderOpen, ChevronRight, ArrowLeft,
   ChevronUp, ChevronDown, ChevronLeft, Clock,
   AlertTriangle, CheckSquare, Square, X, MoveRight,
@@ -1060,9 +1061,7 @@ export default function ProjectsPage() {
       <header className="bg-csev-slate-800 border-b border-csev-border shadow-lg">
         <div className="max-w-[1400px] mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-csev-green/20 rounded-lg">
-              <Zap size={24} className="text-csev-green" />
-            </div>
+            <Image src="/CSEV logo for dark background.png" alt="ChargeSmart EV" width={40} height={40} className="rounded-lg" />
             <div>
               <h1 className="text-xl font-bold text-csev-text-primary">
                 <span className="text-csev-green">Charge</span>Smart EV
