@@ -201,7 +201,20 @@ function ExcelExportButton({ proposal }: { proposal: Proposal }) {
         // Get filename from header or use default
         const contentDisposition = response.headers.get('Content-Disposition');
         const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-        const filename = filenameMatch ? filenameMatch[1] : buildDocFileName(`${utilityName} Breakdown`, 'xlsx');
+        let fallbackName = `${utilityName} Breakdown.xlsx`;
+        if (proposal.customerName) {
+          const city = proposal.customerCity || '';
+          const state = proposal.customerState || '';
+          const cityState = [city, state].filter(Boolean).join(' ');
+          const now = new Date();
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          const dd = String(now.getDate()).padStart(2, '0');
+          const yyyy = now.getFullYear();
+          const date = `${mm}.${dd}.${yyyy}`;
+          const parts = [proposal.customerName, cityState, `${utilityName} Breakdown`, date].filter(Boolean);
+          fallbackName = parts.join('-').replace(/[/\\:*?"<>|]/g, '') + '.xlsx';
+        }
+        const filename = filenameMatch ? filenameMatch[1] : fallbackName;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
