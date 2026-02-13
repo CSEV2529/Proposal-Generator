@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseInstance: SupabaseClient | null = null;
 
@@ -31,7 +32,7 @@ export function getSupabaseClient(): SupabaseClient {
     throw new Error('Supabase environment variables not configured');
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+  supabaseInstance = createBrowserClient(supabaseUrl, supabaseAnonKey);
   return supabaseInstance;
 }
 
