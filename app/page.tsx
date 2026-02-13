@@ -313,28 +313,48 @@ function FieldRecap({ proposal }: { proposal: Proposal }) {
       sectionId: 'section-customer',
       status: customerIncomplete === 0
         ? <span className="text-csev-green">ALL COMPLETED</span>
-        : <span className="text-red-400">{customerIncomplete} FIELD{customerIncomplete > 1 ? 'S' : ''} INCOMPLETE</span>,
+        : (
+          <span className="inline-flex items-center gap-1 text-red-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            {customerIncomplete} FIELD{customerIncomplete > 1 ? 'S' : ''} INCOMPLETE
+          </span>
+        ),
     },
     {
       label: 'Project Template',
       sectionId: 'section-template',
       status: templateIncomplete === 0
         ? <span className="text-csev-green">ALL COMPLETED</span>
-        : <span className="text-red-400">{templateIncomplete} FIELD{templateIncomplete > 1 ? 'S' : ''} INCOMPLETE</span>,
+        : (
+          <span className="inline-flex items-center gap-1 text-red-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            {templateIncomplete} FIELD{templateIncomplete > 1 ? 'S' : ''} INCOMPLETE
+          </span>
+        ),
     },
     {
       label: 'EVSE Equipment',
       sectionId: 'section-evse',
       status: evseCount > 0
         ? <span className="text-csev-green">{evseCount} ITEM{evseCount > 1 ? 'S' : ''} ADDED</span>
-        : <span className="text-red-400">NO ITEMS ADDED</span>,
+        : (
+          <span className="inline-flex items-center gap-1 text-red-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            NO ITEMS ADDED
+          </span>
+        ),
     },
     {
       label: 'Installation Scope',
       sectionId: 'section-installation',
       status: installCount > 0
         ? <span className="text-csev-green">{installCount} LINE{installCount > 1 ? 'S' : ''} ADDED</span>
-        : <span className="text-red-400">NO LINES ADDED</span>,
+        : (
+          <span className="inline-flex items-center gap-1 text-red-400">
+            <AlertTriangle size={10} className="shrink-0" />
+            NO LINES ADDED
+          </span>
+        ),
     },
     {
       label: 'Financial Summary',
