@@ -18,6 +18,9 @@ const NYSEG_RGE_FILE = path.join(TEMPLATES_DIR, 'NYSEG & RG&E Breakdown.xlsx');
 async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NATIONAL_GRID_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  // Clear defined names — ExcelJS corrupts them on re-save
+  workbook.definedNames.model = [];
 
   const sheet = workbook.getWorksheet('Make-Ready');
   if (!sheet) {
@@ -25,7 +28,10 @@ async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   }
 
   // Helper to set cell value (row is 1-indexed Excel row number)
+  // Guards against undefined/NaN/Infinity which corrupt OOXML
   const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
     const cell = sheet.getCell(`${col}${row}`);
     cell.value = value;
   };
@@ -122,6 +128,9 @@ async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
 async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NYSEG_RGE_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  // Clear defined names — ExcelJS corrupts them on re-save
+  workbook.definedNames.model = [];
 
   // Determine which sheet to use based on charging level
   const sheetName = data.chargingLevel === 'dcfc' ? 'DCFC costs' : 'L2 costs';
@@ -130,8 +139,14 @@ async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
     throw new Error(`${sheetName} sheet not found`);
   }
 
+  // Set the active sheet so Excel opens to it by default
+  workbook.views = [{ activeTab: workbook.worksheets.indexOf(sheet) }];
+
   // Helper to set cell value (row is 1-indexed Excel row number)
+  // Guards against undefined/NaN/Infinity which corrupt OOXML
   const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
     const cell = sheet.getCell(`${col}${row}`);
     cell.value = value;
   };
