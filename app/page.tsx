@@ -27,7 +27,7 @@ import {
 } from '@/lib/calculations';
 import { COMPANY_INFO, PROJECT_TYPES, getPaymentOptions } from '@/lib/constants';
 import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
-import { supabase } from '@/lib/supabase';
+// Auth handled via /api/auth/* routes
 import { createProject, updateProject, getProject, getFolders, Folder } from '@/lib/projectStorage';
 import type { Proposal } from '@/lib/types';
 
@@ -540,15 +540,14 @@ function HomePageContent() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || null);
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const { user } = await res.json();
+        setUserEmail(user?.email || null);
       } else {
-        // Allow access without login for local development
         setUserEmail('local@dev.local');
       }
     } catch {
-      // Allow access without login for local development
       setUserEmail('local@dev.local');
     }
   }, []);
@@ -688,7 +687,7 @@ function HomePageContent() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   };
 

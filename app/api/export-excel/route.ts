@@ -140,7 +140,7 @@ async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
   }
 
   // Set the active sheet so Excel opens to it by default
-  workbook.views = [{ activeTab: workbook.worksheets.indexOf(sheet) }];
+  (workbook as unknown as { views: Array<{ activeTab: number }> }).views = [{ activeTab: workbook.worksheets.indexOf(sheet) }];
 
   // Helper to set cell value (row is 1-indexed Excel row number)
   // Guards against undefined/NaN/Infinity which corrupt OOXML

@@ -1,5 +1,4 @@
-// Project storage utilities for Supabase
-import { supabase } from './supabase';
+// Project storage utilities — calls our own API routes (backed by Railway PostgreSQL)
 import { Proposal } from './types';
 
 // Serialize proposal for storage (convert Date to ISO string)
@@ -41,15 +40,11 @@ export interface ProjectWithData extends ProjectSummary {
 // Helper to format address from project data
 function formatAddress(projectData: Record<string, unknown> | null): string {
   if (!projectData) return '';
-
   const street = projectData.customerAddress as string || '';
   const city = projectData.customerCity as string || '';
   const state = projectData.customerState as string || '';
-
-  // Format as "123 Main St, Albany, NY"
   const cityState = [city, state].filter(Boolean).join(', ');
   const parts = [street, cityState].filter(Boolean);
-
   return parts.join(', ');
 }
 
@@ -82,36 +77,20 @@ function mapToSummary(p: Record<string, unknown>): ProjectSummary {
   };
 }
 
-// Get all projects for the current user
+// Get all projects
 export async function getProjects(): Promise<ProjectSummary[]> {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('id, name, customer_name, status, created_at, updated_at, project_data, folder_id')
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching projects:', error);
-    throw error;
-  }
-
-  return (data || []).map(p => mapToSummary(p as Record<string, unknown>));
+  const res = await fetch('/api/projects');
+  if (!res.ok) throw new Error('Failed to fetch projects');
+  const { data } = await res.json();
+  return (data || []).map((p: Record<string, unknown>) => mapToSummary(p));
 }
 
 // Get a single project with full data
 export async function getProject(id: string): Promise<ProjectWithData | null> {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    console.error('Error fetching project:', error);
-    throw error;
-  }
-
+  const res = await fetch(`/api/projects/${id}`);
+  if (!res.ok) throw new Error('Failed to fetch project');
+  const { data } = await res.json();
   if (!data) return null;
-
   const pd = data.project_data as Record<string, unknown>;
   return {
     ...mapToSummary(data as Record<string, unknown>),
@@ -125,35 +104,20 @@ export async function createProject(
   proposal: Proposal,
   folderId?: string | null
 ): Promise<string> {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    throw new Error('Must be logged in to save projects');
-  }
-
-  const insertData: Record<string, unknown> = {
-    user_id: userData.user.id,
-    name: name,
-    customer_name: proposal.customerName || '',
-    project_data: serializeProposal(proposal),
-    status: 'draft',
-  };
-
-  if (folderId) {
-    insertData.folder_id = folderId;
-  }
-
-  const { data, error } = await supabase
-    .from('projects')
-    .insert(insertData)
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('Error creating project:', error);
-    throw error;
-  }
-
-  return data.id;
+  const res = await fetch('/api/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      customer_name: proposal.customerName || '',
+      project_data: serializeProposal(proposal),
+      status: 'draft',
+      folder_id: folderId || null,
+    }),
+  });
+  if (!res.ok) throw new Error('Failed to create project');
+  const { id } = await res.json();
+  return id;
 }
 
 // Update an existing project
@@ -163,28 +127,19 @@ export async function updateProject(
   name?: string,
   status?: 'draft' | 'sent' | 'completed'
 ): Promise<void> {
-  const updateData: Record<string, unknown> = {
+  const body: Record<string, unknown> = {
     project_data: serializeProposal(proposal),
     customer_name: proposal.customerName || '',
   };
+  if (name !== undefined) body.name = name;
+  if (status !== undefined) body.status = status;
 
-  if (name !== undefined) {
-    updateData.name = name;
-  }
-
-  if (status !== undefined) {
-    updateData.status = status;
-  }
-
-  const { error } = await supabase
-    .from('projects')
-    .update(updateData)
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error updating project:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/projects/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('Failed to update project');
 }
 
 // Update just the status of a project
@@ -192,101 +147,58 @@ export async function updateProjectStatus(
   id: string,
   status: 'draft' | 'sent' | 'completed'
 ): Promise<void> {
-  const { error } = await supabase
-    .from('projects')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error updating project status:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/projects/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error('Failed to update project status');
 }
 
 // Rename a project
 export async function renameProject(id: string, name: string): Promise<void> {
-  const { error } = await supabase
-    .from('projects')
-    .update({ name })
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error renaming project:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/projects/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error('Failed to rename project');
 }
 
 // Delete a project
 export async function deleteProject(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('projects')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting project:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete project');
 }
 
 // Search projects by customer name
 export async function searchProjects(query: string): Promise<ProjectSummary[]> {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('id, name, customer_name, status, created_at, updated_at, project_data, folder_id')
-    .ilike('customer_name', `%${query}%`)
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    console.error('Error searching projects:', error);
-    throw error;
-  }
-
-  return (data || []).map(p => mapToSummary(p as Record<string, unknown>));
+  const res = await fetch(`/api/projects?search=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error('Failed to search projects');
+  const { data } = await res.json();
+  return (data || []).map((p: Record<string, unknown>) => mapToSummary(p));
 }
 
 // Duplicate a project
 export async function duplicateProject(id: string, customName?: string, folderId?: string | null): Promise<string> {
-  const original = await getProject(id);
-  if (!original) throw new Error('Project not found');
-
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) throw new Error('Must be logged in');
-
-  const insertData: Record<string, unknown> = {
-    user_id: userData.user.id,
-    name: customName || `${original.name} (Copy)`,
-    customer_name: original.customerName || '',
-    project_data: serializeProposal(original.projectData),
-    status: 'draft',
-    folder_id: folderId !== undefined ? folderId : (original.folderId || null),
-  };
-
-  const { data, error } = await supabase
-    .from('projects')
-    .insert(insertData)
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('Error duplicating project:', error);
-    throw error;
-  }
-
-  return data.id;
+  const res = await fetch(`/api/projects/${id}/duplicate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: customName, folder_id: folderId }),
+  });
+  if (!res.ok) throw new Error('Failed to duplicate project');
+  const { id: newId } = await res.json();
+  return newId;
 }
 
 // Move a project to a folder
 export async function moveProjectToFolder(projectId: string, folderId: string | null): Promise<void> {
-  const { error } = await supabase
-    .from('projects')
-    .update({ folder_id: folderId })
-    .eq('id', projectId);
-
-  if (error) {
-    console.error('Error moving project:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/projects/${projectId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folder_id: folderId }),
+  });
+  if (!res.ok) throw new Error('Failed to move project');
 }
 
 // Folder types
@@ -299,73 +211,45 @@ export interface Folder {
 
 // Get all folders
 export async function getFolders(): Promise<Folder[]> {
-  const { data, error } = await supabase
-    .from('folders')
-    .select('id, name, parent_id, created_at')
-    .order('name');
-
-  if (error) {
-    // If folders table doesn't exist yet, return empty
-    if (error.code === '42P01') return [];
-    console.error('Error fetching folders:', error);
-    throw error;
+  try {
+    const res = await fetch('/api/folders');
+    if (!res.ok) return [];
+    const { data } = await res.json();
+    return (data || []).map((f: Record<string, unknown>) => ({
+      id: f.id as string,
+      name: f.name as string,
+      parentId: (f.parent_id as string) || null,
+      createdAt: f.created_at as string,
+    }));
+  } catch {
+    return [];
   }
-
-  return (data || []).map(f => ({
-    id: f.id,
-    name: f.name,
-    parentId: f.parent_id,
-    createdAt: f.created_at,
-  }));
 }
 
 // Create a folder
 export async function createFolder(name: string, parentId: string | null = null): Promise<string> {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) throw new Error('Must be logged in');
-
-  const { data, error } = await supabase
-    .from('folders')
-    .insert({
-      user_id: userData.user.id,
-      name,
-      parent_id: parentId,
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('Error creating folder:', error);
-    throw error;
-  }
-
-  return data.id;
+  const res = await fetch('/api/folders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, parent_id: parentId }),
+  });
+  if (!res.ok) throw new Error('Failed to create folder');
+  const { id } = await res.json();
+  return id;
 }
 
 // Rename a folder
 export async function renameFolder(id: string, name: string): Promise<void> {
-  const { error } = await supabase
-    .from('folders')
-    .update({ name })
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error renaming folder:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/folders/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error('Failed to rename folder');
 }
 
 // Delete a folder (projects in it become unfoldered)
 export async function deleteFolder(id: string): Promise<void> {
-  // Move all projects in this folder to root
-  await supabase.from('projects').update({ folder_id: null }).eq('folder_id', id);
-  // Move all subfolders to parent (or root)
-  const { data: folder } = await supabase.from('folders').select('parent_id').eq('id', id).single();
-  await supabase.from('folders').update({ parent_id: folder?.parent_id || null }).eq('parent_id', id);
-  // Delete the folder
-  const { error } = await supabase.from('folders').delete().eq('id', id);
-  if (error) {
-    console.error('Error deleting folder:', error);
-    throw error;
-  }
+  const res = await fetch(`/api/folders/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete folder');
 }

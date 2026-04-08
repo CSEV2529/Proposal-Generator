@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -19,16 +18,23 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      setError(error.message);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Login failed');
+        setLoading(false);
+      } else {
+        window.location.href = '/';
+      }
+    } catch {
+      setError('Login failed');
       setLoading(false);
-    } else {
-      window.location.href = '/';
     }
   };
 

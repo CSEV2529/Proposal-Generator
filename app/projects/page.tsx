@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+// Auth handled via /api/auth/* routes
 import {
   getProjects, getProject, deleteProject, duplicateProject,
   getFolders, createFolder, renameFolder, deleteFolder,
@@ -696,7 +696,9 @@ export default function ProjectsPage() {
   }, []);
 
   const checkAuthAndLoad = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) { router.push('/login'); return; }
+    const { user } = await res.json();
     if (!user) { router.push('/login'); return; }
     setUserEmail(user.email || null);
     loadData();
@@ -831,7 +833,7 @@ export default function ProjectsPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   };
 
