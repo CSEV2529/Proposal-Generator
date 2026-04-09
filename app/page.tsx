@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { StatsCard } from '@/components/ui/Card';
 import {
   formatCurrency,
+  formatCurrencyWithCents,
   calculateGrossProjectCost,
   calculateNetProjectCost,
   hasEnabledPaymentOption,
@@ -535,6 +536,7 @@ function HomePageContent() {
   const [mounted, setMounted] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [showCents, setShowCents] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -707,6 +709,7 @@ function HomePageContent() {
 
   const grossCost = calculateGrossProjectCost(proposal);
   const netCost = calculateNetProjectCost(proposal);
+  const fmt = (amount: number) => showCents ? formatCurrencyWithCents(amount) : formatCurrency(amount);
 
   const handleReset = () => {
     setShowResetDialog(true);
@@ -889,7 +892,7 @@ function HomePageContent() {
             <div id="section-template"><TemplateSelector /></div>
             <div id="section-evse"><EVSEForm /></div>
             <div id="section-installation"><InstallationScopeForm /></div>
-            <div id="section-financial"><FinancialForm /></div>
+            <div id="section-financial"><FinancialForm showCents={showCents} /></div>
             <div id="section-sitemap"><SiteMapForm /></div>
           </div>
 
@@ -932,13 +935,13 @@ function HomePageContent() {
                     <div className="flex justify-between">
                       <span className="text-csev-text-secondary">EVSE (quoted):</span>
                       <span className="font-medium text-csev-text-primary">
-                        {formatCurrency(proposal.evseQuotedPrice)}
+                        {fmt(proposal.evseQuotedPrice)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-csev-text-secondary">CSMR (quoted):</span>
                       <span className="font-medium text-csev-text-primary">
-                        {formatCurrency(proposal.csmrQuotedPrice)}
+                        {fmt(proposal.csmrQuotedPrice)}
                       </span>
                     </div>
 
@@ -946,34 +949,48 @@ function HomePageContent() {
 
                     <div className="flex justify-between text-base">
                       <span className="text-csev-text-primary font-medium">Gross Cost:</span>
-                      <span className="font-bold text-csev-text-primary">{formatCurrency(grossCost)}</span>
+                      <span className="font-bold text-csev-text-primary">{fmt(grossCost)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-csev-green">
                       <span>Total Incentives:</span>
                       <span>
-                        - {formatCurrency(proposal.makeReadyIncentive + proposal.nyseradaIncentive)}
+                        - {fmt(proposal.makeReadyIncentive + proposal.nyseradaIncentive)}
                       </span>
                     </div>
                     <div className="flex justify-between text-lg bg-csev-green/10 -mx-6 px-6 py-3 mt-3 border-y border-csev-green/30">
                       <span className="font-bold text-csev-green">Net Cost:</span>
                       <span className="font-bold text-csev-green">
-                        {formatCurrency(netCost)}
+                        {fmt(netCost)}
                       </span>
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* Display Toggles */}
+              <div className="flex items-center justify-end gap-3 -mb-2">
+                <button
+                  onClick={() => setShowCents(!showCents)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    showCents
+                      ? 'bg-csev-green/20 border-csev-green/40 text-csev-green'
+                      : 'bg-csev-slate-700 border-csev-border text-csev-text-muted hover:text-csev-text-secondary'
+                  }`}
+                >
+                  ¢ Cents
+                </button>
+              </div>
+
               {/* Stats Cards */}
               <div className="grid grid-cols-2 gap-4">
                 <StatsCard
                   label="Gross Cost"
-                  value={formatCurrency(grossCost).replace('$', '')}
+                  value={fmt(grossCost).replace('$', '')}
                   prefix="$"
                 />
                 <StatsCard
                   label="Net Cost"
-                  value={formatCurrency(netCost).replace('$', '')}
+                  value={fmt(netCost).replace('$', '')}
                   prefix="$"
                 />
               </div>

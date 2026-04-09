@@ -141,9 +141,9 @@ input[type='number'] {
 
 /* Stat value large display — auto-shrinks to fit container */
 .stat-value {
-  font-size: clamp(0.95rem, 2.5vw, 1.75rem);
+  font-size: clamp(0.8rem, 2vw, 1.35rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

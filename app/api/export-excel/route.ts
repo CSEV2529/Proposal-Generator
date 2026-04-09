@@ -28,7 +28,7 @@ import {
   LABOR_RATE_PER_HOUR
 } from '@/lib/excelExport';
 
-// Monkey-patch ExcelJS TableXform to handle table/filter features in MA templates
+// Monkey-patch ExcelJS to handle table/filter features in MA templates
 // Must run before any workbook.xlsx.readFile calls
 try {
   const TableXform = require('exceljs/lib/xlsx/xform/table/table-xform');
@@ -38,6 +38,53 @@ try {
   };
 } catch {
   // Silently ignore if the internal module path changes
+}
+
+// Convert structured table references (e.g. SimpleInvoice[[#This Row],[Col]]) to A1 style,
+// then remove tables. This prevents Excel corruption warnings on MA templates.
+function convertStructuredRefsAndRemoveTables(workbook: ExcelJS.Workbook, sheetName: string, headerRow: number) {
+  const sheet = workbook.getWorksheet(sheetName);
+  if (!sheet) return;
+
+  // Build column name → letter map from header row
+  const colMap: { [name: string]: string } = {};
+  const hRow = sheet.getRow(headerRow);
+  for (let c = 1; c <= 20; c++) {
+    const v = hRow.getCell(c).value;
+    if (v && typeof v === 'string') {
+      // Handle multi-line headers by using first line only for matching
+      const cleanName = v.trim().split('\n')[0].trim();
+      const colLetter = c <= 26 ? String.fromCharCode(64 + c) : '';
+      if (colLetter) {
+        colMap[cleanName] = colLetter;
+        // Also store the full value for exact matches
+        colMap[v.trim()] = colLetter;
+      }
+    }
+  }
+
+  // Replace structured refs with A1 style in all formulas
+  sheet.eachRow((row, rowNum) => {
+    row.eachCell((cell) => {
+      if (cell.value && typeof cell.value === 'object' && 'formula' in cell.value && cell.value.formula) {
+        let f = cell.value.formula;
+        if (f.includes('SimpleInvoice')) {
+          f = f.replace(/SimpleInvoice\[\[#This Row\],\[([^\]]+)\]\]/g, (_match: string, colName: string) => {
+            const col = colMap[colName] || colMap[colName.trim()];
+            return col ? col + rowNum : _match;
+          });
+          cell.value = { formula: f, result: (cell.value as { result?: number }).result };
+        }
+      }
+    });
+  });
+
+  // Now safe to remove tables
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sheetAny = sheet as any;
+  if (sheetAny.tables) {
+    Object.keys(sheetAny.tables).forEach((t: string) => sheet.removeTable(t));
+  }
 }
 
 // Templates are stored in the project's templates folder
@@ -305,6 +352,7 @@ async function writeEversourceMAExcel(data: ExcelExportData): Promise<Buffer> {
   await workbook.xlsx.readFile(EVERSOURCE_MA_FILE);
   workbook.calcProperties.fullCalcOnLoad = true;
   workbook.definedNames.model = [];
+  convertStructuredRefsAndRemoveTables(workbook, 'Estimate', 8);
 
   const sheet = workbook.getWorksheet('Estimate');
   if (!sheet) {
@@ -321,27 +369,38 @@ async function writeEversourceMAExcel(data: ExcelExportData): Promise<Buffer> {
   // Write project info
   setCell('C', 4, data.siteAddress); // Street address
   setCell('C', 5, `${data.siteCity}, ${data.siteState} ${data.siteZip}`); // City/State/Zip
+  // Installer information
+  setCell('F', 3, 'ChargeSmart EV'); // Company Name header label
+  setCell('F', 4, 'ChargeSmart EV'); // Company Name
+  // Site host info
+  setCell('H', 4, data.customerName); // Site Host Name
 
   // Write cost categories
-  // G=material total, H=labor total (J=total is formula G+H)
-  // For rows with qty breakdown: E=qty, F=unit price, G=formula E*F
   Object.entries(data.categories).forEach(([category, costs]) => {
     const row = EVERSOURCE_MA_CELL_MAP[category];
     if (row === undefined) return;
+    if (costs.materialCost <= 0 && costs.laborCost <= 0) return;
 
-    if (costs.materialCost > 0 || costs.laborCost > 0) {
-      // For quantity-based rows (trenching, conduit, bollards, handholes), write E=qty, F=unit price
-      const qtyRows = ['Trenching continuously paved', 'Trenching non-continuously paved',
-        'Conduit underground', 'Conduit above ground', 'Protective Bollards', 'Handholes/Manholes'];
-      if (qtyRows.includes(category) && costs.quantity > 0) {
-        setCell('E', row, costs.quantity); // Qty
-        setCell('F', row, Math.round((costs.materialCost / costs.quantity) * 100) / 100); // Unit price
-        // G is formula E*F
-      } else if (costs.materialCost > 0) {
-        setCell('G', row, costs.materialCost); // Material Total
-      }
-      if (costs.laborCost > 0) {
-        setCell('H', row, costs.laborCost); // Labor Total
+    // Only write E=qty, F=unit price for Feet and Each rows (not "Total" rows which have X'd out cells)
+    const qtyRows = ['Trenching continuously paved', 'Trenching non-continuously paved',
+      'Conduit underground', 'Conduit above ground', 'Protective Bollards', 'Handholes/Manholes'];
+    if (qtyRows.includes(category) && costs.quantity > 0 && costs.materialCost > 0) {
+      setCell('E', row, costs.quantity);
+      setCell('F', row, Math.round((costs.materialCost / costs.quantity) * 100) / 100);
+    }
+    // Always write exact material total to G (overrides formula to prevent rounding gaps)
+    if (costs.materialCost > 0) {
+      setCell('G', row, Math.round(costs.materialCost * 100) / 100);
+    }
+    if (costs.laborCost > 0) {
+      setCell('H', row, Math.round(costs.laborCost * 100) / 100);
+    }
+    // Write item descriptions to Detail/Notes column (C) for "Specify" rows
+    if (data.categoryNotes && data.categoryNotes[category]) {
+      const specifyRows = ['Concrete Work/Bases/Pads', 'Distribution Equipment/panels/breakers',
+        'Metering Equipment', 'Other'];
+      if (specifyRows.includes(category)) {
+        setCell('C', row, data.categoryNotes[category]);
       }
     }
   });
@@ -370,6 +429,7 @@ async function writeNationalGridMAExcel(data: ExcelExportData): Promise<Buffer> 
   await workbook.xlsx.readFile(NATIONAL_GRID_MA_FILE);
   workbook.calcProperties.fullCalcOnLoad = true;
   workbook.definedNames.model = [];
+  convertStructuredRefsAndRemoveTables(workbook, 'Estimate', 8);
 
   const sheet = workbook.getWorksheet('Estimate');
   if (!sheet) {

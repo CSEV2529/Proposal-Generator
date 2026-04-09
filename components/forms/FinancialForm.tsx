@@ -20,7 +20,8 @@ import {
 } from '@/lib/calculations';
 import { getIncentiveLabels, getAdditionalTerms, getPaymentOptions } from '@/lib/constants';
 
-export function FinancialForm() {
+export function FinancialForm({ showCents = false }: { showCents?: boolean } = {}) {
+  const fmt = (amount: number) => showCents ? formatCurrencyWithCents(amount) : formatCurrency(amount);
   const { proposal, dispatch } = useProposal();
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,17 +143,17 @@ export function FinancialForm() {
 
             <span className="text-csev-text-secondary">EVSE Equipment:</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.evseActualCost)}
+              {fmt(proposal.evseActualCost)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
-              {formatCurrency(proposal.evseQuotedPrice)}
+              {fmt(proposal.evseQuotedPrice)}
             </span>
 
             {proposal.evseSalesTax > 0 && (
               <>
                 <span className="text-csev-text-secondary">EVSE Sales Tax ({proposal.salesTaxRate}%):</span>
                 <span className="text-right text-csev-text-muted">
-                  {formatCurrency(proposal.evseSalesTax)}
+                  {fmt(proposal.evseSalesTax)}
                 </span>
                 <span className="text-right font-medium text-csev-text-primary">
                   -
@@ -162,44 +163,44 @@ export function FinancialForm() {
 
             <span className="text-csev-text-secondary">Installation (CSMR):</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.csmrActualCost)}
+              {fmt(proposal.csmrActualCost)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
-              {formatCurrency(proposal.csmrQuotedPrice)}
+              {fmt(proposal.csmrQuotedPrice)}
             </span>
 
             <span className="text-csev-text-secondary">Utility Allowance:</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.utilityAllowance)}
+              {fmt(proposal.utilityAllowance)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
-              {formatCurrency(proposal.utilityAllowance)}
+              {fmt(proposal.utilityAllowance)}
             </span>
 
             <span className="text-csev-text-secondary">Shipping:</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.shippingCost)}
+              {fmt(proposal.shippingCost)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
-              {formatCurrency(proposal.shippingCost)}
+              {fmt(proposal.shippingCost)}
             </span>
 
             <span className="text-csev-text-secondary">Network Plan:</span>
             <span className="text-right text-csev-text-muted">
-              {formatCurrency(proposal.networkActualCost)}
+              {fmt(proposal.networkActualCost)}
             </span>
             <span className="text-right font-medium text-csev-text-primary">
-              {formatCurrency(proposal.networkPlanCost)}
+              {fmt(proposal.networkPlanCost)}
             </span>
 
             <hr className="col-span-3 border-csev-border" />
 
             <span className="text-csev-text-primary font-medium">Subtotals:</span>
             <span className="text-right text-csev-text-secondary font-medium">
-              {formatCurrency(proposal.totalActualCost)}
+              {fmt(proposal.totalActualCost)}
             </span>
             <span className="text-right font-bold text-csev-text-primary">
-              {formatCurrency(proposal.grossProjectCost)}
+              {fmt(proposal.grossProjectCost)}
             </span>
           </div>
         </div>
@@ -248,7 +249,7 @@ export function FinancialForm() {
                 ]}
               />
               <p className="text-xs text-csev-text-muted mt-1">
-                Network plan cost per SKU x {proposal.networkYears} yr = {formatCurrency(proposal.networkPlanCost)}
+                Network plan cost per SKU x {proposal.networkYears} yr = {fmt(proposal.networkPlanCost)}
               </p>
             </div>
           </div>
@@ -384,18 +385,18 @@ export function FinancialForm() {
         <div className="bg-csev-green/10 rounded-lg p-4 space-y-3 border border-csev-green/30">
           <div className="flex justify-between items-center text-lg">
             <span className="font-medium text-csev-text-primary">Gross Project Cost:</span>
-            <span className="font-bold text-csev-text-primary">{formatCurrency(proposal.grossProjectCost)}</span>
+            <span className="font-bold text-csev-text-primary">{fmt(proposal.grossProjectCost)}</span>
           </div>
           <div className="flex justify-between items-center text-sm text-csev-text-secondary">
             <span>Less: Total Incentives</span>
-            <span>- {formatCurrency(proposal.totalIncentives)}</span>
+            <span>- {fmt(proposal.totalIncentives)}</span>
           </div>
           <hr className="border-csev-green/30" />
           <div className="flex justify-between items-center text-xl">
             <span className="font-bold text-csev-green">
               Net Project Cost:
             </span>
-            <span className="font-bold text-csev-green">{formatCurrency(proposal.netProjectCost)}</span>
+            <span className="font-bold text-csev-green">{fmt(proposal.netProjectCost)}</span>
           </div>
         </div>
 
@@ -417,7 +418,7 @@ export function FinancialForm() {
                     payload: { actualCostOverride: value },
                   });
                 }}
-                placeholder={formatCurrency(proposal.totalActualCost)}
+                placeholder={fmt(proposal.totalActualCost)}
                 helperText={proposal.actualCostOverride ? 'Using actual costs' : 'Leave empty to use estimated'}
               />
             </div>
@@ -441,13 +442,13 @@ export function FinancialForm() {
                 {paymentAnalysis.map((analysis, index) => (
                   <tr key={index} className="border-b border-csev-border/50">
                     <td className="py-2 px-3 font-medium text-csev-text-primary">{analysis.optionName}</td>
-                    <td className="py-2 px-3 text-right text-csev-text-primary">{formatCurrency(proposal.grossProjectCost)}</td>
+                    <td className="py-2 px-3 text-right text-csev-text-primary">{fmt(proposal.grossProjectCost)}</td>
                     <td className="py-2 px-3 text-right text-amber-500">
-                      {analysis.customerDiscount > 0 ? `- ${formatCurrency(analysis.customerDiscount)}` : '-'}
+                      {analysis.customerDiscount > 0 ? `- ${fmt(analysis.customerDiscount)}` : '-'}
                     </td>
-                    <td className="py-2 px-3 text-right text-csev-text-muted">- {formatCurrency(analysis.csevCost)}</td>
+                    <td className="py-2 px-3 text-right text-csev-text-muted">- {fmt(analysis.csevCost)}</td>
                     <td className={`py-2 px-3 text-right font-medium ${analysis.csevProfit >= 0 ? 'text-csev-green' : 'text-red-400'}`}>
-                      = {formatCurrency(analysis.csevProfit)}
+                      = {fmt(analysis.csevProfit)}
                     </td>
                     <td className={`py-2 px-3 text-right font-medium ${analysis.csevMarginPercent >= 0 ? 'text-csev-green' : 'text-red-400'}`}>
                       {formatPercentage(analysis.csevMarginPercent)}

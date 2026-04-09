@@ -186,13 +186,29 @@ const EVERSOURCE_MA_HARDWARE2_ROW = 31;
 const EVERSOURCE_MA_FREIGHT_ROW = 32;
 const EVERSOURCE_MA_NETWORKING_ROW = 36;
 
-// Eversource MA category mapping
+// Eversource MA category mapping — uses item ID for granular routing
 const EVERSOURCE_MA_ITEM_MAP: { [itemId: string]: string } = {
   'permit-fee': 'Permitting',
   'design-fee': 'Design/Engineering',
   'engineering-site': 'Design/Engineering',
   'engineering-full': 'Design/Engineering',
   'project-management': 'Design/Engineering',
+  // Trenching: grass = non-continuously paved, asphalt/concrete/boring = continuously paved
+  'trenching-grass': 'Trenching non-continuously paved',
+  'trenching-asphalt': 'Trenching continuously paved',
+  'trenching-concrete': 'Trenching continuously paved',
+  'underground-boring': 'Trenching continuously paved',
+  // Conduit: hand-hole goes to Handholes/Manholes, fittings costs go to Conduit but no qty
+  'hand-hole': 'Handholes/Manholes',
+  'conduit-fittings': 'Conduit underground',
+  // Civil - Bases: split bollards vs concrete footings
+  'bollard-bolt-on': 'Protective Bollards',
+  'bollard-4in-steel': 'Protective Bollards',
+  'bollard-6in-steel': 'Protective Bollards',
+  'concrete-l2-footing': 'Concrete Work/Bases/Pads',
+  'concrete-dcfc-footing': 'Concrete Work/Bases/Pads',
+  'concrete-service-pad': 'Concrete Work/Bases/Pads',
+  'tire-stop': 'Other',
 };
 
 const EVERSOURCE_MA_SUBGROUP_MAP: { [subgroup: string]: string } = {
@@ -210,6 +226,7 @@ const EVERSOURCE_MA_SUBGROUP_MAP: { [subgroup: string]: string } = {
 };
 
 function getEversourceMACategory(item: InstallationItem): string {
+  // Item-level mapping takes precedence
   if (EVERSOURCE_MA_ITEM_MAP[item.itemId]) {
     return EVERSOURCE_MA_ITEM_MAP[item.itemId];
   }
@@ -357,6 +374,8 @@ export interface ExcelExportData {
       quantity: number;
     };
   };
+  // Item descriptions per category for "Specify" notes columns
+  categoryNotes?: { [category: string]: string };
 }
 
 export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
@@ -624,10 +643,13 @@ export function prepareCentralHudsonExport(proposal: Proposal): ExcelExportData 
 
 export function prepareEversourceMAExport(proposal: Proposal): ExcelExportData {
   const categories: ExcelExportData['categories'] = {};
+  const categoryNotes: { [category: string]: string } = {};
+  const categoryItemNames: { [category: string]: string[] } = {};
 
   // Initialize all categories
   Object.keys(EVERSOURCE_MA_CELL_MAP).forEach(cat => {
     categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+    categoryItemNames[cat] = [];
   });
 
   // Calculate markup factor
@@ -641,20 +663,33 @@ export function prepareEversourceMAExport(proposal: Proposal): ExcelExportData {
     const quotedMaterial = item.totalMaterial * markupFactor;
     const quotedLabor = item.totalLabor * markupFactor;
 
-    if (!categories[category]) {
-      categories['Other'].laborCost += quotedLabor;
-      categories['Other'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
-      categories['Other'].materialCost += quotedMaterial;
-      if (item.materialPrice > 0) {
-        categories['Other'].quantity += item.quantity;
+    const target = categories[category] || categories['Other'];
+    const targetCategory = categories[category] ? category : 'Other';
+    target.laborCost += quotedLabor;
+    target.laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+    target.materialCost += quotedMaterial;
+    // Track quantity only for categories that use E/F columns (Feet and Each rows)
+    const qtyCategories = ['Trenching continuously paved', 'Trenching non-continuously paved',
+      'Conduit underground', 'Conduit above ground', 'Protective Bollards', 'Handholes/Manholes'];
+    if (qtyCategories.includes(targetCategory)) {
+      if (item.unit === 'ft') {
+        target.quantity += item.quantity;
+      } else if (item.unit === 'each') {
+        target.quantity += item.quantity;
       }
-    } else {
-      categories[category].laborCost += quotedLabor;
-      categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
-      categories[category].materialCost += quotedMaterial;
-      if (item.materialPrice > 0) {
-        categories[category].quantity += item.quantity;
-      }
+    }
+    // Collect item names for notes
+    if (!categoryItemNames[targetCategory]) categoryItemNames[targetCategory] = [];
+    const desc = `${item.name} (x${item.quantity})`;
+    if (!categoryItemNames[targetCategory].includes(desc)) {
+      categoryItemNames[targetCategory].push(desc);
+    }
+  });
+
+  // Build notes strings from collected item names
+  Object.entries(categoryItemNames).forEach(([cat, names]) => {
+    if (names.length > 0) {
+      categoryNotes[cat] = names.join(', ');
     }
   });
 
@@ -695,6 +730,7 @@ export function prepareEversourceMAExport(proposal: Proposal): ExcelExportData {
     networkPlanTotal: proposal.networkPlanCost || 0,
     shippingCost: proposal.shippingCost || 0,
     categories,
+    categoryNotes,
   };
 }
 
