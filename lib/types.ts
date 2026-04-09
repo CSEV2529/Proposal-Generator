@@ -194,12 +194,12 @@ export interface PaymentOptionAnalysis {
 }
 
 export const defaultProposal: Proposal = {
-  customerName: 'The Mews at North Bergen',
-  customerAddress: '1305 Paterson Plank Rd',
-  customerCity: 'North Bergen',
-  customerState: 'NJ',
-  customerZip: '07047',
-  projectStateId: 'nj',
+  customerName: 'Best Western Holiday Inn',
+  customerAddress: '123 Main St',
+  customerCity: 'Rochester',
+  customerState: 'NY',
+  customerZip: '14624',
+  projectStateId: '',
   preparedDate: new Date(),
   projectType: 'level2-epc',
   accessType: 'public',
