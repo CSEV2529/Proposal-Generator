@@ -115,8 +115,212 @@ function getNYSEGRGECategory(item: InstallationItem): string {
   return NYSEG_RGE_SUBGROUP_MAP[item.subgroup] || 'Other [please describe]';
 }
 
+// Cell mappings for Central Hudson "Sheet1"
+// Rows: D=Material Total, E=Labor Total, F=D+E formula
+const CENTRAL_HUDSON_CELL_MAP: { [category: string]: number } = {
+  'Transformers': 31,
+  'Panel & Service Boards': 32,
+  'Conduit & Cable': 33,
+  'Trenching': 34,
+  'Permits': 35,
+  'Design Costs': 36,
+  'Other': 37,
+};
+
+// Central Hudson ineligible rows (column D only)
+const CENTRAL_HUDSON_EVSE_ROW = 47;
+const CENTRAL_HUDSON_INSTALLATION_ROW = 48;
+const CENTRAL_HUDSON_NETWORKING_ROW = 51;
+const CENTRAL_HUDSON_FREIGHT_ROW = 54;
+
+// Central Hudson category mapping
+const CENTRAL_HUDSON_ITEM_MAP: { [itemId: string]: string } = {
+  'permit-fee': 'Permits',
+  'design-fee': 'Design Costs',
+  'engineering-site': 'Design Costs',
+  'engineering-full': 'Design Costs',
+  'project-management': 'Design Costs',
+};
+
+const CENTRAL_HUDSON_SUBGROUP_MAP: { [subgroup: string]: string } = {
+  'Permits': 'Permits',
+  'Design': 'Design Costs',
+  'Transformers': 'Transformers',
+  'Trenching': 'Trenching',
+  'Civil - Bases': 'Other',
+  'Panels': 'Panel & Service Boards',
+  'Panels/Switchgear - New Service': 'Panel & Service Boards',
+  'Breakers': 'Panel & Service Boards',
+  'Conduit': 'Conduit & Cable',
+  'Cables': 'Conduit & Cable',
+  'Striping': 'Other',
+};
+
+function getCentralHudsonCategory(item: InstallationItem): string {
+  if (CENTRAL_HUDSON_ITEM_MAP[item.itemId]) {
+    return CENTRAL_HUDSON_ITEM_MAP[item.itemId];
+  }
+  return CENTRAL_HUDSON_SUBGROUP_MAP[item.subgroup] || 'Other';
+}
+
+// Cell mappings for Eversource MA "Estimate" sheet
+// Columns: E=qty, F=unit price, G=material total (formula E*F), H=labor total, J=total cost (formula G+H)
+const EVERSOURCE_MA_CELL_MAP: { [category: string]: number } = {
+  'Design/Engineering': 10,
+  'Permitting': 11,
+  'Trenching continuously paved': 13,
+  'Trenching non-continuously paved': 14,
+  'Conduit underground': 15,
+  'Conduit above ground': 16,
+  'Protective Bollards': 17,
+  'Handholes/Manholes': 18,
+  'Concrete Work/Bases/Pads': 19,
+  'Distribution Equipment/panels/breakers': 20,
+  'Metering Equipment': 21,
+  'Other': 22,
+};
+
+// Eversource MA EVSE rows
+const EVERSOURCE_MA_HARDWARE1_ROW = 30;
+const EVERSOURCE_MA_HARDWARE2_ROW = 31;
+const EVERSOURCE_MA_FREIGHT_ROW = 32;
+const EVERSOURCE_MA_NETWORKING_ROW = 36;
+
+// Eversource MA category mapping
+const EVERSOURCE_MA_ITEM_MAP: { [itemId: string]: string } = {
+  'permit-fee': 'Permitting',
+  'design-fee': 'Design/Engineering',
+  'engineering-site': 'Design/Engineering',
+  'engineering-full': 'Design/Engineering',
+  'project-management': 'Design/Engineering',
+};
+
+const EVERSOURCE_MA_SUBGROUP_MAP: { [subgroup: string]: string } = {
+  'Permits': 'Permitting',
+  'Design': 'Design/Engineering',
+  'Transformers': 'Distribution Equipment/panels/breakers',
+  'Trenching': 'Trenching continuously paved',
+  'Civil - Bases': 'Concrete Work/Bases/Pads',
+  'Panels': 'Distribution Equipment/panels/breakers',
+  'Panels/Switchgear - New Service': 'Distribution Equipment/panels/breakers',
+  'Breakers': 'Distribution Equipment/panels/breakers',
+  'Conduit': 'Conduit underground',
+  'Cables': 'Conduit underground',
+  'Striping': 'Other',
+};
+
+function getEversourceMACategory(item: InstallationItem): string {
+  if (EVERSOURCE_MA_ITEM_MAP[item.itemId]) {
+    return EVERSOURCE_MA_ITEM_MAP[item.itemId];
+  }
+  return EVERSOURCE_MA_SUBGROUP_MAP[item.subgroup] || 'Other';
+}
+
+// Cell mappings for National Grid MA "Estimate" sheet
+// Columns: D=qty, E=material total, F=labor total, G=total cost (formula E+F)
+const NATIONAL_GRID_MA_CELL_MAP: { [category: string]: number } = {
+  'Design/Engineering/Permitting': 10,
+  'Trenching continuously paved': 12,
+  'Trenching non-continuously paved': 13,
+  'Conduit & Cable': 14,
+  'Protective Bollards': 15,
+  'Handholes/Manholes': 16,
+  'Concrete Work/Bases/Pads': 17,
+  'Panels/Service Board/Breakers': 18,
+  'Other': 19,
+};
+
+// National Grid MA EVSE rows (column E)
+const NATIONAL_GRID_MA_HARDWARE1_ROW = 27;
+const NATIONAL_GRID_MA_HARDWARE2_ROW = 28;
+const NATIONAL_GRID_MA_FREIGHT_ROW = 29;
+const NATIONAL_GRID_MA_NETWORKING_ROW = 32;
+
+// National Grid MA category mapping
+const NATIONAL_GRID_MA_ITEM_MAP: { [itemId: string]: string } = {
+  'permit-fee': 'Design/Engineering/Permitting',
+  'design-fee': 'Design/Engineering/Permitting',
+  'engineering-site': 'Design/Engineering/Permitting',
+  'engineering-full': 'Design/Engineering/Permitting',
+  'project-management': 'Design/Engineering/Permitting',
+};
+
+const NATIONAL_GRID_MA_SUBGROUP_MAP: { [subgroup: string]: string } = {
+  'Permits': 'Design/Engineering/Permitting',
+  'Design': 'Design/Engineering/Permitting',
+  'Transformers': 'Other',
+  'Trenching': 'Trenching continuously paved',
+  'Civil - Bases': 'Concrete Work/Bases/Pads',
+  'Panels': 'Panels/Service Board/Breakers',
+  'Panels/Switchgear - New Service': 'Panels/Service Board/Breakers',
+  'Breakers': 'Panels/Service Board/Breakers',
+  'Conduit': 'Conduit & Cable',
+  'Cables': 'Conduit & Cable',
+  'Striping': 'Other',
+};
+
+function getNationalGridMACategory(item: InstallationItem): string {
+  if (NATIONAL_GRID_MA_ITEM_MAP[item.itemId]) {
+    return NATIONAL_GRID_MA_ITEM_MAP[item.itemId];
+  }
+  return NATIONAL_GRID_MA_SUBGROUP_MAP[item.subgroup] || 'Other';
+}
+
+// Cell mappings for Seattle City Light "Cost Template" sheet
+// Material rows: F=qty, G=unit cost, H=total (formula F*G)
+const SEATTLE_MATERIAL_CELL_MAP: { [category: string]: number } = {
+  'Chargers/Outlets': 32,
+  'Conduit & Cable': 33,
+  'Panel & Service Boards': 34,
+  'Trenching & Wall Coring': 36,
+  'Permits': 37,
+  'Freight': 41,
+  'EV Signage': 43,
+  'Striping/Painting': 47,
+};
+
+// Labor rows: F=hours, G=hourly rate ($125), H=total (formula F*G)
+const SEATTLE_LABOR_CELL_MAP: { [category: string]: number } = {
+  'Engineering & Design': 57,
+  'Charger Installation': 58,
+  'Project Management': 59,
+};
+
+// Networking row
+const SEATTLE_NETWORKING_ROW = 38;
+
+// Seattle City Light category mapping (maps to material categories)
+const SEATTLE_ITEM_MAP: { [itemId: string]: { material?: string; labor?: string } } = {
+  'permit-fee': { material: 'Permits' },
+  'design-fee': { labor: 'Engineering & Design' },
+  'engineering-site': { labor: 'Engineering & Design' },
+  'engineering-full': { labor: 'Engineering & Design' },
+  'project-management': { labor: 'Project Management' },
+};
+
+const SEATTLE_SUBGROUP_MAP: { [subgroup: string]: { material?: string; labor?: string } } = {
+  'Permits': { material: 'Permits' },
+  'Design': { labor: 'Engineering & Design' },
+  'Transformers': { material: 'Panel & Service Boards' },
+  'Trenching': { material: 'Trenching & Wall Coring' },
+  'Civil - Bases': { material: 'Trenching & Wall Coring' },
+  'Panels': { material: 'Panel & Service Boards' },
+  'Panels/Switchgear - New Service': { material: 'Panel & Service Boards' },
+  'Breakers': { material: 'Panel & Service Boards' },
+  'Conduit': { material: 'Conduit & Cable' },
+  'Cables': { material: 'Conduit & Cable' },
+  'Striping': { material: 'Striping/Painting' },
+};
+
+function getSeattleCategoryMapping(item: InstallationItem): { material?: string; labor?: string } {
+  if (SEATTLE_ITEM_MAP[item.itemId]) {
+    return SEATTLE_ITEM_MAP[item.itemId];
+  }
+  return SEATTLE_SUBGROUP_MAP[item.subgroup] || { material: 'Conduit & Cable' };
+}
+
 export interface ExcelExportData {
-  utilityType: 'national-grid' | 'nyseg-rge';
+  utilityType: 'national-grid' | 'nyseg-rge' | 'central-hudson' | 'eversource-ma' | 'national-grid-ma' | 'seattle-city-light';
   utilityLabel?: string; // Display name for filename (e.g. "National Grid", "NYSEG", "RG&E")
   chargingLevel: 'level2' | 'dcfc';
   customerName: string;
@@ -344,5 +548,340 @@ export function prepareNYSEGRGEExport(proposal: Proposal): ExcelExportData {
   };
 }
 
+export function prepareCentralHudsonExport(proposal: Proposal): ExcelExportData {
+  const categories: ExcelExportData['categories'] = {};
+
+  // Initialize all categories
+  Object.keys(CENTRAL_HUDSON_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+
+  // Calculate markup factor
+  const costBasis = proposal.csmrCostBasisPercent / 100;
+  const marginMultiplier = 1 / (1 - proposal.csmrMarginPercent / 100);
+  const markupFactor = costBasis * marginMultiplier;
+
+  // Aggregate costs by category (applying markup to get quoted prices)
+  proposal.installationItems.forEach(item => {
+    const category = getCentralHudsonCategory(item);
+    const quotedMaterial = item.totalMaterial * markupFactor;
+    const quotedLabor = item.totalLabor * markupFactor;
+
+    if (!categories[category]) {
+      categories['Other'].laborCost += quotedLabor;
+      categories['Other'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories['Other'].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories['Other'].quantity += item.quantity;
+      }
+    } else {
+      categories[category].laborCost += quotedLabor;
+      categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories[category].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories[category].quantity += item.quantity;
+      }
+    }
+  });
+
+  // Calculate total plugs, stations, and EVSE info
+  let numPlugs = 0;
+  let numStations = 0;
+  const evseModels: string[] = [];
+  proposal.evseItems.forEach(item => {
+    numStations += item.quantity;
+    const isDualPort = item.productId.includes('-dp-') || item.productId.includes('dchp');
+    numPlugs += item.quantity * (isDualPort ? 2 : 1);
+    if (item.name && !evseModels.includes(item.name)) {
+      evseModels.push(item.name);
+    }
+  });
+
+  // Sum total installation cost for the "Station Installation" ineligible line
+  let totalInstallationCost = 0;
+  Object.values(categories).forEach(cat => {
+    totalInstallationCost += cat.laborCost + cat.materialCost;
+  });
+
+  return {
+    utilityType: 'central-hudson',
+    utilityLabel: 'Central Hudson',
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
+    customerName: proposal.customerName || '',
+    siteAddress: proposal.customerAddress || '',
+    siteCity: proposal.customerCity || '',
+    siteState: proposal.customerState || '',
+    siteZip: proposal.customerZip || '',
+    numPlugs,
+    numStations,
+    evsePrice: proposal.evseQuotedPrice,
+    evseModel: evseModels.join(', '),
+    networkPlanTotal: proposal.networkPlanCost || 0,
+    shippingCost: proposal.shippingCost || 0,
+    categories,
+  };
+}
+
+export function prepareEversourceMAExport(proposal: Proposal): ExcelExportData {
+  const categories: ExcelExportData['categories'] = {};
+
+  // Initialize all categories
+  Object.keys(EVERSOURCE_MA_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+
+  // Calculate markup factor
+  const costBasis = proposal.csmrCostBasisPercent / 100;
+  const marginMultiplier = 1 / (1 - proposal.csmrMarginPercent / 100);
+  const markupFactor = costBasis * marginMultiplier;
+
+  // Aggregate costs by category (applying markup to get quoted prices)
+  proposal.installationItems.forEach(item => {
+    const category = getEversourceMACategory(item);
+    const quotedMaterial = item.totalMaterial * markupFactor;
+    const quotedLabor = item.totalLabor * markupFactor;
+
+    if (!categories[category]) {
+      categories['Other'].laborCost += quotedLabor;
+      categories['Other'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories['Other'].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories['Other'].quantity += item.quantity;
+      }
+    } else {
+      categories[category].laborCost += quotedLabor;
+      categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories[category].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories[category].quantity += item.quantity;
+      }
+    }
+  });
+
+  // Calculate total plugs, stations, and EVSE info
+  let numPlugs = 0;
+  let numStations = 0;
+  let evseQuantity = 0;
+  let evseUnitPrice = 0;
+  const evseModels: string[] = [];
+  proposal.evseItems.forEach(item => {
+    numStations += item.quantity;
+    evseQuantity += item.quantity;
+    const isDualPort = item.productId.includes('-dp-') || item.productId.includes('dchp');
+    numPlugs += item.quantity * (isDualPort ? 2 : 1);
+    if (item.name && !evseModels.includes(item.name)) {
+      evseModels.push(item.name);
+    }
+    if (!evseUnitPrice && item.unitPrice) {
+      evseUnitPrice = item.unitPrice;
+    }
+  });
+
+  return {
+    utilityType: 'eversource-ma',
+    utilityLabel: 'Eversource',
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
+    customerName: proposal.customerName || '',
+    siteAddress: proposal.customerAddress || '',
+    siteCity: proposal.customerCity || '',
+    siteState: proposal.customerState || '',
+    siteZip: proposal.customerZip || '',
+    numPlugs,
+    numStations,
+    evsePrice: proposal.evseQuotedPrice,
+    evseModel: evseModels.join(', '),
+    evseQuantity,
+    evseUnitPrice,
+    networkPlanTotal: proposal.networkPlanCost || 0,
+    shippingCost: proposal.shippingCost || 0,
+    categories,
+  };
+}
+
+export function prepareNationalGridMAExport(proposal: Proposal): ExcelExportData {
+  const categories: ExcelExportData['categories'] = {};
+
+  // Initialize all categories
+  Object.keys(NATIONAL_GRID_MA_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+
+  // Calculate markup factor
+  const costBasis = proposal.csmrCostBasisPercent / 100;
+  const marginMultiplier = 1 / (1 - proposal.csmrMarginPercent / 100);
+  const markupFactor = costBasis * marginMultiplier;
+
+  // Aggregate costs by category (applying markup to get quoted prices)
+  proposal.installationItems.forEach(item => {
+    const category = getNationalGridMACategory(item);
+    const quotedMaterial = item.totalMaterial * markupFactor;
+    const quotedLabor = item.totalLabor * markupFactor;
+
+    if (!categories[category]) {
+      categories['Other'].laborCost += quotedLabor;
+      categories['Other'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories['Other'].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories['Other'].quantity += item.quantity;
+      }
+    } else {
+      categories[category].laborCost += quotedLabor;
+      categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories[category].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories[category].quantity += item.quantity;
+      }
+    }
+  });
+
+  // Calculate total plugs, stations, and EVSE info
+  let numPlugs = 0;
+  let numStations = 0;
+  let evseQuantity = 0;
+  let evseUnitPrice = 0;
+  const evseModels: string[] = [];
+  proposal.evseItems.forEach(item => {
+    numStations += item.quantity;
+    evseQuantity += item.quantity;
+    const isDualPort = item.productId.includes('-dp-') || item.productId.includes('dchp');
+    numPlugs += item.quantity * (isDualPort ? 2 : 1);
+    if (item.name && !evseModels.includes(item.name)) {
+      evseModels.push(item.name);
+    }
+    if (!evseUnitPrice && item.unitPrice) {
+      evseUnitPrice = item.unitPrice;
+    }
+  });
+
+  return {
+    utilityType: 'national-grid-ma',
+    utilityLabel: 'National Grid',
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
+    customerName: proposal.customerName || '',
+    siteAddress: proposal.customerAddress || '',
+    siteCity: proposal.customerCity || '',
+    siteState: proposal.customerState || '',
+    siteZip: proposal.customerZip || '',
+    numPlugs,
+    numStations,
+    evsePrice: proposal.evseQuotedPrice,
+    evseModel: evseModels.join(', '),
+    evseQuantity,
+    evseUnitPrice,
+    networkPlanTotal: proposal.networkPlanCost || 0,
+    shippingCost: proposal.shippingCost || 0,
+    categories,
+  };
+}
+
+export function prepareSeattleCityLightExport(proposal: Proposal): ExcelExportData {
+  const categories: ExcelExportData['categories'] = {};
+
+  // Initialize material categories
+  Object.keys(SEATTLE_MATERIAL_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+  // Initialize labor categories
+  Object.keys(SEATTLE_LABOR_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+
+  // Calculate markup factor
+  const costBasis = proposal.csmrCostBasisPercent / 100;
+  const marginMultiplier = 1 / (1 - proposal.csmrMarginPercent / 100);
+  const markupFactor = costBasis * marginMultiplier;
+
+  // Seattle splits material and labor into separate sheet sections
+  // Aggregate costs using the dual mapping
+  proposal.installationItems.forEach(item => {
+    const mapping = getSeattleCategoryMapping(item);
+    const quotedMaterial = item.totalMaterial * markupFactor;
+    const quotedLabor = item.totalLabor * markupFactor;
+
+    // Material goes to the material category
+    if (mapping.material && quotedMaterial > 0) {
+      if (!categories[mapping.material]) {
+        categories[mapping.material] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+      }
+      categories[mapping.material].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories[mapping.material].quantity += item.quantity;
+      }
+    }
+
+    // Labor goes to the labor category (default to Charger Installation)
+    const laborCat = mapping.labor || 'Charger Installation';
+    if (quotedLabor > 0) {
+      if (!categories[laborCat]) {
+        categories[laborCat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+      }
+      categories[laborCat].laborCost += quotedLabor;
+      categories[laborCat].laborHours += quotedLabor / LABOR_RATE_PER_HOUR;
+    }
+  });
+
+  // Calculate total plugs, stations, and EVSE info
+  let numPlugs = 0;
+  let numStations = 0;
+  let evseQuantity = 0;
+  let evseUnitPrice = 0;
+  const evseModels: string[] = [];
+  proposal.evseItems.forEach(item => {
+    numStations += item.quantity;
+    evseQuantity += item.quantity;
+    const isDualPort = item.productId.includes('-dp-') || item.productId.includes('dchp');
+    numPlugs += item.quantity * (isDualPort ? 2 : 1);
+    if (item.name && !evseModels.includes(item.name)) {
+      evseModels.push(item.name);
+    }
+    if (!evseUnitPrice && item.unitPrice) {
+      evseUnitPrice = item.unitPrice;
+    }
+  });
+
+  return {
+    utilityType: 'seattle-city-light',
+    utilityLabel: 'Seattle City Light',
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
+    customerName: proposal.customerName || '',
+    siteAddress: proposal.customerAddress || '',
+    siteCity: proposal.customerCity || '',
+    siteState: proposal.customerState || '',
+    siteZip: proposal.customerZip || '',
+    numPlugs,
+    numStations,
+    evsePrice: proposal.evseQuotedPrice,
+    evseModel: evseModels.join(', '),
+    evseQuantity,
+    evseUnitPrice,
+    networkPlanTotal: proposal.networkPlanCost || 0,
+    shippingCost: proposal.shippingCost || 0,
+    categories,
+  };
+}
+
 // Export the cell mappings for use by the API route
-export { NATIONAL_GRID_CELL_MAP, NYSEG_RGE_CELL_MAP, NYSEG_RGE_EVSE_ROW, LABOR_RATE_PER_HOUR };
+export {
+  NATIONAL_GRID_CELL_MAP,
+  NYSEG_RGE_CELL_MAP,
+  NYSEG_RGE_EVSE_ROW,
+  CENTRAL_HUDSON_CELL_MAP,
+  CENTRAL_HUDSON_EVSE_ROW,
+  CENTRAL_HUDSON_INSTALLATION_ROW,
+  CENTRAL_HUDSON_NETWORKING_ROW,
+  CENTRAL_HUDSON_FREIGHT_ROW,
+  EVERSOURCE_MA_CELL_MAP,
+  EVERSOURCE_MA_HARDWARE1_ROW,
+  EVERSOURCE_MA_HARDWARE2_ROW,
+  EVERSOURCE_MA_FREIGHT_ROW,
+  EVERSOURCE_MA_NETWORKING_ROW,
+  NATIONAL_GRID_MA_CELL_MAP,
+  NATIONAL_GRID_MA_HARDWARE1_ROW,
+  NATIONAL_GRID_MA_HARDWARE2_ROW,
+  NATIONAL_GRID_MA_FREIGHT_ROW,
+  NATIONAL_GRID_MA_NETWORKING_ROW,
+  SEATTLE_MATERIAL_CELL_MAP,
+  SEATTLE_LABOR_CELL_MAP,
+  SEATTLE_NETWORKING_ROW,
+  LABOR_RATE_PER_HOUR,
+};

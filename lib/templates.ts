@@ -325,6 +325,7 @@ export const utilities: Utility[] = [
   { id: 'pse', name: 'Puget Sound Energy', stateId: 'wa' },
   { id: 'avista-wa', name: 'Avista Utilities', stateId: 'wa' },
   { id: 'pacificorp-wa', name: 'PacifiCorp', stateId: 'wa' },
+  { id: 'seattle-city-light', name: 'Seattle City Light', stateId: 'wa' },
 
   // West Virginia
   { id: 'appalachian-wv', name: 'Appalachian Power (AEP)', stateId: 'wv' },

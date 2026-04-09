@@ -26,7 +26,7 @@ import {
   getEffectivePaymentOptionEnabled,
 } from '@/lib/calculations';
 import { COMPANY_INFO, PROJECT_TYPES, getPaymentOptions } from '@/lib/constants';
-import { prepareNationalGridExport, prepareNYSEGRGEExport } from '@/lib/excelExport';
+import { prepareNationalGridExport, prepareNYSEGRGEExport, prepareCentralHudsonExport, prepareEversourceMAExport, prepareNationalGridMAExport, prepareSeattleCityLightExport } from '@/lib/excelExport';
 // Auth handled via /api/auth/* routes
 import { createProject, updateProject, getProject, getFolders, Folder } from '@/lib/projectStorage';
 import type { Proposal } from '@/lib/types';
@@ -37,6 +37,10 @@ const EXCEL_EXPORT_UTILITIES = {
   'national-grid-ma': 'National Grid',
   'nyseg': 'NYSEG',
   'rge': 'RG&E',
+  'central-hudson': 'Central Hudson',
+  'eversource-ma': 'Eversource',
+  'eversource-ct': 'Eversource',
+  'seattle-city-light': 'Seattle City Light',
 };
 
 // Check if a folder has a descendant matching the target id
@@ -178,11 +182,19 @@ function ExcelExportButton({ proposal }: { proposal: Proposal }) {
     try {
       // Prepare export data based on utility type
       let exportData;
-      if (utilityId === 'national-grid' || utilityId === 'national-grid-ma') {
+      if (utilityId === 'national-grid') {
         exportData = prepareNationalGridExport(proposal);
+      } else if (utilityId === 'national-grid-ma') {
+        exportData = prepareNationalGridMAExport(proposal);
       } else if (utilityId === 'nyseg' || utilityId === 'rge') {
         exportData = prepareNYSEGRGEExport(proposal);
         exportData.utilityLabel = utilityId === 'rge' ? 'RG&E' : 'NYSEG';
+      } else if (utilityId === 'central-hudson') {
+        exportData = prepareCentralHudsonExport(proposal);
+      } else if (utilityId === 'eversource-ma' || utilityId === 'eversource-ct') {
+        exportData = prepareEversourceMAExport(proposal);
+      } else if (utilityId === 'seattle-city-light') {
+        exportData = prepareSeattleCityLightExport(proposal);
       } else {
         throw new Error('Unsupported utility');
       }

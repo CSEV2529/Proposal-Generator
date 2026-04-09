@@ -7,13 +7,48 @@ import {
   NATIONAL_GRID_CELL_MAP,
   NYSEG_RGE_CELL_MAP,
   NYSEG_RGE_EVSE_ROW,
+  CENTRAL_HUDSON_CELL_MAP,
+  CENTRAL_HUDSON_EVSE_ROW,
+  CENTRAL_HUDSON_INSTALLATION_ROW,
+  CENTRAL_HUDSON_NETWORKING_ROW,
+  CENTRAL_HUDSON_FREIGHT_ROW,
+  EVERSOURCE_MA_CELL_MAP,
+  EVERSOURCE_MA_HARDWARE1_ROW,
+  EVERSOURCE_MA_HARDWARE2_ROW,
+  EVERSOURCE_MA_FREIGHT_ROW,
+  EVERSOURCE_MA_NETWORKING_ROW,
+  NATIONAL_GRID_MA_CELL_MAP,
+  NATIONAL_GRID_MA_HARDWARE1_ROW,
+  NATIONAL_GRID_MA_HARDWARE2_ROW,
+  NATIONAL_GRID_MA_FREIGHT_ROW,
+  NATIONAL_GRID_MA_NETWORKING_ROW,
+  SEATTLE_MATERIAL_CELL_MAP,
+  SEATTLE_LABOR_CELL_MAP,
+  SEATTLE_NETWORKING_ROW,
   LABOR_RATE_PER_HOUR
 } from '@/lib/excelExport';
 
+// Monkey-patch ExcelJS TableXform to handle table/filter features in MA templates
+// Must run before any workbook.xlsx.readFile calls
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const TableXform = require('exceljs/lib/xlsx/xform/table/table-xform');
+  const origParseClose = TableXform.prototype.parseClose;
+  TableXform.prototype.parseClose = function(name: string) {
+    try { return origParseClose.call(this, name); } catch { return true; }
+  };
+} catch {
+  // Silently ignore if the internal module path changes
+}
+
 // Templates are stored in the project's templates folder
 const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
-const NATIONAL_GRID_FILE = path.join(TEMPLATES_DIR, 'National Grid Breakdown v2.xlsx');
+const NATIONAL_GRID_FILE = path.join(TEMPLATES_DIR, 'National Grid NY Breakdown v2.xlsx');
 const NYSEG_RGE_FILE = path.join(TEMPLATES_DIR, 'NYSEG & RG&E Breakdown.xlsx');
+const CENTRAL_HUDSON_FILE = path.join(TEMPLATES_DIR, 'Central Hudson EV MRP Project Cost.xlsx');
+const EVERSOURCE_MA_FILE = path.join(TEMPLATES_DIR, 'Eversource_MA_EV_Estimate (2).xlsx');
+const NATIONAL_GRID_MA_FILE = path.join(TEMPLATES_DIR, 'National Grid MA EV Make Ready Estimate 2-28-25 (2).xlsx');
+const SEATTLE_CITY_LIGHT_FILE = path.join(TEMPLATES_DIR, 'TE Portfolio Contractor Cost Template - 20251112 (Seattle City Light).xlsx');
 
 async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
@@ -203,6 +238,268 @@ async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
   return Buffer.from(buffer);
 }
 
+async function writeCentralHudsonExcel(data: ExcelExportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(CENTRAL_HUDSON_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  workbook.definedNames.model = [];
+
+  const sheet = workbook.getWorksheet('Sheet1');
+  if (!sheet) {
+    throw new Error('Sheet1 not found in Central Hudson template');
+  }
+
+  const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
+    const cell = sheet.getCell(`${col}${row}`);
+    cell.value = value;
+  };
+
+  // Write project info
+  setCell('C', 10, data.customerName); // Participant Name
+  setCell('C', 12, data.customerName); // Premise Company
+  setCell('C', 13, `${data.siteAddress}, ${data.siteCity}, ${data.siteState} ${data.siteZip}`); // Premise Address
+  // C15 = "ChargeSmartEV" already filled in template
+  setCell('C', 19, data.chargingLevel === 'dcfc' ? 'DCFC' : 'Level 2'); // Charger Level
+  setCell('C', 20, data.numPlugs); // Total Plugs
+
+  // Write cost categories: D=Material Total, E=Labor Total, F=D+E formula
+  Object.entries(data.categories).forEach(([category, costs]) => {
+    const row = CENTRAL_HUDSON_CELL_MAP[category];
+    if (row === undefined) return;
+
+    if (costs.materialCost > 0 || costs.laborCost > 0) {
+      setCell('D', row, costs.materialCost); // Material Total
+      setCell('E', row, costs.laborCost); // Labor Total
+      // F is calculated by formula
+    }
+  });
+
+  // Write ineligible costs (column D only)
+  if (data.evsePrice && data.evsePrice > 0) {
+    setCell('D', CENTRAL_HUDSON_EVSE_ROW, data.evsePrice); // Chargers price
+  }
+
+  // Station Installation = total of all category costs (material + labor)
+  let totalInstallation = 0;
+  Object.values(data.categories).forEach(cat => {
+    totalInstallation += cat.laborCost + cat.materialCost;
+  });
+  if (totalInstallation > 0) {
+    setCell('D', CENTRAL_HUDSON_INSTALLATION_ROW, totalInstallation);
+  }
+
+  if (data.networkPlanTotal && data.networkPlanTotal > 0) {
+    setCell('D', CENTRAL_HUDSON_NETWORKING_ROW, data.networkPlanTotal); // Networking
+  }
+  if (data.shippingCost && data.shippingCost > 0) {
+    setCell('D', CENTRAL_HUDSON_FREIGHT_ROW, data.shippingCost); // Freight
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
+async function writeEversourceMAExcel(data: ExcelExportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(EVERSOURCE_MA_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  workbook.definedNames.model = [];
+
+  const sheet = workbook.getWorksheet('Estimate');
+  if (!sheet) {
+    throw new Error('Estimate sheet not found in Eversource MA template');
+  }
+
+  const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
+    const cell = sheet.getCell(`${col}${row}`);
+    cell.value = value;
+  };
+
+  // Write project info
+  setCell('C', 4, data.siteAddress); // Street address
+  setCell('C', 5, `${data.siteCity}, ${data.siteState} ${data.siteZip}`); // City/State/Zip
+
+  // Write cost categories
+  // G=material total, H=labor total (J=total is formula G+H)
+  // For rows with qty breakdown: E=qty, F=unit price, G=formula E*F
+  Object.entries(data.categories).forEach(([category, costs]) => {
+    const row = EVERSOURCE_MA_CELL_MAP[category];
+    if (row === undefined) return;
+
+    if (costs.materialCost > 0 || costs.laborCost > 0) {
+      // For quantity-based rows (trenching, conduit, bollards, handholes), write E=qty, F=unit price
+      const qtyRows = ['Trenching continuously paved', 'Trenching non-continuously paved',
+        'Conduit underground', 'Conduit above ground', 'Protective Bollards', 'Handholes/Manholes'];
+      if (qtyRows.includes(category) && costs.quantity > 0) {
+        setCell('E', row, costs.quantity); // Qty
+        setCell('F', row, Math.round((costs.materialCost / costs.quantity) * 100) / 100); // Unit price
+        // G is formula E*F
+      } else if (costs.materialCost > 0) {
+        setCell('G', row, costs.materialCost); // Material Total
+      }
+      if (costs.laborCost > 0) {
+        setCell('H', row, costs.laborCost); // Labor Total
+      }
+    }
+  });
+
+  // Write EVSE info
+  if (data.evseQuantity && data.evseQuantity > 0 && data.evseUnitPrice) {
+    setCell('E', EVERSOURCE_MA_HARDWARE1_ROW, data.evseQuantity); // Qty
+    setCell('F', EVERSOURCE_MA_HARDWARE1_ROW, data.evseUnitPrice); // Unit price
+    // G is formula E*F
+  }
+  // Hardware #2 left empty (second EVSE model if needed)
+
+  if (data.shippingCost && data.shippingCost > 0) {
+    setCell('G', EVERSOURCE_MA_FREIGHT_ROW, data.shippingCost); // Freight total
+  }
+  if (data.networkPlanTotal && data.networkPlanTotal > 0) {
+    setCell('G', EVERSOURCE_MA_NETWORKING_ROW, data.networkPlanTotal); // Networking total
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
+async function writeNationalGridMAExcel(data: ExcelExportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(NATIONAL_GRID_MA_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  workbook.definedNames.model = [];
+
+  const sheet = workbook.getWorksheet('Estimate');
+  if (!sheet) {
+    throw new Error('Estimate sheet not found in National Grid MA template');
+  }
+
+  const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
+    const cell = sheet.getCell(`${col}${row}`);
+    cell.value = value;
+  };
+
+  // Write project info
+  setCell('C', 4, data.siteAddress); // Street address
+  setCell('C', 5, `${data.siteCity}, ${data.siteState} ${data.siteZip}`); // City/State/Zip
+  setCell('C', 6, data.numPlugs); // Number of ports
+  setCell('C', 7, data.numStations); // Number of stations
+
+  // Write cost categories
+  // D=qty, E=material total, F=labor total (G=total is formula E+F)
+  Object.entries(data.categories).forEach(([category, costs]) => {
+    const row = NATIONAL_GRID_MA_CELL_MAP[category];
+    if (row === undefined) return;
+
+    if (costs.materialCost > 0 || costs.laborCost > 0) {
+      // For quantity-based rows (trenching, conduit, bollards, handholes), write D=qty
+      const qtyRows = ['Trenching continuously paved', 'Trenching non-continuously paved',
+        'Conduit & Cable', 'Protective Bollards', 'Handholes/Manholes'];
+      if (qtyRows.includes(category) && costs.quantity > 0) {
+        setCell('D', row, costs.quantity); // Qty
+      }
+      if (costs.materialCost > 0) {
+        setCell('E', row, costs.materialCost); // Material Total
+      }
+      if (costs.laborCost > 0) {
+        setCell('F', row, costs.laborCost); // Labor Total
+      }
+      // G is formula E+F
+    }
+  });
+
+  // Write EVSE info (column E)
+  if (data.evsePrice && data.evsePrice > 0) {
+    setCell('E', NATIONAL_GRID_MA_HARDWARE1_ROW, data.evsePrice); // Hardware #1 total
+  }
+  // Hardware #2 left empty
+
+  if (data.shippingCost && data.shippingCost > 0) {
+    setCell('E', NATIONAL_GRID_MA_FREIGHT_ROW, data.shippingCost); // Freight
+  }
+  if (data.networkPlanTotal && data.networkPlanTotal > 0) {
+    setCell('E', NATIONAL_GRID_MA_NETWORKING_ROW, data.networkPlanTotal); // Networking
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
+async function writeSeattleCityLightExcel(data: ExcelExportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(SEATTLE_CITY_LIGHT_FILE);
+  workbook.calcProperties.fullCalcOnLoad = true;
+  workbook.definedNames.model = [];
+
+  const sheet = workbook.getWorksheet('Cost Template');
+  if (!sheet) {
+    throw new Error('Cost Template sheet not found in Seattle City Light template');
+  }
+
+  const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
+    const cell = sheet.getCell(`${col}${row}`);
+    cell.value = value;
+  };
+
+  // Write project info
+  setCell('C', 12, data.customerName); // Site Name
+  setCell('C', 13, `${data.siteAddress}, ${data.siteCity}, ${data.siteState} ${data.siteZip}`); // Site Address
+  if (data.evseModel) {
+    setCell('C', 22, data.evseModel); // Charger make/model
+  }
+  setCell('C', 23, data.numStations); // Total chargers
+  setCell('C', 24, data.numPlugs); // Total ports
+
+  // Write material rows: F=qty, G=unit cost, H=total (formula F*G)
+  Object.entries(data.categories).forEach(([category, costs]) => {
+    const materialRow = SEATTLE_MATERIAL_CELL_MAP[category];
+    if (materialRow !== undefined && costs.materialCost > 0) {
+      const qty = costs.quantity > 0 ? costs.quantity : 1;
+      const unitCost = costs.quantity > 0 ? costs.materialCost / costs.quantity : costs.materialCost;
+      setCell('F', materialRow, qty);
+      setCell('G', materialRow, Math.round(unitCost * 100) / 100);
+      // H is formula F*G
+    }
+
+    // Write labor rows: F=hours, G=hourly rate ($125), H=total (formula F*G)
+    const laborRow = SEATTLE_LABOR_CELL_MAP[category];
+    if (laborRow !== undefined && costs.laborCost > 0) {
+      const hours = Math.round((costs.laborCost / LABOR_RATE_PER_HOUR) * 10) / 10;
+      setCell('F', laborRow, hours);
+      setCell('G', laborRow, LABOR_RATE_PER_HOUR);
+      // H is formula F*G
+    }
+  });
+
+  // Write EVSE info (Chargers/Outlets material row)
+  if (data.evseQuantity && data.evseQuantity > 0 && data.evseUnitPrice) {
+    setCell('F', SEATTLE_MATERIAL_CELL_MAP['Chargers/Outlets'], data.evseQuantity);
+    setCell('G', SEATTLE_MATERIAL_CELL_MAP['Chargers/Outlets'], data.evseUnitPrice);
+  }
+
+  // Write Freight
+  if (data.shippingCost && data.shippingCost > 0) {
+    setCell('F', SEATTLE_MATERIAL_CELL_MAP['Freight'], 1);
+    setCell('G', SEATTLE_MATERIAL_CELL_MAP['Freight'], data.shippingCost);
+  }
+
+  // Write Networking/Cloud (first year)
+  if (data.networkPlanTotal && data.networkPlanTotal > 0) {
+    setCell('F', SEATTLE_NETWORKING_ROW, 1);
+    setCell('G', SEATTLE_NETWORKING_ROW, data.networkPlanTotal);
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -231,7 +528,6 @@ export async function POST(request: NextRequest) {
     let fileName: string;
 
     if (exportData.utilityType === 'national-grid') {
-      // Check if file exists
       if (!fs.existsSync(NATIONAL_GRID_FILE)) {
         return NextResponse.json({
           error: `National Grid template not found at ${NATIONAL_GRID_FILE}`
@@ -240,7 +536,6 @@ export async function POST(request: NextRequest) {
       fileBuffer = await writeNationalGridExcel(exportData);
       fileName = buildExcelFileName(exportData.utilityLabel || 'National Grid');
     } else if (exportData.utilityType === 'nyseg-rge') {
-      // Check if file exists
       if (!fs.existsSync(NYSEG_RGE_FILE)) {
         return NextResponse.json({
           error: `NYSEG/RG&E template not found at ${NYSEG_RGE_FILE}`
@@ -248,6 +543,38 @@ export async function POST(request: NextRequest) {
       }
       fileBuffer = await writeNYSEGRGEExcel(exportData);
       fileName = buildExcelFileName(exportData.utilityLabel || 'NYSEG-RGE');
+    } else if (exportData.utilityType === 'central-hudson') {
+      if (!fs.existsSync(CENTRAL_HUDSON_FILE)) {
+        return NextResponse.json({
+          error: `Central Hudson template not found at ${CENTRAL_HUDSON_FILE}`
+        }, { status: 404 });
+      }
+      fileBuffer = await writeCentralHudsonExcel(exportData);
+      fileName = buildExcelFileName(exportData.utilityLabel || 'Central Hudson');
+    } else if (exportData.utilityType === 'eversource-ma') {
+      if (!fs.existsSync(EVERSOURCE_MA_FILE)) {
+        return NextResponse.json({
+          error: `Eversource MA template not found at ${EVERSOURCE_MA_FILE}`
+        }, { status: 404 });
+      }
+      fileBuffer = await writeEversourceMAExcel(exportData);
+      fileName = buildExcelFileName(exportData.utilityLabel || 'Eversource');
+    } else if (exportData.utilityType === 'national-grid-ma') {
+      if (!fs.existsSync(NATIONAL_GRID_MA_FILE)) {
+        return NextResponse.json({
+          error: `National Grid MA template not found at ${NATIONAL_GRID_MA_FILE}`
+        }, { status: 404 });
+      }
+      fileBuffer = await writeNationalGridMAExcel(exportData);
+      fileName = buildExcelFileName(exportData.utilityLabel || 'National Grid');
+    } else if (exportData.utilityType === 'seattle-city-light') {
+      if (!fs.existsSync(SEATTLE_CITY_LIGHT_FILE)) {
+        return NextResponse.json({
+          error: `Seattle City Light template not found at ${SEATTLE_CITY_LIGHT_FILE}`
+        }, { status: 404 });
+      }
+      fileBuffer = await writeSeattleCityLightExcel(exportData);
+      fileName = buildExcelFileName(exportData.utilityLabel || 'Seattle City Light');
     } else {
       return NextResponse.json({ error: 'Unknown utility type' }, { status: 400 });
     }
