@@ -45,6 +45,9 @@ async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   setCell('B', 9, data.siteZip); // Zip
   setCell('B', 12, data.numPlugs); // # plugs
   setCell('B', 13, data.numStations); // # stations
+  if (data.trenchingFeet && data.trenchingFeet > 0) {
+    setCell('B', 16, data.trenchingFeet); // Ft of trenching
+  }
 
   // Write category data
   // Note: Column G has formulas (D*F), so only write to D and F

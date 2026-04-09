@@ -139,6 +139,8 @@ export interface ExcelExportData {
   // Shipping
   shippingCost?: number;
   shippingAndNetworkCost?: number;
+  // National Grid project info
+  trenchingFeet?: number;
   // Quantities for NYSEG/RG&E
   trenchingQty?: number;
   conduitQty?: number;
@@ -197,6 +199,14 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
     }
   });
 
+  // Calculate total trenching feet across all trenching items
+  let trenchingFeet = 0;
+  proposal.installationItems.forEach(item => {
+    if (item.subgroup === 'Trenching' && item.unit === 'ft') {
+      trenchingFeet += item.quantity;
+    }
+  });
+
   // Calculate total plugs, stations, and EVSE info
   let numPlugs = 0;
   let numStations = 0;
@@ -243,6 +253,7 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
     networkPlanUnitPrice,
     networkPlanTotal,
     shippingCost: proposal.shippingCost || 0,
+    trenchingFeet,
     categories,
   };
 }
