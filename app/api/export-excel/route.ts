@@ -73,10 +73,12 @@ async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
       // G is calculated by formula
     }
 
-    // Material row: D=qty (1), F=unit price
+    // Material row: D=qty, F=unit price
     if (mapping.materialRow !== undefined && costs.materialCost > 0) {
-      setCell('D', mapping.materialRow + 1, 1); // Qty
-      setCell('F', mapping.materialRow + 1, costs.materialCost); // Unit price
+      const qty = costs.quantity > 0 ? costs.quantity : 1;
+      const unitPrice = costs.quantity > 0 ? costs.materialCost / costs.quantity : costs.materialCost;
+      setCell('D', mapping.materialRow + 1, qty);
+      setCell('F', mapping.materialRow + 1, Math.round(unitPrice * 100) / 100);
       // G is calculated by formula
     }
 

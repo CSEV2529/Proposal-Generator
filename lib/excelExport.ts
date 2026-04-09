@@ -148,6 +148,7 @@ export interface ExcelExportData {
       laborCost: number;
       laborHours: number;
       materialCost: number;
+      quantity: number;
     };
   };
 }
@@ -157,7 +158,7 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
 
   // Initialize all categories
   Object.keys(NATIONAL_GRID_CELL_MAP).forEach(cat => {
-    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0 };
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
   });
 
   // Calculate markup factor to convert pricebook costs to quoted prices
@@ -174,11 +175,26 @@ export function prepareNationalGridExport(proposal: Proposal): ExcelExportData {
     const quotedLabor = item.totalLabor * markupFactor;
 
     if (!categories[category]) {
-      categories[category] = { laborCost: 0, laborHours: 0, materialCost: 0 };
+      categories[category] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
     }
     categories[category].laborCost += quotedLabor;
     categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
     categories[category].materialCost += quotedMaterial;
+    // Track quantities per category for material row D column
+    // Conduit & Cables/Wiring: only count per-foot items (exclude fittings, hand holes, mounting, etc.)
+    // Trenching: always qty 1 if any trenching exists
+    // All others: sum quantities of items that have material cost
+    if (item.materialPrice > 0) {
+      if (category === 'Conduit' || category === 'Cables/Wiring') {
+        if (item.unit === 'ft') {
+          categories[category].quantity += item.quantity;
+        }
+      } else if (category === 'Trenching') {
+        categories[category].quantity = 1;
+      } else {
+        categories[category].quantity += item.quantity;
+      }
+    }
   });
 
   // Calculate total plugs, stations, and EVSE info
@@ -236,7 +252,7 @@ export function prepareNYSEGRGEExport(proposal: Proposal): ExcelExportData {
 
   // Initialize all categories
   Object.keys(NYSEG_RGE_CELL_MAP).forEach(cat => {
-    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0 };
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
   });
 
   // Calculate markup factor to convert pricebook costs to quoted prices
@@ -257,10 +273,16 @@ export function prepareNYSEGRGEExport(proposal: Proposal): ExcelExportData {
       categories['Other [please describe]'].laborCost += quotedLabor;
       categories['Other [please describe]'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
       categories['Other [please describe]'].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories['Other [please describe]'].quantity += item.quantity;
+      }
     } else {
       categories[category].laborCost += quotedLabor;
       categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
       categories[category].materialCost += quotedMaterial;
+      if (item.materialPrice > 0) {
+        categories[category].quantity += item.quantity;
+      }
     }
   });
 
