@@ -31,7 +31,6 @@ import {
 // Monkey-patch ExcelJS TableXform to handle table/filter features in MA templates
 // Must run before any workbook.xlsx.readFile calls
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const TableXform = require('exceljs/lib/xlsx/xform/table/table-xform');
   const origParseClose = TableXform.prototype.parseClose;
   TableXform.prototype.parseClose = function(name: string) {
