@@ -5,6 +5,7 @@ import { COMPANY_INFO, PROJECT_TYPES } from '@/lib/constants';
 import { formatCurrency, generateProposalNumber, calculateTotalPorts } from '@/lib/calculations';
 import { getUtilityById } from '@/lib/templates';
 import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
+import './fonts';
 import { LOGO_DARK_BASE64 } from './logoDark';
 import { LOGO_LIGHT_BASE64 } from './logoLight';
 import { NODES_IMAGE_BASE64 } from './nodesImage';

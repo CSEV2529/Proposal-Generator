@@ -30,7 +30,12 @@ export default function LoginPage() {
         setError(data.error || 'Login failed');
         setLoading(false);
       } else {
-        window.location.href = '/';
+        const data = await res.json();
+        if (data.user?.mustChangePassword) {
+          window.location.href = '/change-password';
+        } else {
+          window.location.href = '/';
+        }
       }
     } catch {
       setError('Login failed');

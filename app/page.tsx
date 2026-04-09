@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RotateCcw, Eye, EyeOff, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle, ChevronRight, List } from 'lucide-react';
+import { FileDown, RotateCcw, Eye, EyeOff, FileSpreadsheet, Save, FolderOpen, LogOut, Sun, Moon, AlertTriangle, ChevronRight, List, Shield } from 'lucide-react';
 import Image from 'next/image';
 import { useProposal } from '@/context/ProposalContext';
 import {
@@ -522,6 +522,7 @@ function HomePageContent() {
   const [showPreview, setShowPreview] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -544,6 +545,7 @@ function HomePageContent() {
       if (res.ok) {
         const { user } = await res.json();
         setUserEmail(user?.email || null);
+        setUserRole(user?.role || null);
       } else {
         setUserEmail('local@dev.local');
       }
@@ -836,6 +838,16 @@ function HomePageContent() {
               >
                 <RotateCcw size={18} />
               </Button>
+              {userRole === 'admin' && (
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push('/admin')}
+                  className="text-csev-text-muted hover:text-csev-green"
+                  title="User Management"
+                >
+                  <Shield size={18} />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={handleLogout}

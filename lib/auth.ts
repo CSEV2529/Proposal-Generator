@@ -7,6 +7,8 @@ const TOKEN_EXPIRY = '7d';
 export interface AuthPayload {
   userId: string;
   email: string;
+  role: 'admin' | 'user';
+  mustChangePassword: boolean;
 }
 
 export function signToken(payload: AuthPayload): string {

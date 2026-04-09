@@ -20,7 +20,7 @@ import {
   ChevronUp, ChevronDown, ChevronLeft, Clock,
   AlertTriangle, CheckSquare, Square, X, MoveRight,
   List, FileDown, FileSpreadsheet, Sun, Moon, Download,
-  RotateCcw, Filter,
+  RotateCcw, Filter, Shield,
 } from 'lucide-react';
 
 // Helper to trigger a file download from a blob (returns a promise that resolves after a delay to prevent browser blocking)
@@ -659,6 +659,7 @@ export default function ProjectsPage() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -701,6 +702,7 @@ export default function ProjectsPage() {
     const { user } = await res.json();
     if (!user) { router.push('/login'); return; }
     setUserEmail(user.email || null);
+    setUserRole(user.role || null);
     loadData();
   }, [router, loadData]);
 
@@ -1073,6 +1075,12 @@ export default function ProjectsPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-csev-text-muted">{userEmail}</span>
+            {userRole === 'admin' && (
+              <Button variant="ghost" size="sm" onClick={() => router.push('/admin')} title="User Management">
+                <Shield size={16} className="mr-1" />
+                Admin
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut size={16} className="mr-1" />
               Logout

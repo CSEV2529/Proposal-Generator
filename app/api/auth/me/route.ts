@@ -13,5 +13,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ user: null }, { status: 401 });
   }
 
-  return NextResponse.json({ user: { id: payload.userId, email: payload.email } });
+  return NextResponse.json({
+    user: {
+      id: payload.userId,
+      email: payload.email,
+      role: payload.role || 'user',
+      mustChangePassword: payload.mustChangePassword || false,
+    },
+  });
 }

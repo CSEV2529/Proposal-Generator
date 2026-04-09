@@ -5,6 +5,7 @@ import { COMPANY_INFO, LABOR_RATE_PER_HOUR, PROJECT_TYPES } from '@/lib/constant
 import { formatCurrency, generateProposalNumber } from '@/lib/calculations';
 import { getProductById } from '@/lib/pricebook';
 import { getPdfColors, PdfColorPalette, PdfTheme } from './pdfTheme';
+import './fonts';
 import { LOGO_DARK_BASE64 } from './logoDark';
 import { LOGO_LIGHT_BASE64 } from './logoLight';
 import { NODES_IMAGE_BASE64 } from './nodesImage';
