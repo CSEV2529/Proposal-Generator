@@ -194,11 +194,11 @@ export interface PaymentOptionAnalysis {
 }
 
 export const defaultProposal: Proposal = {
-  customerName: '',
-  customerAddress: '',
-  customerCity: '',
-  customerState: '',
-  customerZip: '',
+  customerName: 'Best Western Holiday Inn',
+  customerAddress: '123 Main St',
+  customerCity: 'Rochester',
+  customerState: 'NY',
+  customerZip: '14624',
   projectStateId: '',
   preparedDate: new Date(),
   projectType: 'level2-epc',
