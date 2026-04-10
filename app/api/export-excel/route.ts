@@ -25,6 +25,7 @@ import {
   SEATTLE_MATERIAL_CELL_MAP,
   SEATTLE_LABOR_CELL_MAP,
   SEATTLE_NETWORKING_ROW,
+  PSEG_LI_CELL_MAP,
   LABOR_RATE_PER_HOUR
 } from '@/lib/excelExport';
 
@@ -38,6 +39,45 @@ try {
   };
 } catch {
   // Silently ignore if the internal module path changes
+}
+
+// Monkey-patch ExcelJS to handle conditional formatting rules with missing formulae
+// PSEG Long Island template has CF rules that crash CfRuleXform.renderExpression
+try {
+  const CfRuleXform = require('exceljs/lib/xlsx/xform/sheet/cf/cf-rule-xform');
+  const origRender = CfRuleXform.prototype.render;
+  CfRuleXform.prototype.render = function(...args: unknown[]) {
+    try { return origRender.apply(this, args); } catch { /* skip broken CF rule */ }
+  };
+} catch {
+  // Silently ignore if the internal module path changes
+}
+
+// Clean workbook of features ExcelJS mangles on re-save:
+// - External defined names with [N] workbook refs (NYSEG/RG&E)
+// - Conditional formatting with x14 extension rules (PSEG LI)
+// - Tables ExcelJS can't round-trip
+// Call this right after readFile on every template.
+function cleanWorkbook(workbook: ExcelJS.Workbook) {
+  // 1. Strip defined names — external refs cause corruption, local ones are low-risk
+  workbook.definedNames.model = [];
+
+  workbook.eachSheet((sheet) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sheetAny = sheet as any;
+
+    // 2. Strip conditional formatting (x14 extLst rules crash CfRuleXform)
+    if (sheetAny.conditionalFormattings) {
+      sheetAny.conditionalFormattings = [];
+    }
+
+    // 3. Remove tables (structured refs become #REF! if not converted first)
+    if (sheetAny.tables && Object.keys(sheetAny.tables).length > 0) {
+      Object.keys(sheetAny.tables).forEach((t: string) => sheet.removeTable(t));
+    }
+  });
+
+  workbook.calcProperties.fullCalcOnLoad = true;
 }
 
 // Convert structured table references (e.g. SimpleInvoice[[#This Row],[Col]]) to A1 style,
@@ -89,19 +129,18 @@ function convertStructuredRefsAndRemoveTables(workbook: ExcelJS.Workbook, sheetN
 
 // Templates are stored in the project's templates folder
 const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
-const NATIONAL_GRID_FILE = path.join(TEMPLATES_DIR, 'National Grid NY Breakdown v2.xlsx');
-const NYSEG_RGE_FILE = path.join(TEMPLATES_DIR, 'NYSEG & RG&E Breakdown.xlsx');
-const CENTRAL_HUDSON_FILE = path.join(TEMPLATES_DIR, 'Central Hudson EV MRP Project Cost.xlsx');
-const EVERSOURCE_MA_FILE = path.join(TEMPLATES_DIR, 'Eversource_MA_EV_Estimate (2).xlsx');
-const NATIONAL_GRID_MA_FILE = path.join(TEMPLATES_DIR, 'National Grid MA EV Make Ready Estimate 2-28-25 (2).xlsx');
-const SEATTLE_CITY_LIGHT_FILE = path.join(TEMPLATES_DIR, 'TE Portfolio Contractor Cost Template - 20251112 (Seattle City Light).xlsx');
+const NATIONAL_GRID_FILE = path.join(TEMPLATES_DIR, 'NY - National Grid EV (Breakdown).xlsx');
+const NYSEG_RGE_FILE = path.join(TEMPLATES_DIR, 'NY - NYSEG & RG&E (Breakdown).xlsx');
+const CENTRAL_HUDSON_FILE = path.join(TEMPLATES_DIR, 'NY - Central Hudson EV MRP Project Cost (Breakdown).xlsx');
+const EVERSOURCE_MA_FILE = path.join(TEMPLATES_DIR, 'MA - Eversource EV Estimate (Breakdown).xlsx');
+const NATIONAL_GRID_MA_FILE = path.join(TEMPLATES_DIR, 'MA - National Grid MA EV Make Ready Estimate (Breakdown).xlsx');
+const SEATTLE_CITY_LIGHT_FILE = path.join(TEMPLATES_DIR, 'WA - Seattle City Light - TE Portfolio Contractor Cost Template (Breakdown).xlsx');
+const PSEG_LI_FILE = path.join(TEMPLATES_DIR, 'NY - PSEG Long Island - EVMakeReadyApp (Breakdown).xlsx');
 
 async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NATIONAL_GRID_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  // Clear defined names — ExcelJS corrupts them on re-save
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
 
   const sheet = workbook.getWorksheet('Make-Ready');
   if (!sheet) {
@@ -214,9 +253,7 @@ async function writeNationalGridExcel(data: ExcelExportData): Promise<Buffer> {
 async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NYSEG_RGE_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  // Clear defined names — ExcelJS corrupts them on re-save
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
 
   // Determine which sheet to use based on charging level
   const sheetName = data.chargingLevel === 'dcfc' ? 'DCFC costs' : 'L2 costs';
@@ -287,8 +324,7 @@ async function writeNYSEGRGEExcel(data: ExcelExportData): Promise<Buffer> {
 async function writeCentralHudsonExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(CENTRAL_HUDSON_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
 
   const sheet = workbook.getWorksheet('Sheet1');
   if (!sheet) {
@@ -350,8 +386,7 @@ async function writeCentralHudsonExcel(data: ExcelExportData): Promise<Buffer> {
 async function writeEversourceMAExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(EVERSOURCE_MA_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
   convertStructuredRefsAndRemoveTables(workbook, 'Estimate', 8);
 
   const sheet = workbook.getWorksheet('Estimate');
@@ -427,8 +462,7 @@ async function writeEversourceMAExcel(data: ExcelExportData): Promise<Buffer> {
 async function writeNationalGridMAExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(NATIONAL_GRID_MA_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
   convertStructuredRefsAndRemoveTables(workbook, 'Estimate', 8);
 
   const sheet = workbook.getWorksheet('Estimate');
@@ -492,8 +526,7 @@ async function writeNationalGridMAExcel(data: ExcelExportData): Promise<Buffer> 
 async function writeSeattleCityLightExcel(data: ExcelExportData): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(SEATTLE_CITY_LIGHT_FILE);
-  workbook.calcProperties.fullCalcOnLoad = true;
-  workbook.definedNames.model = [];
+  cleanWorkbook(workbook);
 
   const sheet = workbook.getWorksheet('Cost Template');
   if (!sheet) {
@@ -554,6 +587,79 @@ async function writeSeattleCityLightExcel(data: ExcelExportData): Promise<Buffer
     setCell('F', SEATTLE_NETWORKING_ROW, 1);
     setCell('G', SEATTLE_NETWORKING_ROW, data.networkPlanTotal);
   }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
+async function writePSEGLIExcel(data: ExcelExportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(PSEG_LI_FILE);
+  cleanWorkbook(workbook);
+
+  // --- Customer Information sheet ---
+  const custSheet = workbook.getWorksheet('Customer Information');
+  if (custSheet) {
+    const setCust = (col: string, row: number, value: number | string) => {
+      if (value === undefined || value === null) return;
+      const cell = custSheet.getCell(`${col}${row}`);
+      cell.value = value;
+    };
+    setCust('C', 8, data.customerName); // Account Holder Name
+    setCust('C', 9, data.siteAddress); // Installation Address
+    setCust('I', 9, data.siteCity); // City
+    setCust('L', 9, data.siteZip); // Zip
+  }
+
+  // --- EV Supply Equipment sheet ---
+  const evseSheet = workbook.getWorksheet('EV Supply Equipment');
+  if (evseSheet) {
+    const setEVSE = (col: string, row: number, value: number | string) => {
+      if (value === undefined || value === null) return;
+      const cell = evseSheet.getCell(`${col}${row}`);
+      cell.value = value;
+    };
+    // Fill first charger slot (row 18)
+    if (data.evseModel) {
+      const isL2 = data.chargingLevel === 'level2';
+      setEVSE('E', 18, isL2 ? 'Level 2' : 'DCFC'); // Charger Type
+      setEVSE('F', 18, data.numStations); // # of Chargers
+      // Ports per charger - put total ports in J1772 for L2 or CCS for DCFC
+      if (isL2) {
+        const portsPerCharger = data.numPlugs > 0 && data.numStations > 0
+          ? Math.round(data.numPlugs / data.numStations) : 1;
+        setEVSE('I', 18, portsPerCharger); // J1772
+      } else {
+        const portsPerCharger = data.numPlugs > 0 && data.numStations > 0
+          ? Math.round(data.numPlugs / data.numStations) : 1;
+        setEVSE('G', 18, portsPerCharger); // CCS
+      }
+    }
+  }
+
+  // --- Make Ready Costs sheet ---
+  const costSheet = workbook.getWorksheet('Make Ready Costs');
+  if (!costSheet) {
+    throw new Error('Make Ready Costs sheet not found in PSEG Long Island template');
+  }
+
+  const setCell = (col: string, row: number, value: number | string) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'number' && (!isFinite(value) || isNaN(value))) return;
+    const cell = costSheet.getCell(`${col}${row}`);
+    cell.value = value;
+  };
+
+  // Write cost categories: E = total cost (material + labor combined)
+  Object.entries(data.categories).forEach(([category, costs]) => {
+    const row = PSEG_LI_CELL_MAP[category];
+    if (row === undefined) return;
+
+    const total = costs.materialCost + costs.laborCost;
+    if (total > 0) {
+      setCell('E', row, total);
+    }
+  });
 
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
@@ -634,6 +740,14 @@ export async function POST(request: NextRequest) {
       }
       fileBuffer = await writeSeattleCityLightExcel(exportData);
       fileName = buildExcelFileName(exportData.utilityLabel || 'Seattle City Light');
+    } else if (exportData.utilityType === 'pseg-li') {
+      if (!fs.existsSync(PSEG_LI_FILE)) {
+        return NextResponse.json({
+          error: `PSEG Long Island template not found at ${PSEG_LI_FILE}`
+        }, { status: 404 });
+      }
+      fileBuffer = await writePSEGLIExcel(exportData);
+      fileName = buildExcelFileName(exportData.utilityLabel || 'PSEG Long Island');
     } else {
       return NextResponse.json({ error: 'Unknown utility type' }, { status: 400 });
     }

@@ -283,6 +283,50 @@ function getNationalGridMACategory(item: InstallationItem): string {
   return NATIONAL_GRID_MA_SUBGROUP_MAP[item.subgroup] || 'Other';
 }
 
+// Cell mappings for PSEG Long Island "Make Ready Costs" sheet
+// Only column E has writable cost cells (total cost per category)
+// Row 29 (Total) is a formula — do not write
+const PSEG_LI_CELL_MAP: { [category: string]: number } = {
+  'Conduit': 15,
+  'Conductors': 17,
+  'Trenching/Boring': 19,
+  'Foundation': 21,
+  'Electric Panel': 23,
+  'Pad-Mounted Transformer': 25,
+  'Landscaping/Restoration': 27,
+};
+
+// PSEG Long Island category mapping
+const PSEG_LI_ITEM_MAP: { [itemId: string]: string } = {
+  'permit-fee': 'Landscaping/Restoration',
+  'design-fee': 'Landscaping/Restoration',
+  'engineering-site': 'Landscaping/Restoration',
+  'engineering-full': 'Landscaping/Restoration',
+  'project-management': 'Landscaping/Restoration',
+  'underground-boring': 'Trenching/Boring',
+};
+
+const PSEG_LI_SUBGROUP_MAP: { [subgroup: string]: string } = {
+  'Conduit': 'Conduit',
+  'Cables': 'Conductors',
+  'Trenching': 'Trenching/Boring',
+  'Civil - Bases': 'Foundation',
+  'Panels': 'Electric Panel',
+  'Breakers': 'Electric Panel',
+  'Panels/Switchgear - New Service': 'Electric Panel',
+  'Transformers': 'Pad-Mounted Transformer',
+  'Striping': 'Landscaping/Restoration',
+  'Permits': 'Landscaping/Restoration',
+  'Design': 'Landscaping/Restoration',
+};
+
+function getPSEGLICategory(item: InstallationItem): string {
+  if (PSEG_LI_ITEM_MAP[item.itemId]) {
+    return PSEG_LI_ITEM_MAP[item.itemId];
+  }
+  return PSEG_LI_SUBGROUP_MAP[item.subgroup] || 'Landscaping/Restoration';
+}
+
 // Cell mappings for Seattle City Light "Cost Template" sheet
 // Material rows: F=qty, G=unit cost, H=total (formula F*G)
 const SEATTLE_MATERIAL_CELL_MAP: { [category: string]: number } = {
@@ -337,7 +381,7 @@ function getSeattleCategoryMapping(item: InstallationItem): { material?: string;
 }
 
 export interface ExcelExportData {
-  utilityType: 'national-grid' | 'nyseg-rge' | 'central-hudson' | 'eversource-ma' | 'national-grid-ma' | 'seattle-city-light';
+  utilityType: 'national-grid' | 'nyseg-rge' | 'central-hudson' | 'eversource-ma' | 'national-grid-ma' | 'seattle-city-light' | 'pseg-li';
   utilityLabel?: string; // Display name for filename (e.g. "National Grid", "NYSEG", "RG&E")
   chargingLevel: 'level2' | 'dcfc';
   customerName: string;
@@ -896,6 +940,68 @@ export function prepareSeattleCityLightExport(proposal: Proposal): ExcelExportDa
   };
 }
 
+export function preparePSEGLIExport(proposal: Proposal): ExcelExportData {
+  const categories: ExcelExportData['categories'] = {};
+
+  // Initialize all categories
+  Object.keys(PSEG_LI_CELL_MAP).forEach(cat => {
+    categories[cat] = { laborCost: 0, laborHours: 0, materialCost: 0, quantity: 0 };
+  });
+
+  // Calculate markup factor
+  const costBasis = proposal.csmrCostBasisPercent / 100;
+  const marginMultiplier = 1 / (1 - proposal.csmrMarginPercent / 100);
+  const markupFactor = costBasis * marginMultiplier;
+
+  // Aggregate costs by category (applying markup to get quoted prices)
+  proposal.installationItems.forEach(item => {
+    const category = getPSEGLICategory(item);
+    const quotedMaterial = item.totalMaterial * markupFactor;
+    const quotedLabor = item.totalLabor * markupFactor;
+
+    if (!categories[category]) {
+      categories['Landscaping/Restoration'].laborCost += quotedLabor;
+      categories['Landscaping/Restoration'].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories['Landscaping/Restoration'].materialCost += quotedMaterial;
+    } else {
+      categories[category].laborCost += quotedLabor;
+      categories[category].laborHours += item.totalLabor / LABOR_RATE_PER_HOUR;
+      categories[category].materialCost += quotedMaterial;
+    }
+  });
+
+  // Calculate total plugs and stations
+  let numPlugs = 0;
+  let numStations = 0;
+  const evseModels: string[] = [];
+  proposal.evseItems.forEach(item => {
+    numStations += item.quantity;
+    const isDualPort = item.productId.includes('-dp-') || item.productId.includes('dchp');
+    numPlugs += item.quantity * (isDualPort ? 2 : 1);
+    if (item.name && !evseModels.includes(item.name)) {
+      evseModels.push(item.name);
+    }
+  });
+
+  return {
+    utilityType: 'pseg-li',
+    utilityLabel: 'PSEG Long Island',
+    chargingLevel: getChargingLevelFromProjectType(proposal.projectType),
+    customerName: proposal.customerName || '',
+    siteAddress: proposal.customerAddress || '',
+    siteCity: proposal.customerCity || '',
+    siteState: proposal.customerState || '',
+    siteZip: proposal.customerZip || '',
+    numPlugs,
+    numStations,
+    evsePrice: proposal.evseQuotedPrice,
+    evseModel: evseModels.join(', '),
+    networkPlanTotal: proposal.networkPlanCost || 0,
+    shippingCost: proposal.shippingCost || 0,
+    categories,
+  };
+}
+
 // Export the cell mappings for use by the API route
 export {
   NATIONAL_GRID_CELL_MAP,
@@ -919,5 +1025,6 @@ export {
   SEATTLE_MATERIAL_CELL_MAP,
   SEATTLE_LABOR_CELL_MAP,
   SEATTLE_NETWORKING_ROW,
+  PSEG_LI_CELL_MAP,
   LABOR_RATE_PER_HOUR,
 };
