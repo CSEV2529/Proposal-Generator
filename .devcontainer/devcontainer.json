@@ -1,0 +1,19 @@
+{
+  "name": "Proposal-Generator",
+  "image": "claude-sandbox",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "mounts": [
+    "source=C:/Users/sandr/DockerClaudeProjects,target=/reference,type=bind,readonly"
+  ],
+  "remoteUser": "claude",
+  "runArgs": ["--memory=2g", "--cpus=2"],
+  "postAttachCommand": "claude --version",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ezoosk.claude-context-bar"
+      ]
+    }
+  }
+}

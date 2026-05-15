@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(psql postgresql://postgres:UyASgxnNomNuCTaVQsFqlIZQWeqqZZlG@mainline.proxy.rlwy.net:55875/railway -c ':*)",
+      "Bash(find C:\\\\Users\\\\sandr\\\\ClaudeProjects\\\\Proposal-Generator\\\\app\\\\api:*)"
+    ]
+  }
+}

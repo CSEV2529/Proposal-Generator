@@ -98,14 +98,21 @@ lib/
 ├── supabase.ts           # Lazy client init, SSR dummy client, isSupabaseConfigured() guard
 ├── projectStorage.ts     # CRUD: getProjects(), getProject(id), createProject(), updateProject(),
 │                         #   deleteProject(), searchProjects() — all use Supabase `projects` table
-├── excelExport.ts        # National Grid: 14 cost categories → Make-Ready sheet cell mappings
-│                         #   NYSEG/RG&E: 10 categories → L2/DCFC sheet cell mappings
-│                         #   Markup: costBasis × marginMultiplier
+├── excelExport.ts        # 7 utility export configs: cell maps, category maps, prepare functions
+│                         #   National Grid NY (14 cats), NYSEG/RG&E (10), Central Hudson (7),
+│                         #   PSEG LI (7), Eversource MA (12), National Grid MA (9), Seattle (10)
+│                         #   Markup: costBasis × marginMultiplier applied to all
 └── utilityBreakdown.ts   # generateNationalGridBreakdown(), generateNYSEGRGEBreakdown()
 
 templates/
-├── National Grid Breakdown v2.xlsx    # Excel template with formulas
-└── NYSEG & RG&E Breakdown.xlsx        # Separate L2/DCFC sheets
+├── NY - National Grid EV (Breakdown).xlsx            # NY National Grid Make-Ready sheet
+├── NY - NYSEG & RG&E (Breakdown).xlsx                # NY NYSEG/RG&E, separate L2/DCFC sheets
+├── NY - Central Hudson EV MRP Project Cost (Breakdown).xlsx  # NY Central Hudson
+├── NY - PSEG Long Island - EVMakeReadyApp (Breakdown).xlsx   # NY PSEG LI, 16 sheets, 7 cost categories
+├── MA - Eversource EV Estimate (Breakdown).xlsx      # MA Eversource (also used for CT)
+├── MA - National Grid MA EV Make Ready Estimate (Breakdown).xlsx  # MA National Grid
+├── WA - Seattle City Light - TE Portfolio Contractor Cost Template (Breakdown).xlsx  # WA Seattle
+└── NJ - PSEG and JCP&L - Invoices and Breakdown.pdf  # NJ reference (not yet wired)
 ```
 
 ## Supabase Schema
@@ -329,8 +336,11 @@ All document outputs follow a unified naming pattern:
 - PDF components use dynamic imports with `ssr: false` to avoid hydration issues
 - `next.config.js` disables canvas alias for @react-pdf/renderer compatibility
 - Default proposal has test data pre-filled (Best Western Inn & Suites, Rochester, NY)
-- Excel export is conditional — only shows for National Grid or NYSEG/RG&E utility selections
+- Excel export shows for 8 utility IDs: national-grid, nyseg, rge, central-hudson, pseg-li, eversource-ma, eversource-ct, national-grid-ma, seattle-city-light
 - Excel exports use `utilityLabel` on `ExcelExportData` to distinguish NYSEG vs RG&E in filenames
+- All Excel write functions must call `cleanWorkbook(workbook)` after readFile — strips defined names, conditional formatting, and tables that ExcelJS mangles on re-save
+- MA templates additionally need `convertStructuredRefsAndRemoveTables()` for structured table refs
+- ExcelJS monkey-patches in route.ts: TableXform.parseClose (table parsing) + CfRuleXform.render (PSEG LI conditional formatting)
 - Project save/load via URL query param `?project={id}`
 - Auth allows local dev without login (Supabase optional in dev)
 - All PDF page titles use Orbitron 28px white with marginBottom 12 (consistent across pages 2-6)

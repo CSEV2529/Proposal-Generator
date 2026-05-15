@@ -1,0 +1,3 @@
+- [Dev workflow](feedback_railway_only.md) — develop on localhost, push to Railway when ready
+- [Deployment setup](project_deployment.md) — Railway from myrepo/dev-alex, Netlify from origin/main, never cross
+- [Session Apr 9](project_session_apr9.md) — admin system, 4 new Excel exports, cents toggle, PDF fix, Railway deploy
