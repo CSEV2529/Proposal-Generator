@@ -1,3 +1,5 @@
+// NOTE: This script requires DATABASE_URL to use the public Railway hostname, not postgres.railway.internal
+
 /**
  * Reset a user's password in Railway PostgreSQL
  *
@@ -27,7 +29,7 @@ async function resetPassword() {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await pool.query('UPDATE users SET password_hash = $1 WHERE email = $2', [passwordHash, email.toLowerCase()]);
+  await pool.query('UPDATE users SET password_hash = $1, must_change_password = false WHERE email = $2', [passwordHash, email.toLowerCase()]);
 
   console.log(`✓ Password updated for ${email}`);
   await pool.end();

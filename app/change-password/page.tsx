@@ -62,14 +62,19 @@ export default function ChangePasswordPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Current Password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter current password"
-            required
-          />
+          <div>
+            <p className="text-xs text-csev-text-secondary mb-1.5">
+              Enter the temporary password provided by your administrator
+            </p>
+            <Input
+              label="Current Password"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password"
+              required
+            />
+          </div>
           <Input
             label="New Password"
             type="password"

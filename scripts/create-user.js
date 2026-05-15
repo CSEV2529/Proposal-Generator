@@ -1,3 +1,5 @@
+// NOTE: This script requires DATABASE_URL to use the public Railway hostname, not postgres.railway.internal
+
 /**
  * Create a user in Railway PostgreSQL
  *
@@ -41,8 +43,8 @@ async function createUser() {
   // Hash password and create user
   const passwordHash = await bcrypt.hash(password, 12);
   const result = await pool.query(
-    'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email',
-    [email.toLowerCase(), passwordHash, name]
+    'INSERT INTO users (email, password_hash, name, role, must_change_password) VALUES ($1, $2, $3, $4, $5) RETURNING id, email',
+    [email.toLowerCase(), passwordHash, name, 'user', false]
   );
 
   const user = result.rows[0];

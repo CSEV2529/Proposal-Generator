@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { LogOut, UserPlus, Trash2, KeyRound, Shield, ArrowLeft } from 'lucide-react';
+import { LogOut, UserPlus, Trash2, KeyRound, Shield, ArrowLeft, Copy, X } from 'lucide-react';
 
 interface UserRecord {
   id: string;
@@ -34,6 +34,9 @@ export default function AdminPage() {
   // Reset password
   const [resetUserId, setResetUserId] = useState<string | null>(null);
   const [resetPassword, setResetPassword] = useState('');
+
+  // Created user credentials (shown after invite for admin to copy/share)
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
 
   // Confirm dialog
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -85,12 +88,12 @@ export default function AdminPage() {
     });
 
     if (res.ok) {
+      setCreatedCredentials({ email: inviteEmail, password: invitePassword });
       setShowInviteForm(false);
       setInviteEmail('');
       setInviteName('');
       setInvitePassword('');
       setInviteRole('user');
-      showToast('success', 'User created successfully');
       loadUsers();
     } else {
       const data = await res.json();
@@ -205,6 +208,56 @@ export default function AdminPage() {
             Invite User
           </Button>
         </div>
+
+        {/* Created user credentials */}
+        {createdCredentials && (
+          <div className="bg-csev-green/10 border border-csev-green/30 rounded-lg p-4 mb-6 animate-fade-in">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="text-white font-medium mb-1">User Created — Share These Credentials</h3>
+                <p className="text-xs text-csev-text-secondary">
+                  Send these to the user. They&apos;ll be prompted to change the password on first login.
+                </p>
+              </div>
+              <button
+                onClick={() => setCreatedCredentials(null)}
+                className="text-csev-text-muted hover:text-white p-1 -m-1"
+                aria-label="Dismiss"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs text-csev-text-muted mb-1">Email</div>
+                <div className="bg-csev-slate-800 px-3 py-2 rounded border border-csev-border text-white font-mono text-sm break-all">
+                  {createdCredentials.email}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-csev-text-muted mb-1">Temporary Password</div>
+                <div className="bg-csev-slate-800 px-3 py-2 rounded border border-csev-border text-white font-mono text-sm break-all">
+                  {createdCredentials.password}
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}`
+                  );
+                  showToast('success', 'Credentials copied to clipboard');
+                }}
+              >
+                <Copy size={14} className="mr-1.5" />
+                Copy Credentials
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Invite form */}
         {showInviteForm && (
