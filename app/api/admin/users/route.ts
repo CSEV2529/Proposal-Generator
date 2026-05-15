@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getPool } from '@/lib/db';
 import { verifyToken, COOKIE_NAME } from '@/lib/auth';
+import { sendInviteEmail } from '@/lib/email';
 
 function getAdmin(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
@@ -57,8 +58,21 @@ export async function POST(request: NextRequest) {
        VALUES ($1, $2, $3, $4, true) RETURNING id, email, name, role`,
       [email.toLowerCase(), passwordHash, name || null, role || 'user']
     );
+    const newUser = result.rows[0];
 
-    return NextResponse.json({ user: result.rows[0] }, { status: 201 });
+    const origin = request.headers.get('origin') || request.nextUrl.origin;
+    const loginUrl = `${process.env.APP_URL || origin}/login`;
+    const emailResult = await sendInviteEmail({
+      toEmail: newUser.email,
+      name: newUser.name,
+      tempPassword: password,
+      loginUrl,
+    });
+
+    return NextResponse.json(
+      { user: newUser, emailSent: emailResult.sent, emailError: emailResult.sent ? null : emailResult.reason },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Create user error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

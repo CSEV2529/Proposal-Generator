@@ -36,7 +36,12 @@ export default function AdminPage() {
   const [resetPassword, setResetPassword] = useState('');
 
   // Created user credentials (shown after invite for admin to copy/share)
-  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    email: string;
+    password: string;
+    emailSent: boolean;
+    emailError?: string | null;
+  } | null>(null);
 
   // Confirm dialog
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -88,7 +93,13 @@ export default function AdminPage() {
     });
 
     if (res.ok) {
-      setCreatedCredentials({ email: inviteEmail, password: invitePassword });
+      const data = await res.json();
+      setCreatedCredentials({
+        email: inviteEmail,
+        password: invitePassword,
+        emailSent: data.emailSent === true,
+        emailError: data.emailError ?? null,
+      });
       setShowInviteForm(false);
       setInviteEmail('');
       setInviteName('');
@@ -241,7 +252,16 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="text-xs">
+                {createdCredentials.emailSent ? (
+                  <span className="text-csev-green">✓ Invitation email sent to {createdCredentials.email}</span>
+                ) : (
+                  <span className="text-amber-400">
+                    ⚠ Email not sent{createdCredentials.emailError ? ` (${createdCredentials.emailError})` : ''} — share these credentials manually
+                  </span>
+                )}
+              </div>
               <Button
                 variant="secondary"
                 size="sm"
